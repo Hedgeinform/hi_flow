@@ -241,3 +241,25 @@ Floor checklist для агента в Brainstorm path: **8 probe-категор
 - Per module/feature: «наша фича взаимодействует? Как — read / write / trigger / depend on?»
 
 **Output:** integration forks.
+
+### Cross-cutting probe — Make implicit criteria explicit [Always active]
+
+При появлении любой vague-формулировки определи flavor:
+
+- **Скрытое число** (быстро / часто / много / низкий темп) → quantify в значение.
+- **Скрытый критерий** (опасный / настойчивый / нереалистичный) → operationalize в правило / checklist.
+- **Genuinely fuzzy** (похоже / естественно / уместно) → accept fuzziness, дать LLM якорные примеры.
+
+### Cross-cutting check — Contradiction detection [Always active]
+
+После каждого нового fork-ответа сверяй с уже зафиксированными. При противоречии — flag оператору эксплицитно:
+
+> *«В F1.3 ты сказал X, в текущем F2.4 — предполагается Y. Конфликт. Какое решение верно / нужно ли пересмотр?»*
+
+### Closing probe — Premortem [Mandatory at end]
+
+После прохождения 8 категорий + cross-cutting checks:
+
+> *«Представь, что фича запущена и через 3 месяца идут жалобы пользователей. Какие жалобы?»*
+
+Каждая воображаемая жалоба → потенциальный новый fork.
