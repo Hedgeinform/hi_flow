@@ -1,6 +1,6 @@
 ---
 name: feature-spec
-description: Use when operator needs to create a product spec for a single feature ("продуктовая спека", "спека на фичу", "продуктовый дизайн фичи", "анализ нашей фичи", "давай продумаем фичу"). Conducts structured brainstorm with hierarchical fork discovery using 8-category probing taxonomy + HAZOP guidewords + premortem. Outputs product-spec.md with cell-based decision tree, cross-cutting policies, reusable sub-policies. Solo-founder oriented, plain product Russian by default.
+description: Use when operator needs to create a product spec for a single feature ("продуктовая спека", "спека на фичу", "продуктовый дизайн фичи", "анализ продукта", "анализ нашей фичи", "давай продумаем фичу"). Conducts structured brainstorm with hierarchical fork discovery using 8-category probing taxonomy + HAZOP guidewords + premortem. Outputs product-spec.md with cell-based decision tree, cross-cutting policies, reusable sub-policies. Solo-founder oriented, plain product Russian by default.
 ---
 
 # `as_flow:feature-spec` — Feature-Level Product Spec Skill
@@ -323,7 +323,7 @@ Product-spec.md адресован оператору-продуктологу, 
 ## Reusable sub-policies
 [named blocks referenced from forks]
 
-## Premortem findings
+## Premortem findings (closing probe absorbed)
 [absorbed concerns]
 
 ## Open items at closure
@@ -410,7 +410,7 @@ Product-spec.md адресован оператору-продуктологу, 
 ## Format Rules
 
 1. **Hierarchical IDs (Cockburn-style).** Forks нумеруются F1, F1.3, F1.3.2.1.
-2. **ID присваивается ⇔ cell существует.** Тривиальные терминальные branches описываются inline в parent'е без присвоения ID.
+2. **ID присваивается ⇔ cell существует.** Никаких dangling IDs без cells. Никаких cells без IDs. Тривиальные терминальные branches описываются inline в parent'е без присвоения ID.
 3. **Resolution-first** в каждом cell'е.
 4. **Cardinality tag** обязателен на forks с branches.
 5. **Status tag** обязателен на каждом fork.
