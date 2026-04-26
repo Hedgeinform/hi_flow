@@ -4,21 +4,28 @@
 
 ## Skills в семействе
 
-- **`as_flow:feature-spec`** — продуктовая спека одной фичи (Phase 1, feature-level). См. `skills/feature-spec/SKILL.md`.
+### as_flow:feature-spec — продуктовая спека одной фичи [READY]
 
-## Future skills (parked)
+Активация: «продуктовая спека [для X]», «спека на фичу X», «давай продумаем фичу X», и др. (полный список см. в SKILL.md).
 
-- `as_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level)
-- `as_flow:arch-spec` — архитектурная спека фичи (Phase 2)
-- `as_flow:impl-plan` — план реализации (Phase 3)
-- `as_flow:fitness` — architectural fitness functions
-- `as_flow:sanity-check` — пересмотр архитектурной целостности по запросу
-- `as_flow:handoff` — session handoff discipline
+Запуск: оператор пишет trigger phrase. Skill генерирует self-assessment proposal, далее по утверждённому пути.
+
+Output: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md`.
+
+### Other skills [PARKED]
+
+- `as_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level).
+- `as_flow:arch-spec` — архитектурная спека фичи (Phase 2).
+- `as_flow:impl-plan` — план реализации (Phase 3).
+- `as_flow:fitness` — architectural fitness functions.
+- `as_flow:sanity-check`, `as_flow:handoff`.
 
 ## Install
 
-[TBD — будет документировано после implementation, описано как ставить локально / глобально]
+[Документировать после первого распространения]
 
 ## Background
 
-Дизайн-спеки: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md` (в проекте agent_orchesration_skills).
+- Design spec: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md`
+- Reference example: `as_flow/skills/feature-spec/references/example-goal-setting.md`
+- Implementation report: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md`
