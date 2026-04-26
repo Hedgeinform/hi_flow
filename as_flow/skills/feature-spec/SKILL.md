@@ -198,4 +198,46 @@ Floor checklist для агента в Brainstorm path: **8 probe-категор
 
 **Output:** forks per (output, reaction).
 
-[continued in next section]
+### 5. Hard policies [Optional]
+
+**Procedure:** срабатывает если домен имеет ethical / safety / medical / legal риск.
+
+- Walk через Boundary findings — per экстремум: «триггерит ли concern?»
+- Если домен высоко-stakes — walk через стандартные sensitive areas (privacy, finance, age, vulnerability, harm).
+- Каждая policy формулируется паттерном: *«Если <условие>, то отказ / требование / лог <действие>»*.
+
+**Важно:** **не фабрикуй** policy для нейтральных фич. Если риска нет — категория пропускается без записи.
+
+**Output:** policy-forks. Уходят в раздел Cross-cutting policies, не в основное дерево.
+
+### 6. Disambiguation [Optional]
+
+**Procedure:** срабатывает при наличии ≥2 похожих внешне ситуаций.
+
+- Попарный обход всех forks: «выглядят похоже извне (для пользователя), но требуют разной реакции?»
+- Highlight near-misses оператору.
+- Critery — обычно examples + checklist, не формула.
+
+**Важно:** **не изобретай** псевдо-disambiguation для заполнения категории. Если нет реальных near-misses — категория пропускается.
+
+**Output:** disambiguation forks с критериями + examples.
+
+### 7. Lifecycle [Conditional: фича имеет state, сохраняющийся после первичного действия]
+
+**Procedure:** per state-change из Контракта выхода — **5 lifecycle вопросов**:
+
+- *Expire* — когда state перестаёт быть актуален?
+- *Change* — пользователь хочет изменить?
+- *Abandon* — пользователь забил, что бот делает?
+- *Repeat* — повторное действие через время?
+- *Override* — что если пришёл новый input, перекрывающий старый?
+
+**Output:** lifecycle forks.
+
+### 8. Cross-feature integration [Conditional: в проекте есть существующие фичи]
+
+**Procedure:**
+- Прочитай Module Map из `ARCHITECTURE.md` (если есть).
+- Per module/feature: «наша фича взаимодействует? Как — read / write / trigger / depend on?»
+
+**Output:** integration forks.
