@@ -3,7 +3,7 @@
 При активации скилл генерирует proposal в этом формате (заполняй <placeholders> по контексту):
 
 ```
-[Self-assessment: as_flow:feature-spec]
+[Self-assessment: hi_flow:feature-spec]
 
 Предлагаю: <brainstorm | direct | skip>
 Причина: <одно-два предложения, почему именно этот путь>

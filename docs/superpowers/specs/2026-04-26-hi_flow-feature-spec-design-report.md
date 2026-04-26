@@ -1,12 +1,12 @@
-# Implementation Report: as_flow:feature-spec
+# Implementation Report: hi_flow:feature-spec
 
-**Spec:** `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md`
+**Spec:** `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md`
 **Date:** 2026-04-26
 **Status:** completed
 
 ## What was done
 
-- Plugin scaffolding (`as_flow/`) с `plugin.json`, `README.md`, директорией `skills/feature-spec/` (commit `37ef519`).
+- Plugin scaffolding (`hi_flow/`) с `plugin.json`, `README.md`, директорией `skills/feature-spec/` (commit `37ef519`).
 - SKILL.md полностью реализован за 9 коммитов (`f36372f`, `44baef2`, `86c7a0a`, `a3b5434`, `f8d1ef0`, `69abbb5`, `7a5c9d3`, `c2b18f7`, `51977a3`):
   - Frontmatter с триггерами активации.
   - Секция «Активация, Self-Assessment, Scope».
@@ -65,4 +65,4 @@ Parked items (из секции 10 design doc, осознанно отложен
 - Non-functional forks как отдельная категория.
 - Out-of-scope как probe (вместо текущего трактования через scope-секцию).
 - Mermaid graph rendering для visual probe map.
-- Sibling skills семейства as_flow: `product-spec`, `arch-spec`, `impl-plan`, `fitness`, `sanity-check`, `handoff`.
+- Sibling skills семейства hi_flow: `product-spec`, `arch-spec`, `impl-plan`, `fitness`, `sanity-check`, `handoff`.

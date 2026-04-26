@@ -1,14 +1,14 @@
-# `as_flow:feature-spec` Implementation Plan
+# `hi_flow:feature-spec` Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Реализовать Claude Code skill `as_flow:feature-spec`, который ведёт оператора от запроса фичи к подписанной `product-spec.md` через self-assessment + brainstorm с probing taxonomy.
+**Goal:** Реализовать Claude Code skill `hi_flow:feature-spec`, который ведёт оператора от запроса фичи к подписанной `product-spec.md` через self-assessment + brainstorm с probing taxonomy.
 
 **Architecture:** Skill — это markdown-файл с frontmatter и инструкциями для LLM. Имплементация = написание SKILL.md по разделам design doc'а + supporting reference files (template, example) + scenario-based validation. Никакого runtime-кода — только инструкции, которым следует агент.
 
 **Tech Stack:** Claude Code skills format (markdown + YAML frontmatter), Claude Code plugin structure.
 
-**Spec:** `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md`
+**Spec:** `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md`
 **Reference example:** `examples/goal-setting-product-spec.md`
 
 ---
@@ -27,7 +27,7 @@ Worktree не используем — это документационная �
 ## File Structure
 
 ```
-as_flow/
+hi_flow/
 ├── README.md                              # plugin overview, install instructions
 ├── plugin.json                            # plugin manifest (если требуется Claude Code)
 └── skills/
@@ -40,8 +40,8 @@ as_flow/
 ```
 
 **Locations:**
-- Project workspace: `C:\Users\Vegr\Projects\Owners\agent_orchesration_skills\as_flow\` (during development)
-- Production install location: `~/.claude/plugins/<name>/as_flow/` или эквивалент (post-implementation, не в плане)
+- Project workspace: `C:\Users\Vegr\Projects\Owners\agent_orchesration_skills\hi_flow\` (during development)
+- Production install location: `~/.claude/plugins/<name>/hi_flow/` или эквивалент (post-implementation, не в плане)
 
 ---
 
@@ -50,16 +50,16 @@ as_flow/
 ### Task 1: Plugin scaffolding
 
 **Files:**
-- Create: `as_flow/README.md`
-- Create: `as_flow/plugin.json` (если требуется)
-- Create: `as_flow/skills/feature-spec/` (директория)
-- Create: `as_flow/skills/feature-spec/references/` (директория)
+- Create: `hi_flow/README.md`
+- Create: `hi_flow/plugin.json` (если требуется)
+- Create: `hi_flow/skills/feature-spec/` (директория)
+- Create: `hi_flow/skills/feature-spec/references/` (директория)
 
 - [ ] **Step 1: Create directory structure**
 
 ```bash
 cd "C:\Users\Vegr\Projects\Owners\agent_orchesration_skills"
-mkdir -p as_flow/skills/feature-spec/references
+mkdir -p hi_flow/skills/feature-spec/references
 ```
 
 - [ ] **Step 2: Verify Claude Code skill plugin format**
@@ -70,29 +70,29 @@ Reference: посмотреть структуру существующего п
 ls -la "C:\Users\Vegr\.claude\plugins\cache\superpowers-marketplace\superpowers\5.0.7\"
 ```
 
-Identify какие manifest-файлы нужны (plugin.json, manifest.json, или ничего — только skills/<name>/SKILL.md). Документировать в README что именно использует as_flow.
+Identify какие manifest-файлы нужны (plugin.json, manifest.json, или ничего — только skills/<name>/SKILL.md). Документировать в README что именно использует hi_flow.
 
 - [ ] **Step 3: Write plugin README**
 
-Create `as_flow/README.md`:
+Create `hi_flow/README.md`:
 
 ```markdown
-# as_flow — методология Three-Phase Flow для solo+AI разработки
+# hi_flow — методология Three-Phase Flow для solo+AI разработки
 
 Семейство Claude Code skill'ов, реализующих структурированную методологию разработки product → architecture → implementation для solo founder с AI-агентом.
 
 ## Skills в семействе
 
-- **`as_flow:feature-spec`** — продуктовая спека одной фичи (Phase 1, feature-level). См. `skills/feature-spec/SKILL.md`.
+- **`hi_flow:feature-spec`** — продуктовая спека одной фичи (Phase 1, feature-level). См. `skills/feature-spec/SKILL.md`.
 
 ## Future skills (parked)
 
-- `as_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level)
-- `as_flow:arch-spec` — архитектурная спека фичи (Phase 2)
-- `as_flow:impl-plan` — план реализации (Phase 3)
-- `as_flow:fitness` — architectural fitness functions
-- `as_flow:sanity-check` — пересмотр архитектурной целостности по запросу
-- `as_flow:handoff` — session handoff discipline
+- `hi_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level)
+- `hi_flow:arch-spec` — архитектурная спека фичи (Phase 2)
+- `hi_flow:impl-plan` — план реализации (Phase 3)
+- `hi_flow:fitness` — architectural fitness functions
+- `hi_flow:sanity-check` — пересмотр архитектурной целостности по запросу
+- `hi_flow:handoff` — session handoff discipline
 
 ## Install
 
@@ -100,13 +100,13 @@ Create `as_flow/README.md`:
 
 ## Background
 
-Дизайн-спеки: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md` (в проекте agent_orchesration_skills).
+Дизайн-спеки: `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md` (в проекте agent_orchesration_skills).
 ```
 
 - [ ] **Step 4: Verify structure**
 
 ```bash
-ls -R as_flow/
+ls -R hi_flow/
 ```
 
 Expected output: видны директории skills/feature-spec/references/ и файлы README.md.
@@ -114,8 +114,8 @@ Expected output: видны директории skills/feature-spec/references/
 - [ ] **Step 5: Commit**
 
 ```bash
-git add as_flow/README.md as_flow/skills/
-git commit -m "feat(as_flow): plugin scaffolding for feature-spec skill"
+git add hi_flow/README.md hi_flow/skills/
+git commit -m "feat(hi_flow): plugin scaffolding for feature-spec skill"
 ```
 
 ---
@@ -123,11 +123,11 @@ git commit -m "feat(as_flow): plugin scaffolding for feature-spec skill"
 ### Task 2: SKILL.md frontmatter
 
 **Files:**
-- Create: `as_flow/skills/feature-spec/SKILL.md`
+- Create: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Write frontmatter**
 
-Create `as_flow/skills/feature-spec/SKILL.md` with YAML frontmatter:
+Create `hi_flow/skills/feature-spec/SKILL.md` with YAML frontmatter:
 
 ```markdown
 ---
@@ -135,7 +135,7 @@ name: feature-spec
 description: Use when operator needs to create a product spec for a single feature ("продуктовая спека", "спека на фичу", "продуктовый дизайн фичи", "анализ нашей фичи", "давай продумаем фичу"). Conducts structured brainstorm with hierarchical fork discovery using 8-category probing taxonomy + HAZOP guidewords + premortem. Outputs product-spec.md with cell-based decision tree, cross-cutting policies, reusable sub-policies. Solo-founder oriented, plain product Russian by default.
 ---
 
-# `as_flow:feature-spec` — Feature-Level Product Spec Skill
+# `hi_flow:feature-spec` — Feature-Level Product Spec Skill
 
 [Тело скилла — заполняется в последующих задачах]
 ```
@@ -143,7 +143,7 @@ description: Use when operator needs to create a product spec for a single featu
 - [ ] **Step 2: Verify frontmatter parses**
 
 ```bash
-head -10 as_flow/skills/feature-spec/SKILL.md
+head -10 hi_flow/skills/feature-spec/SKILL.md
 ```
 
 Expected: видны три строки `---` ограничивающие frontmatter, поля name и description.
@@ -151,8 +151,8 @@ Expected: видны три строки `---` ограничивающие fron
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): SKILL.md frontmatter with triggers"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): SKILL.md frontmatter with triggers"
 ```
 
 ---
@@ -160,7 +160,7 @@ git commit -m "feat(as_flow:feature-spec): SKILL.md frontmatter with triggers"
 ### Task 3: Skill body — overview, scope, activation, self-assessment
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add overview and scope sections**
 
@@ -169,14 +169,14 @@ Append to `SKILL.md` (after frontmatter):
 ```markdown
 ## What this skill does
 
-Ведёт оператора от запроса фичи к подписанной product-spec.md, которая (1) даёт оператору фокус для deep review, (2) даёт следующей фазе (`as_flow:arch-spec`) однозначное основание для архитектурного дизайна.
+Ведёт оператора от запроса фичи к подписанной product-spec.md, которая (1) даёт оператору фокус для deep review, (2) даёт следующей фазе (`hi_flow:arch-spec`) однозначное основание для архитектурного дизайна.
 
 Skill systematically выявляет иерархические продуктовые развилки (forks) — конкретные поведенческие решения, edge cases, hard policies, критерии разграничения похожих ситуаций — через структурированный диалог с оператором.
 
 ## Out of scope
 
-- Product-level декомпозиция (отдельный skill `as_flow:product-spec`).
-- Архитектурные / технические решения (`as_flow:arch-spec`, `as_flow:impl-plan`).
+- Product-level декомпозиция (отдельный skill `hi_flow:product-spec`).
+- Архитектурные / технические решения (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
 - Автоматический вызов следующей фазы — оператор инициирует.
 - n8n-проекты — специфика инструмента, отдельный кейс.
 
@@ -221,7 +221,7 @@ Skill активируется только на эти явные фразы:
 ### Proposal format
 
 ```
-[Self-assessment: as_flow:feature-spec]
+[Self-assessment: hi_flow:feature-spec]
 
 Предлагаю: brainstorm / direct / skip
 Причина: <одно-два предложения>
@@ -245,18 +245,18 @@ Skill активируется только на эти явные фразы:
 Read both files side by side:
 
 ```bash
-cat as_flow/skills/feature-spec/SKILL.md
+cat hi_flow/skills/feature-spec/SKILL.md
 ```
 
-Cross-reference с `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md` разделы 1, 2.
+Cross-reference с `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md` разделы 1, 2.
 
 Confirm: out-of-scope items match, triggers list matches, self-assessment factors match, proposal format identical.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): activation, self-assessment, scope sections"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): activation, self-assessment, scope sections"
 ```
 
 ---
@@ -264,7 +264,7 @@ git commit -m "feat(as_flow:feature-spec): activation, self-assessment, scope se
 ### Task 4: Skill body — process flow (skip / direct / brainstorm paths)
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add process flow section**
 
@@ -349,8 +349,8 @@ Verify содержание соответствует дизайну: три п
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): process flow with three paths"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): process flow with three paths"
 ```
 
 ---
@@ -358,7 +358,7 @@ git commit -m "feat(as_flow:feature-spec): process flow with three paths"
 ### Task 5: Skill body — probing taxonomy (categories 1-4)
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add probing taxonomy intro and categories 1-4**
 
@@ -432,8 +432,8 @@ Cross-reference с design doc.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): probing taxonomy categories 1-4"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): probing taxonomy categories 1-4"
 ```
 
 ---
@@ -441,7 +441,7 @@ git commit -m "feat(as_flow:feature-spec): probing taxonomy categories 1-4"
 ### Task 6: Skill body — probing taxonomy (categories 5-8)
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add categories 5-8**
 
@@ -500,8 +500,8 @@ Cross-reference с design doc.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): probing taxonomy categories 5-8"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): probing taxonomy categories 5-8"
 ```
 
 ---
@@ -509,7 +509,7 @@ git commit -m "feat(as_flow:feature-spec): probing taxonomy categories 5-8"
 ### Task 7: Skill body — cross-cutting probes and closing probe
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add cross-cutting probes and Premortem**
 
@@ -546,8 +546,8 @@ Cross-reference с design doc раздел 5.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): cross-cutting probes and premortem"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): cross-cutting probes and premortem"
 ```
 
 ---
@@ -555,7 +555,7 @@ git commit -m "feat(as_flow:feature-spec): cross-cutting probes and premortem"
 ### Task 8: Skill body — output format (product-spec.md structure)
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add output format section**
 
@@ -697,8 +697,8 @@ Cross-reference с design doc.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): output format and product-spec.md structure"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): output format and product-spec.md structure"
 ```
 
 ---
@@ -706,7 +706,7 @@ git commit -m "feat(as_flow:feature-spec): output format and product-spec.md str
 ### Task 9: Skill body — operational and format rules
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add operational rules section**
 
@@ -748,8 +748,8 @@ Cross-reference с design doc.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): operational and format rules"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): operational and format rules"
 ```
 
 ---
@@ -757,7 +757,7 @@ git commit -m "feat(as_flow:feature-spec): operational and format rules"
 ### Task 10: Skill body — references and example pointer
 
 **Files:**
-- Modify: `as_flow/skills/feature-spec/SKILL.md`
+- Modify: `hi_flow/skills/feature-spec/SKILL.md`
 
 - [ ] **Step 1: Add references section**
 
@@ -780,8 +780,8 @@ Append to `SKILL.md`:
 - [ ] **Step 2: Final read of complete SKILL.md**
 
 ```bash
-cat as_flow/skills/feature-spec/SKILL.md | wc -l
-cat as_flow/skills/feature-spec/SKILL.md | head -50
+cat hi_flow/skills/feature-spec/SKILL.md | wc -l
+cat hi_flow/skills/feature-spec/SKILL.md | head -50
 ```
 
 Verify общая структура: frontmatter, все секции на месте.
@@ -789,8 +789,8 @@ Verify общая структура: frontmatter, все секции на ме
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/SKILL.md
-git commit -m "feat(as_flow:feature-spec): references and implementation notes"
+git add hi_flow/skills/feature-spec/SKILL.md
+git commit -m "feat(hi_flow:feature-spec): references and implementation notes"
 ```
 
 ---
@@ -798,11 +798,11 @@ git commit -m "feat(as_flow:feature-spec): references and implementation notes"
 ### Task 11: Reference template — product-spec.md skeleton
 
 **Files:**
-- Create: `as_flow/skills/feature-spec/references/product-spec-template.md`
+- Create: `hi_flow/skills/feature-spec/references/product-spec-template.md`
 
 - [ ] **Step 1: Create template file**
 
-Create `as_flow/skills/feature-spec/references/product-spec-template.md`:
+Create `hi_flow/skills/feature-spec/references/product-spec-template.md`:
 
 ```markdown
 # <Feature name>
@@ -918,14 +918,14 @@ Bot:   <финальное подтверждение>
 - [ ] **Step 2: Verify template structure**
 
 ```bash
-cat as_flow/skills/feature-spec/references/product-spec-template.md | head -50
+cat hi_flow/skills/feature-spec/references/product-spec-template.md | head -50
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/references/product-spec-template.md
-git commit -m "feat(as_flow:feature-spec): product-spec.md template"
+git add hi_flow/skills/feature-spec/references/product-spec-template.md
+git commit -m "feat(hi_flow:feature-spec): product-spec.md template"
 ```
 
 ---
@@ -933,11 +933,11 @@ git commit -m "feat(as_flow:feature-spec): product-spec.md template"
 ### Task 12: Reference template — self-assessment proposal
 
 **Files:**
-- Create: `as_flow/skills/feature-spec/references/self-assessment-template.md`
+- Create: `hi_flow/skills/feature-spec/references/self-assessment-template.md`
 
 - [ ] **Step 1: Create template file**
 
-Create `as_flow/skills/feature-spec/references/self-assessment-template.md`:
+Create `hi_flow/skills/feature-spec/references/self-assessment-template.md`:
 
 ```markdown
 # Self-Assessment Proposal Template
@@ -945,7 +945,7 @@ Create `as_flow/skills/feature-spec/references/self-assessment-template.md`:
 При активации скилл генерирует proposal в этом формате (заполняй <placeholders> по контексту):
 
 ```
-[Self-assessment: as_flow:feature-spec]
+[Self-assessment: hi_flow:feature-spec]
 
 Предлагаю: <brainstorm | direct | skip>
 Причина: <одно-два предложения, почему именно этот путь>
@@ -1000,14 +1000,14 @@ Create `as_flow/skills/feature-spec/references/self-assessment-template.md`:
 - [ ] **Step 2: Verify content**
 
 ```bash
-cat as_flow/skills/feature-spec/references/self-assessment-template.md
+cat hi_flow/skills/feature-spec/references/self-assessment-template.md
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/references/self-assessment-template.md
-git commit -m "feat(as_flow:feature-spec): self-assessment template"
+git add hi_flow/skills/feature-spec/references/self-assessment-template.md
+git commit -m "feat(hi_flow:feature-spec): self-assessment template"
 ```
 
 ---
@@ -1015,20 +1015,20 @@ git commit -m "feat(as_flow:feature-spec): self-assessment template"
 ### Task 13: Reference example — copy goal-setting product-spec
 
 **Files:**
-- Create: `as_flow/skills/feature-spec/references/example-goal-setting.md`
+- Create: `hi_flow/skills/feature-spec/references/example-goal-setting.md`
 
 - [ ] **Step 1: Copy example file**
 
 ```bash
-cp examples/goal-setting-product-spec.md as_flow/skills/feature-spec/references/example-goal-setting.md
+cp examples/goal-setting-product-spec.md hi_flow/skills/feature-spec/references/example-goal-setting.md
 ```
 
 - [ ] **Step 2: Add header note for context**
 
-Edit beginning of `as_flow/skills/feature-spec/references/example-goal-setting.md` to add a note before the existing content:
+Edit beginning of `hi_flow/skills/feature-spec/references/example-goal-setting.md` to add a note before the existing content:
 
 ```markdown
-> **Reference example for `as_flow:feature-spec` skill.** Это полный пример product-spec.md, сгенерированный по дизайну скилла на реальном кейсе goal-setting в Zhenka (фитнес-бот). Используй как образец формата, плотности, баланса деталей при генерации собственных product-spec.md.
+> **Reference example for `hi_flow:feature-spec` skill.** Это полный пример product-spec.md, сгенерированный по дизайну скилла на реальном кейсе goal-setting в Zhenka (фитнес-бот). Используй как образец формата, плотности, баланса деталей при генерации собственных product-spec.md.
 >
 > **Что хорошо демонстрирует пример:**
 > - Все 8 probe-категорий (где применимы), включая Optional которые не выдуманы.
@@ -1050,15 +1050,15 @@ Edit beginning of `as_flow/skills/feature-spec/references/example-goal-setting.m
 - [ ] **Step 3: Verify file size and structure**
 
 ```bash
-wc -l as_flow/skills/feature-spec/references/example-goal-setting.md
-head -30 as_flow/skills/feature-spec/references/example-goal-setting.md
+wc -l hi_flow/skills/feature-spec/references/example-goal-setting.md
+head -30 hi_flow/skills/feature-spec/references/example-goal-setting.md
 ```
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/references/example-goal-setting.md
-git commit -m "feat(as_flow:feature-spec): goal-setting reference example"
+git add hi_flow/skills/feature-spec/references/example-goal-setting.md
+git commit -m "feat(hi_flow:feature-spec): goal-setting reference example"
 ```
 
 ---
@@ -1071,7 +1071,7 @@ git commit -m "feat(as_flow:feature-spec): goal-setting reference example"
 - [ ] **Step 1: Verify SKILL.md structure**
 
 ```bash
-cd as_flow/skills/feature-spec
+cd hi_flow/skills/feature-spec
 head -10 SKILL.md
 ```
 
@@ -1134,8 +1134,8 @@ All three should return without errors.
 If structural issues found — fix and commit:
 
 ```bash
-git add as_flow/skills/feature-spec/
-git commit -m "fix(as_flow:feature-spec): structural validation fixes"
+git add hi_flow/skills/feature-spec/
+git commit -m "fix(hi_flow:feature-spec): structural validation fixes"
 ```
 
 If no issues — skip commit.
@@ -1154,10 +1154,10 @@ Dispatch a fresh subagent with the SKILL.md content + example reference + simula
 Subagent prompt (skeleton):
 
 ```
-You are simulating execution of the as_flow:feature-spec Claude Code skill.
+You are simulating execution of the hi_flow:feature-spec Claude Code skill.
 
-Read the skill instructions from: as_flow/skills/feature-spec/SKILL.md
-Read reference files: as_flow/skills/feature-spec/references/
+Read the skill instructions from: hi_flow/skills/feature-spec/SKILL.md
+Read reference files: hi_flow/skills/feature-spec/references/
 
 Simulated user input: "давай продумаем фичу постановки начальной цели для пользователя в Zhenka (фитнес-бот)"
 
@@ -1173,15 +1173,15 @@ Execute the skill end-to-end:
 7. Apply coverage-based closure.
 8. Generate final product-spec.md.
 
-Save output to: as_flow/skills/feature-spec/test-output/scenario-goal-setting.md
+Save output to: hi_flow/skills/feature-spec/test-output/scenario-goal-setting.md
 Document any deviations from skill instructions encountered.
 ```
 
 - [ ] **Step 2: Compare output to reference example**
 
 ```bash
-diff -u as_flow/skills/feature-spec/references/example-goal-setting.md \
-       as_flow/skills/feature-spec/test-output/scenario-goal-setting.md > test-output/diff-goal-setting.md
+diff -u hi_flow/skills/feature-spec/references/example-goal-setting.md \
+       hi_flow/skills/feature-spec/test-output/scenario-goal-setting.md > test-output/diff-goal-setting.md
 ```
 
 Review the diff. Differences are expected (LLM variation), but **structure** must match:
@@ -1193,7 +1193,7 @@ Review the diff. Differences are expected (LLM variation), but **structure** mus
 
 - [ ] **Step 3: Document deviations**
 
-Create `as_flow/skills/feature-spec/test-output/scenario-goal-setting-review.md`:
+Create `hi_flow/skills/feature-spec/test-output/scenario-goal-setting-review.md`:
 
 ```markdown
 # Scenario Test: Goal Setting
@@ -1228,8 +1228,8 @@ If deviations found:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/test-output/ as_flow/skills/feature-spec/SKILL.md
-git commit -m "test(as_flow:feature-spec): goal-setting scenario validation"
+git add hi_flow/skills/feature-spec/test-output/ hi_flow/skills/feature-spec/SKILL.md
+git commit -m "test(hi_flow:feature-spec): goal-setting scenario validation"
 ```
 
 ---
@@ -1262,8 +1262,8 @@ If skill incorrectly fabricates forks in Optional categories — это крит
 - [ ] **Step 4: Document and commit**
 
 ```bash
-git add as_flow/skills/feature-spec/test-output/ as_flow/skills/feature-spec/SKILL.md
-git commit -m "test(as_flow:feature-spec): daily-reminder scenario validation"
+git add hi_flow/skills/feature-spec/test-output/ hi_flow/skills/feature-spec/SKILL.md
+git commit -m "test(hi_flow:feature-spec): daily-reminder scenario validation"
 ```
 
 ---
@@ -1293,8 +1293,8 @@ Skill should:
 - [ ] **Step 4: Commit**
 
 ```bash
-git add as_flow/skills/feature-spec/test-output/ as_flow/skills/feature-spec/SKILL.md
-git commit -m "test(as_flow:feature-spec): skip-path scenario validation"
+git add hi_flow/skills/feature-spec/test-output/ hi_flow/skills/feature-spec/SKILL.md
+git commit -m "test(hi_flow:feature-spec): skip-path scenario validation"
 ```
 
 ---
@@ -1302,21 +1302,21 @@ git commit -m "test(as_flow:feature-spec): skip-path scenario validation"
 ### Task 18: Documentation finalization and report
 
 **Files:**
-- Modify: `as_flow/README.md`
-- Create: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md`
+- Modify: `hi_flow/README.md`
+- Create: `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design-report.md`
 
 - [ ] **Step 1: Update plugin README with usage instructions**
 
-Edit `as_flow/README.md`:
+Edit `hi_flow/README.md`:
 
 ```markdown
-# as_flow — методология Three-Phase Flow для solo+AI разработки
+# hi_flow — методология Three-Phase Flow для solo+AI разработки
 
 [обновлённое содержание с install/usage instructions, basis на тестах, статусе скиллов]
 
 ## Skills в семействе
 
-### as_flow:feature-spec — продуктовая спека одной фичи [READY]
+### hi_flow:feature-spec — продуктовая спека одной фичи [READY]
 
 Активация: «продуктовая спека [для X]», «спека на фичу X», «давай продумаем фичу X», и др. (полный список см. в SKILL.md).
 
@@ -1326,11 +1326,11 @@ Output: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md`.
 
 ### Other skills [PARKED]
 
-- `as_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level).
-- `as_flow:arch-spec` — архитектурная спека фичи (Phase 2).
-- `as_flow:impl-plan` — план реализации (Phase 3).
-- `as_flow:fitness` — architectural fitness functions.
-- `as_flow:sanity-check`, `as_flow:handoff`.
+- `hi_flow:product-spec` — декомпозиция крупного продукта (Phase 1, product-level).
+- `hi_flow:arch-spec` — архитектурная спека фичи (Phase 2).
+- `hi_flow:impl-plan` — план реализации (Phase 3).
+- `hi_flow:fitness` — architectural fitness functions.
+- `hi_flow:sanity-check`, `hi_flow:handoff`.
 
 ## Install
 
@@ -1338,25 +1338,25 @@ Output: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md`.
 
 ## Background
 
-- Design spec: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md`
-- Reference example: `as_flow/skills/feature-spec/references/example-goal-setting.md`
-- Implementation report: `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md`
+- Design spec: `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md`
+- Reference example: `hi_flow/skills/feature-spec/references/example-goal-setting.md`
+- Implementation report: `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design-report.md`
 ```
 
 - [ ] **Step 2: Create implementation report**
 
-Create `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md`:
+Create `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design-report.md`:
 
 ```markdown
-# Implementation Report: as_flow:feature-spec
+# Implementation Report: hi_flow:feature-spec
 
-**Spec:** `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design.md`
+**Spec:** `docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design.md`
 **Date:** 2026-04-26
 **Status:** completed
 
 ## What was done
 
-- Plugin scaffolding: `as_flow/` with `skills/feature-spec/`, README.
+- Plugin scaffolding: `hi_flow/` with `skills/feature-spec/`, README.
 - SKILL.md with full content per design (frontmatter + 11 sections).
 - Reference files: product-spec-template, self-assessment-template, example-goal-setting (copied from examples/).
 - Behavioral validation: 3 scenarios tested via subagent dispatch (goal-setting, daily-reminder, skip-path).
@@ -1377,8 +1377,8 @@ Create `docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md`
 - [ ] **Step 3: Final commit**
 
 ```bash
-git add as_flow/README.md docs/superpowers/specs/2026-04-26-as_flow-feature-spec-design-report.md
-git commit -m "docs(as_flow:feature-spec): finalize README and implementation report"
+git add hi_flow/README.md docs/superpowers/specs/2026-04-26-hi_flow-feature-spec-design-report.md
+git commit -m "docs(hi_flow:feature-spec): finalize README and implementation report"
 ```
 
 ---
