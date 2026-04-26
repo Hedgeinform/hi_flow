@@ -417,3 +417,15 @@ Product-spec.md адресован оператору-продуктологу, 
 6. **`Открыто`, `Связи`, `Examples`** — опциональные. Если пусты, строка не пишется.
 7. **`END.`** на терминальных ветках.
 8. **Без summary** в конце спеки. Оператор читает целиком.
+
+## References
+
+- **Reference example** of completed product-spec.md: `references/example-goal-setting.md`. Read this when generating own product-spec.md to anchor format and style.
+- **Product-spec template** with placeholders: `references/product-spec-template.md`. Use as starting structure when writing.
+- **Self-assessment proposal template:** `references/self-assessment-template.md`.
+
+## Implementation Notes
+
+- При запуске skill, сначала читай эти reference files для якорения output format.
+- Self-assessment proposal — generate using self-assessment-template.md format.
+- При генерации product-spec.md — использовать product-spec-template.md как скелет, заполнять по результатам brainstorm'а.
