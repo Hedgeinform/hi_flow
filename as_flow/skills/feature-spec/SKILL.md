@@ -263,3 +263,130 @@ Floor checklist для агента в Brainstorm path: **8 probe-категор
 > *«Представь, что фича запущена и через 3 месяца идут жалобы пользователей. Какие жалобы?»*
 
 Каждая воображаемая жалоба → потенциальный новый fork.
+
+## Output Format — product-spec.md
+
+### File location
+
+`<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md` (default; настраиваемо).
+
+### PRD-as-standalone principle
+
+Спека самодостаточна для product context. Следующая фаза (arch-spec) читает её для понимания продукта, ARCHITECTURE.md для архитектурного контекста — без overlap.
+
+### Plain language principle
+
+Product-spec.md адресован оператору-продуктологу, не разработчику. Default — продуктовый русский язык. Английский жаргон допустим если он:
+
+- (а) объективно упрощает восприятие (короче и точнее русского эквивалента), или
+- (б) широко известен в профессиональной среде (MVP, KPI, UX, ИМТ, BMI, ROI, и т.п.).
+
+Жаргон, понятный только инженеру (extract-all, payload, throughput, idempotency, fallback и т.п.) — переводи или раскрывай на продуктовом языке.
+
+### Top-level structure
+
+```markdown
+# <Feature name>
+
+## Sample dialogs
+### Happy path
+[concrete dialog]
+
+### Corrected path
+[concrete dialog]
+
+### Refused / Edge path
+[concrete dialog]
+
+## Цель
+[1-3 предложения; out of scope inline если есть явные исключения]
+
+## Контракт входа
+
+### От пользователя (raw)
+- field: формы
+
+### Из контекста
+- field: тип, источник, обязательность, default
+
+## Контракт выхода
+- Запись: ...
+- Возврат пользователю: ...
+- Side effects: ...
+
+## Развилки
+[hierarchical decision tree]
+
+## Cross-cutting policies
+[orthogonal forks]
+
+## Reusable sub-policies
+[named blocks referenced from forks]
+
+## Premortem findings
+[absorbed concerns]
+
+## Open items at closure
+[skill-generated table]
+```
+
+### Sample dialogs
+
+3 концетных user path'а в формате диалога:
+
+- **Happy path** — всё прошло гладко.
+- **Corrected path** — потребовалась корректировка, всё закрылось.
+- **Refused path** — бот отказал. Если refuse-сценарий не применим — заменяется на **Edge path**.
+
+Якорь для оператора и для следующей фазы.
+
+### Cell format
+
+```markdown
+### F1.3.2. <название> [decision: что решаем] [status: OPEN | RESOLVED | OUT-OF-SCOPE | DEFERRED]
+
+**Resolution:** <ответ + одна фраза reasoning'а> | OPEN — нужно решение
+
+**Branches [XOR | OR | OPT]:**
+- F1.3.2.1 — <branch label> → <inline action OR see deeper>
+- F1.3.2.2 — <branch label> → see CC1 / see P-NAME
+
+**Открыто:** <sub-questions, опционально>
+**Связи:** <cross-references, опционально>
+**Examples:** <конкретные сценарии, опционально>
+```
+
+**Cardinality tags:**
+- `[XOR]` — ровно одна ветка срабатывает
+- `[OR]` — могут срабатывать одновременно
+- `[OPT]` — необязательная ветка
+
+**Status tags:**
+- `RESOLVED` — решение принято
+- `OPEN` — нужно решение, blocker для следующей фазы
+- `OUT-OF-SCOPE` — явно выведено из scope
+- `DEFERRED` — отложено, не блокирует
+
+**Terminal markers:**
+- `END.` — ветка завершается этим действием
+- `→ see Fx.y.z` — развёрнут глубже
+- `→ see CC1` / `→ see P-NAME` — переход к cross-cutting / sub-policy
+
+**Resolution-first:** Resolution всегда первая строка после header.
+
+### Cross-cutting policies — orthogonal forks
+
+```markdown
+### CC1. <название>
+**Pre-empts:** F1.3.*, F1.1
+**Resolution:** ...
+**Pattern:** *Если <событие> → отказ / требование / лог <действие>*
+```
+
+### Reusable sub-policies — DAG factoring
+
+```markdown
+### P-INSIST-HANDLING
+[блок, описывающий поведение]
+**Used in:** F1.3.2.2, F2.5.1, F4.2
+```
