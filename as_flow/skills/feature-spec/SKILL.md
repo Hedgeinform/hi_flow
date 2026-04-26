@@ -70,3 +70,73 @@ Skill активируется только на эти явные фразы:
 Оператор может override любое предложение или сразу указать конкретный путь («запусти brainstorm под X», «direct по моему input'у»).
 
 **Все пути запускаются только после confirmation.** Skill ничего не делает молча — каждый переход даёт оператору момент согласия / override.
+
+## Process flow
+
+После confirmation в self-assessment → один из трёх путей.
+
+### Skip path
+
+Завершение без артефакта. Если оператор не согласен с skip — он не подтверждает, а override'ит на direct или brainstorm в self-assessment proposal. Skip case рассмотрен только когда оператор явно сказал «да, skip».
+
+### Direct path
+
+Читай input оператора, структурируй в product-spec.md по формату (см. ниже), покажи финальный draft, оператор апрувит или просит правки. Минимум диалога.
+
+### Brainstorm path
+
+Три под-фазы: operator-dump → agent probing → closure.
+
+#### 3.3.1. Operator-dump
+
+Начни с одного открытого вопроса:
+
+> *«Расскажи, что у тебя уже есть про эту фичу — цели, поведение, развилки, ограничения. Дамп всё, что в голове.»*
+
+Параллельно (если в проекте есть `ARCHITECTURE.md`) прочитай Module Map и Active Decisions — для понимания existing features (нужно для Cross-feature integration probe).
+
+Дамп может быть пустым («хочу X, ничего пока не думал») — переходи к probing без него.
+
+#### 3.3.2. Agent probing
+
+Идёшь через **8 probe-категорий** (раздел Probing Taxonomy ниже) как floor checklist, плюс свободно добавляешь адаптивные probes по контексту.
+
+Probing итеративный: вопрос → ответ оператора → запись в новый или существующий fork cell → следующий probe.
+
+**Park-and-continue:** если оператор говорит «не знаю» / «позже» — записывай в `Открыто` и идёшь дальше. Никаких deadlock'ов.
+
+**Cross-cutting probes (всегда активны):**
+- *Make implicit criteria explicit* — при появлении vague-формулировок.
+- *Contradiction detection* — после каждого нового fork-ответа сверяй с уже зафиксированными.
+
+**Closing probe (mandatory at end):**
+- *Premortem* — *«представь, фича запущена, через 3 месяца идут жалобы. Какие?»*
+
+#### 3.3.3. Closure
+
+После coverage-based closure criterion enumerate все open items:
+
+- Forks без `Решение` — likely blocker для следующей фазы.
+- Непустые `Открыто` поля — sub-questions, обычно не блокеры.
+- Parked items.
+
+Каждый item flag'ируй: **likely blocker / nice-to-have / уточнить**.
+
+Оператор per item решает: **resolve сейчас / оставить для следующей фазы эскалации / out of scope**.
+
+После — пиши финальный product-spec.md, покажи оператору, жди подтверждения. На «да» — сохраняй и выходи. На правки — вноси и переспрашивай.
+
+### Coverage-based closure criterion
+
+Переходи к Closure только при выполнении всех:
+
+- Все Mandatory категории дали forks или явное N/A.
+- Все Conditional с выполненными preconditions дали forks или явное N/A.
+- Premortem closing завершён.
+- Contradiction detection не имеет открытых конфликтов.
+
+До этого — probing продолжается.
+
+### Контракт с следующей фазой
+
+При обнаружении ambiguity, которую не можешь решить — эскалируй оператору. Не перезапускай предыдущую фазу (если она была — например, product-level skill).
