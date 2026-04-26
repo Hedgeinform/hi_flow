@@ -390,3 +390,30 @@ Product-spec.md адресован оператору-продуктологу, 
 [блок, описывающий поведение]
 **Used in:** F1.3.2.2, F2.5.1, F4.2
 ```
+
+## Operational Rules — что skill enforce'ит
+
+1. **Happy path first.** Проводи happy path end-to-end до того, как разрешишь branching. Reviewer всегда имеет cohesive narrative spine.
+
+2. **Sample dialog cohesion check.** При написании sample dialogs проверяй, что каждый bot turn consistent с предыдущим user input. Если bot говорит / спрашивает то, что не следует из текущего state — это сигнал missing fork. Эксплицитно подними вопрос оператору и зафиксируй fork в дереве, прежде чем продолжать диалог. Sample dialogs — integrative test для forks tree, вторая safety net после coverage-based closure.
+
+3. **Depth budget — cap 3-4 уровней.** При превышении предложи выделить sub-tree в named P-policy.
+
+4. **Cross-cutting detection.** Если rule повторяется в ≥2 ветках основного дерева — suggest move в Cross-cutting section.
+
+5. **Repeated sub-tree detection.** Если sub-tree логически идентичен другому — suggest factor в P-policy.
+
+6. **Decision tables вместо 2^N веток.** Когда fork зависит от N независимых булевых флагов — предложи таблицу с don't-care.
+
+7. **Out-of-scope inline.** Не отдельная секция. Если есть явные исключения, описывай inline в Цели или Контракте выхода.
+
+## Format Rules
+
+1. **Hierarchical IDs (Cockburn-style).** Forks нумеруются F1, F1.3, F1.3.2.1.
+2. **ID присваивается ⇔ cell существует.** Тривиальные терминальные branches описываются inline в parent'е без присвоения ID.
+3. **Resolution-first** в каждом cell'е.
+4. **Cardinality tag** обязателен на forks с branches.
+5. **Status tag** обязателен на каждом fork.
+6. **`Открыто`, `Связи`, `Examples`** — опциональные. Если пусты, строка не пишется.
+7. **`END.`** на терминальных ветках.
+8. **Без summary** в конце спеки. Оператор читает целиком.
