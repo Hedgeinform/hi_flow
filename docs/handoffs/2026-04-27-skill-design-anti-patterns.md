@@ -204,6 +204,43 @@ Probing taxonomy / per-category procedures / output format — это **legitima
 - [ ] **Body in English**, Russian — только в operator-facing literals + output examples.
 - [ ] **Length ≤300 строк** для типичного скилла (probing taxonomies могут быть длиннее).
 - [ ] **Sample comparison** — открой canonical skill (например, brainstorming) и сравни структуру. Если очевидно длиннее или иначе организован — почему?
+- [ ] **Self-Review step + User Review Gate присутствуют** перед финализацией output (см. ниже).
+
+---
+
+## Обязательный финал spec-производящего скилла: Self-Review + User Review Gate
+
+Это **canonical pattern** из Anthropic brainstorming skill. Его легко пропустить (мы пропустили при первом проходе). Нельзя.
+
+### Структура финала
+
+После того как content output'а сформирован, но **до** предъявления оператору:
+
+1. **Write output to file** (по configured path).
+2. **Self-Review через субагента** с изоляцией контекста (per global CLAUDE.md operator-rule). Main agent immersed в content и подвержен confirmation bias — fresh subagent объективнее. Передавать: path к файлу + checklist. **No conversation history.**
+3. **Apply fixes inline** по findings субагента. **No re-review** — fix and move on (per Anthropic канон).
+4. **User Review Gate** — explicit предъявление оператору с фразой типа «Spec written to `<path>`. Please review and let me know if you want changes before we move to the next phase.»
+5. **Wait for operator response.** Если правки — apply + re-run Self-Review. Только после approval — переход к следующей фазе.
+
+### Self-Review checklist (адаптируй под уровень скилла)
+
+Базовые 4 чека (из Anthropic канона):
+- **Placeholder scan** — TBD / `<placeholder>` / vague text / open items без обоснования.
+- **Internal consistency** — секции не противоречат друг другу.
+- **Scope check** — артефакт focused на свой уровень, не сполз в соседний.
+- **Ambiguity check** — формулировки однозначны, status и cardinality консистентны.
+
+Плюс **format compliance** check специфичный для семейства hi_flow:
+- Все forks имеют status + cardinality tags.
+- Inline vs cell branches правильно (ID ⇔ cell).
+- Cross-cutting forks в CC секции, не nested.
+- Reusable sub-policies factored как P-NAME.
+
+Плюс уровневые чеки (для arch-spec — fitness function declarations completeness, Mermaid graph correctness, escalation criteria coverage; для product-spec — feature decomposition completeness, cross-feature deps mapped, etc.).
+
+### Где это в SKILL.md
+
+Раздел между Closure и Operational Rules. См. `hi_flow/skills/feature-spec/SKILL.md` после раздела «Closure» как референс — там `### Self-Review (via subagent with isolated context)` + `### User Review Gate`.
 
 ---
 

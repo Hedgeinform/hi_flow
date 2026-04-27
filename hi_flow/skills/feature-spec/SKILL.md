@@ -21,7 +21,7 @@ A single `feature-spec.md`. Default location: `<project>/docs/specs/YYYY-MM-DD-<
 
 ## Anti-triggers (do NOT auto-activate)
 
-- Bare feature-shape request («хочу добавить X», «нужна фича Y», «давай добавим tool Z») — could be research / chatter / arch request. Clarify or propose the skill, do not run it.
+- Bare feature-shape request («хочу добавить X», «давай добавим tool Z») — could be research / chatter / arch request. Clarify or propose the skill, do not run it.
 - «собери информацию про X» / «исследуй X» / «анализ конкурента» — research, not feature spec.
 - «реализуй X» / «нужна архитектура для X» — territory of sibling skills.
 
@@ -111,7 +111,31 @@ Flag each item: **likely blocker / nice-to-have / уточнить**. (The Open 
 
 Operator decides per item: **resolve now / leave for next phase / out of scope**.
 
-Then write the final `feature-spec.md`, show it to the operator, wait for confirmation. On «да» — save and exit. On edits — apply and re-confirm.
+Then write the final `feature-spec.md` to the configured location.
+
+### Self-Review (via subagent with isolated context)
+
+After writing, dispatch a fresh subagent (Agent tool) to review the spec with isolated context. The main agent has spent the entire brainstorm immersed in this content and is subject to confirmation bias — a fresh-context subagent gives a more reliable read.
+
+Pass to the subagent: the spec file path + the checklist below. No conversation history, no prior context.
+
+Checks the subagent runs:
+
+1. **Placeholder scan.** Any `<placeholder>` tags, vague Resolutions, `OPEN` forks without reasoning, missing `Examples` where Resolution would benefit from anchoring? Flag for fix.
+2. **Internal consistency.** Do forks contradict each other (e.g., F1.3 says X, F2.4 implies not-X)? Does Контракт выхода cover side effects implied by all Resolutions? Do Sample dialogs match the forks tree (sample dialog cohesion check at the artifact level)?
+3. **Scope check.** Is the spec focused on a single feature, or has it slipped into product-level decomposition (multiple features, roadmap, cross-feature deps)? If decomposition slipped — flag for split.
+4. **Ambiguity check.** Status tags consistent with Resolution content (`RESOLVED` forks have non-empty Resolution; `OPEN` forks explicitly say so)? Cardinality tags match branch semantics? Any Resolution wording that could be interpreted two different ways?
+5. **Format compliance.** All forks have status + cardinality tags. Inline-vs-cell branches follow the rule (ID ⇔ cell). Cross-cutting forks live in CC section, not nested. Reusable sub-policies properly factored as P-NAME blocks.
+
+Subagent returns findings. **Fix issues inline. No need to re-review** — just fix and move on.
+
+### User Review Gate
+
+After self-review fixes are applied, present the spec to the operator:
+
+> «Spec written to `<path>`. Please review it and let me know if you want any changes before we move to the next phase.»
+
+Wait for the operator's response. If they request changes, apply them and re-run Self-Review. Only proceed once the operator approves.
 
 ### Coverage-based closure criterion
 
