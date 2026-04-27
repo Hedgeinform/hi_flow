@@ -1,61 +1,52 @@
 ---
 name: feature-spec
-description: Use when operator needs to create a product spec for a single feature ("продуктовая спека", "спека на фичу", "продуктовый дизайн фичи", "анализ продукта", "анализ нашей фичи", "давай продумаем фичу"). Conducts structured brainstorm with hierarchical fork discovery using 8-category probing taxonomy + HAZOP guidewords + premortem. Outputs product-spec.md with cell-based decision tree, cross-cutting policies, reusable sub-policies. Solo-founder oriented, plain product Russian by default.
+description: Use when operator says «продуктовая спека», «спека на фичу X», «продуктовый дизайн фичи X», «анализ нашей фичи X», «давай продумаем фичу X», or English equivalents. Produces feature-spec.md.
 ---
 
 # `hi_flow:feature-spec` — Feature-Level Product Spec Skill
 
-## What this skill does
+Help the operator turn a feature request into a signed `feature-spec.md` that (1) gives the operator a focused artifact for deep review, and (2) gives the next phase (`hi_flow:arch-spec`) an unambiguous foundation for architectural design.
 
-Ведёт оператора от запроса фичи к подписанной product-spec.md, которая (1) даёт оператору фокус для deep review, (2) даёт следующей фазе (`hi_flow:arch-spec`) однозначное основание для архитектурного дизайна.
-
-Skill systematically выявляет иерархические продуктовые развилки (forks) — конкретные поведенческие решения, edge cases, hard policies, критерии разграничения похожих ситуаций — через структурированный диалог с оператором.
+Systematically surface hierarchical product forks — concrete behavioral decisions, edge cases, hard policies, criteria distinguishing similar situations — through structured operator dialogue.
 
 ## Out of scope
 
-- Product-level декомпозиция (отдельный skill `hi_flow:product-spec`).
-- Архитектурные / технические решения (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
-- Автоматический вызов следующей фазы — оператор инициирует.
-- n8n-проекты — специфика инструмента, отдельный кейс.
+- Product-level decomposition (separate skill `hi_flow:product-spec`).
+- Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
+- Auto-invoking the next phase — operator initiates.
 
 ## Output
 
-Один файл product-spec.md в формате, описанном ниже. Расположение: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md` (настраиваемо).
+A single `feature-spec.md`. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
 
-## Activation
+## Anti-triggers (do NOT auto-activate)
 
-### Triggers (explicit, content-specific)
+- Bare feature-shape request («хочу добавить X», «нужна фича Y», «давай добавим tool Z») — could be research / chatter / arch request. Clarify or propose the skill, do not run it.
+- «собери информацию про X» / «исследуй X» / «анализ конкурента» — research, not feature spec.
+- «реализуй X» / «нужна архитектура для X» — territory of sibling skills.
 
-Skill активируется только на эти явные фразы:
+## Mode selection
 
-- «продуктовая спека [для X]» / «product spec [for X]»
-- «спека на фичу X» / «спека по фиче X»
-- «продуктовый дизайн фичи X» / «product design of X»
-- «анализ продукта X» / «анализ нашей фичи X» (когда X — наша фича, не конкурент)
-- «давай продумаем фичу X» / «давай спроектируем фичу X»
+Once activated, decide which path: **direct** or **brainstorm**.
 
-### Anti-triggers (skill НЕ активируется автоматически)
+- **Direct path** — produce the spec from operator input alone, without probing dialogue. Allowed only when **all** hold: operator input is explicit and lists forks; scope is small (≤ 3-4 forks); domain is low-stakes; high similarity to an existing pattern; isolated feature.
+- **Brainstorm path** — full dialogue with probing taxonomy. **Default.**
 
-- Bare feature-shape запрос («хочу добавить X», «нужна фича Y», «давай добавим tool Z») — это может быть research / chatter / архитектурный запрос. Уточняй или предлагай skill, но не запускай сам.
-- «собери информацию про X» / «исследуй X» / «анализ конкурента» — это research, не product spec.
-- «реализуй X» / «нужна архитектура для X» — это территория других скиллов семейства.
+**Default: brainstorm. When in doubt, choose brainstorm.**
 
-### Self-assessment proposal
+### Common Rationalizations
 
-После активации генерируй proposal по выбору пути:
-
-1. **Skip** — у задачи нет продуктовой составляющей (опечатка, чистый refactor). Редкий случай.
-2. **Direct path** — спека формируется без brainstorm-диалога. Только при выполнении **всех** условий: input оператора эксплицитный со списком forks; scope мелкий (≤ 3-4 forks); low-stakes домен; high similarity к существующему паттерну; изолированная фича.
-3. **Brainstorm path** — полный диалог с probing taxonomy. **Default.**
-
-**Асимметрия cost'ов обосновывает conservative default:** false negative (direct там, где нужен brainstorm) → пропущенные forks → архитектурный долг. Cost радикально выше потери времени на лишний brainstorm. В сомнении → brainstorm.
+| Thought | Reality |
+|---|---|
+| "Operator's input looks complete, direct should be enough" | Direct path missing forks → architectural debt. Cost of false negative ≫ cost of false positive. Choose brainstorm. |
+| "Scope feels small, why bother probing" | "Feels small" is a feeling, not a check against the 5-condition gate. Run the gate. |
 
 ### Proposal format
 
 ```
 [Self-assessment: hi_flow:feature-spec]
 
-Предлагаю: brainstorm / direct / skip
+Предлагаю: brainstorm / direct
 Причина: <одно-два предложения>
 Факторы:
 - Input completeness: high / medium / low
@@ -67,125 +58,119 @@ Skill активируется только на эти явные фразы:
 Подтверди / измени.
 ```
 
-Оператор может override любое предложение или сразу указать конкретный путь («запусти brainstorm под X», «direct по моему input'у»).
-
-**Все пути запускаются только после confirmation.** Skill ничего не делает молча — каждый переход даёт оператору момент согласия / override.
+Operator may override or specify a path directly («запусти brainstorm под X», «direct по моему input'у»). Run only after confirmation — every transition gives the operator a moment to consent or override.
 
 ## Process flow
 
-После confirmation в self-assessment → один из трёх путей.
-
-### Skip path
-
-Завершение без артефакта. Если оператор не согласен с skip — он не подтверждает, а override'ит на direct или brainstorm в self-assessment proposal. Skip case рассмотрен только когда оператор явно сказал «да, skip». На skip-confirmation подтверди оператору exit одной короткой фразой («Закрываюсь, продуктовой составляющей не вижу») и заверши.
+After confirmation, follow one of two paths.
 
 ### Direct path
 
-Читай input оператора, структурируй в product-spec.md по формату (см. ниже), покажи финальный draft, оператор апрувит или просит правки. Минимум диалога.
+Read operator input, structure it into `feature-spec.md` per the format below, show the final draft, operator approves or requests edits. Minimum dialogue.
 
-**На direct path сохраняются:** Sample dialogs (mandatory — оператор всё равно должен видеть concrete user paths) и базовая структура форматов (Контракт входа/выхода, Развилки cell-формата). **Premortem** — опционально, спроси оператора нужен ли он на direct path.
+**On direct path, keep:** Sample dialogs (mandatory — operator still needs concrete user paths) and the base format scaffolding (Контракт входа/выхода, Развилки cell format). **Premortem** is optional — ask the operator whether to run it.
 
 ### Brainstorm path
 
-Три под-фазы: operator-dump → agent probing → closure.
+Three sub-phases: operator-dump → agent probing → closure.
 
-#### 3.3.1. Operator-dump
+### Operator-dump
 
-Начни с одного открытого вопроса:
+Open with a single broad question:
 
 > *«Расскажи, что у тебя уже есть про эту фичу — цели, поведение, развилки, ограничения. Дамп всё, что в голове.»*
 
-Параллельно (если в проекте есть `ARCHITECTURE.md`) прочитай Module Map и Active Decisions — для понимания existing features (нужно для Cross-feature integration probe).
+In parallel, if the project has `ARCHITECTURE.md`, read its Module Map and Active Decisions — needed for the Cross-feature integration probe.
 
-Дамп может быть пустым («хочу X, ничего пока не думал») — переходи к probing без него.
+The dump may be empty («хочу X, ничего пока не думал») — proceed to probing without it.
 
-#### 3.3.2. Agent probing
+### Agent probing
 
-Идёшь через **8 probe-категорий** (раздел Probing Taxonomy ниже) как floor checklist, плюс свободно добавляешь адаптивные probes по контексту.
+Walk the **8 probe categories** (Probing Taxonomy below) as a floor checklist. Add adaptive probes by context.
 
-Probing итеративный: вопрос → ответ оператора → запись в новый или существующий fork cell → следующий probe.
+Iterative: question → operator answer → write into a new or existing fork cell → next probe.
 
-**Park-and-continue:** если оператор говорит «не знаю» / «позже» — записывай в `Открыто` и идёшь дальше. Никаких deadlock'ов.
+**Park-and-continue:** if operator says «не знаю» / «позже» — record under `Открыто` and move on. No deadlocks.
 
-**Cross-cutting probes (всегда активны):**
-- *Make implicit criteria explicit* — при появлении vague-формулировок.
-- *Contradiction detection* — после каждого нового fork-ответа сверяй с уже зафиксированными.
+**Cross-cutting probes (always active):**
+- *Make implicit criteria explicit* — when a vague phrasing appears.
+- *Contradiction detection* — after each new fork answer, cross-check against recorded forks.
 
 **Closing probe (mandatory at end):**
 - *Premortem* — *«представь, фича запущена, через 3 месяца идут жалобы. Какие?»*
 
-#### 3.3.3. Closure
+### Closure
 
-После coverage-based closure criterion enumerate все open items:
+After the coverage-based closure criterion is met, enumerate all open items:
 
-- Forks без `Решение` — вероятный блокер для следующей фазы.
-- Непустые `Открыто` поля — sub-questions, обычно не блокеры.
+- Forks without `Resolution` — likely blocker for the next phase.
+- Non-empty `Открыто` fields — sub-questions, usually not blockers.
 - Parked items.
 
-Каждый item flag'ируй: **вероятный блокер / желательно / уточнить**. (В таблице Open items at closure используется та же лексика, см. раздел Output Format.)
+Flag each item: **likely blocker / nice-to-have / уточнить**. (The Open items at closure table uses the same vocabulary — see Output Format.)
 
-Оператор per item решает: **resolve сейчас / оставить для следующей фазы эскалации / out of scope**.
+Operator decides per item: **resolve now / leave for next phase / out of scope**.
 
-После — пиши финальный product-spec.md, покажи оператору, жди подтверждения. На «да» — сохраняй и выходи. На правки — вноси и переспрашивай.
+Then write the final `feature-spec.md`, show it to the operator, wait for confirmation. On «да» — save and exit. On edits — apply and re-confirm.
 
 ### Coverage-based closure criterion
 
-Переходи к Closure только при выполнении всех:
+Move to Closure only when all hold:
 
-- Все Mandatory категории дали forks или явное N/A.
-- Все Conditional с выполненными preconditions дали forks или явное N/A.
-- Premortem closing завершён.
-- Contradiction detection не имеет открытых конфликтов.
+- All Mandatory categories yielded forks or an explicit N/A.
+- All Conditional categories whose preconditions hold yielded forks or an explicit N/A.
+- Premortem closing probe ran.
+- Contradiction detection has no open conflicts.
 
-До этого — probing продолжается.
+Until then, keep probing.
 
-### Контракт с следующей фазой
+### Escalation rule
 
-При обнаружении ambiguity, которую не можешь решить — эскалируй оператору. Не перезапускай предыдущую фазу (если она была — например, product-level skill).
+When ambiguity arises that cannot be resolved from available data, escalate to the operator. Do **not** restart the previous phase (e.g. a product-level skill that ran upstream).
 
 ## Probing Taxonomy
 
-Floor checklist для агента в Brainstorm path: **8 probe-категорий + 1 cross-cutting probe + 1 cross-cutting check + 1 closing probe + 1 closure criterion**.
+Floor checklist for the brainstorm path: **8 probe categories + 1 cross-cutting probe + 1 cross-cutting check + 1 closing probe + 1 closure criterion**.
 
-### Универсальное правило
+### Universal rule
 
-Проходи через все категории, но **не обязан** генерировать forks в каждой. Пустая категория — нормальный результат, если у фичи действительно нет соответствующих решений. **Не заполняй искусственно** — это путь к галлюцинациям.
+Walk through every category, but you are **not required** to generate forks in each. An empty category is a normal result if the feature genuinely has no decisions there. **Do not pad** — that path leads to hallucinations.
 
-Каждая категория имеет explicit Procedure (input → algorithm → output). Адаптивные probes допустимы как **дополнение** к процедуре, не замена.
+Each category has an explicit Procedure (input → algorithm → output). Adaptive probes are allowed as a **supplement** to the procedure, not a replacement.
 
 ### 1. Input space [Mandatory]
 
 **Procedure:**
-- Спроси: «какие поля есть у фичи?»
-- Per поле: «откуда берётся (user input / context / system)? обязательно? есть default?»
-- Iteratively, пока не появляются новые поля.
-- Для user-input полей: «какие формы пользовательского ввода (raw forms — числа, даты, неточные ссылки, дельты, проценты)?»
+- Ask: «какие поля есть у фичи?»
+- Per field: «откуда берётся (user input / context / system)? обязательно? есть default?»
+- Iterate until no new fields surface.
+- For user-input fields: «какие формы пользовательского ввода (raw forms — числа, даты, неточные ссылки, дельты, проценты)?»
 
-**Output:** список полей с метаданными.
+**Output:** field list with metadata.
 
 ### 2. Boundary [Mandatory]
 
-**Procedure:** для каждого поля прогонь **HAZOP guidewords**:
-- *No* — поле не дано
-- *More* — значение больше ожидаемого
-- *Less* — значение меньше
-- *As Well As* — есть и что-то ещё
-- *Part Of* — частичное значение
-- *Reverse* — противоположный смысл
-- *Other Than* — неожиданная форма
+**Procedure:** for each field, run the **HAZOP guidewords**:
+- *No* — field absent
+- *More* — value larger than expected
+- *Less* — value smaller
+- *As Well As* — and something else too
+- *Part Of* — partial value
+- *Reverse* — opposite meaning
+- *Other Than* — unexpected form
 
-Каждый guideword → 1 probe «как бот реагирует на это?». Нерелевантные пропускай явно.
+Each guideword → one probe «как бот реагирует на это?». Skip irrelevant guidewords explicitly.
 
-**Output:** forks для нетривиальных реакций.
+**Output:** forks for non-trivial reactions.
 
-### 3. Invalid combinations [Conditional: ≥2 взаимодействующих поля]
+### 3. Invalid combinations [Conditional: ≥2 interacting fields]
 
 **Procedure:**
-- Identify все пары / тройки / N-tuples полей с логическим взаимодействием (один параметр зависит / противоречит / усиливает / ослабляет другой).
-- Per группа: «есть ли запрещённая или проблематичная комбинация? Какое правило?»
-- Запись: обычный fork **или** decision table (если ≥3 независимых булевых условия с don't-care, либо если 2 булевых условия дают 4 простых исхода).
+- Identify all pairs / triples / N-tuples of fields with logical interaction (one parameter depends on / contradicts / strengthens / weakens another).
+- Per group: «есть ли запрещённая или проблематичная комбинация? Какое правило?»
+- Record as a regular fork **or** decision table (when ≥3 independent boolean conditions with don't-care, or 2 boolean conditions yield 4 simple outcomes).
 
-**Decision table format** (внутри fork cell в качестве Branches replacement):
+**Decision table format** (inside a fork cell, replacing Branches):
 
 ```markdown
 **Branches [XOR]** (decision table):
@@ -198,107 +183,107 @@ Floor checklist для агента в Brainstorm path: **8 probe-категор
 | +       | +       | F1.3   | <action или → see F1.3>              |
 ```
 
-Условные обозначения: `+` = есть/true, `-` = нет/false, `*` = don't-care (любое значение). Branch column пуст (`—`) для inline-веток без cell'и.
+Notation: `+` = present/true, `-` = absent/false, `*` = don't-care. Branch column is `—` for inline branches without a cell.
 
 **Output:** combination forks / decision tables.
 
-### 4. User reactions [Conditional: фича имеет user-visible output]
+### 4. User reactions [Conditional: feature has user-visible output]
 
-**Procedure:** per user-visible output walk через **5 стандартных user reactions**:
-- *Accept* — пользователь согласен
-- *Reject* — отказ
-- *Partial-accept* — соглашается с частью
-- *Abandon* — не отвечает
-- *Change* — возвращается изменить
+**Procedure:** per user-visible output, walk the **5 standard user reactions**:
+- *Accept* — user agrees
+- *Reject* — refuses
+- *Partial-accept* — agrees with part
+- *Abandon* — does not respond
+- *Change* — comes back to modify
 
-Каждая → probe «как бот реагирует?».
+Each → probe «как бот реагирует?».
 
 **Output:** forks per (output, reaction).
 
 ### 5. Hard policies [Optional]
 
-**Procedure:** срабатывает если домен имеет ethical / safety / medical / legal риск.
+**Procedure:** triggers when the domain has ethical / safety / medical / legal risk.
 
-- Walk через Boundary findings — per экстремум: «триггерит ли concern?»
-- Если домен высоко-stakes — walk через стандартные sensitive areas (privacy, finance, age, vulnerability, harm).
-- Каждая policy формулируется паттерном: *«Если <условие>, то отказ / требование / лог <действие>»*.
+- Walk Boundary findings — per extremum: «триггерит ли concern?»
+- For high-stakes domains, walk standard sensitive areas (privacy, finance, age, vulnerability, harm).
+- Each policy follows the pattern: *«Если <условие>, то отказ / требование / лог <действие>»*.
 
-**Важно:** **не фабрикуй** policy для нейтральных фич. Если риска нет — категория пропускается без записи.
+**Important:** **do not fabricate** policies for neutral features. If there is no risk, skip the category without recording.
 
-**Output:** policy-forks. Уходят в раздел Cross-cutting policies, не в основное дерево.
+**Output:** policy forks. They go into the Cross-cutting policies section, not the main tree.
 
 ### 6. Disambiguation [Optional]
 
-**Procedure:** срабатывает при наличии ≥2 похожих внешне ситуаций.
+**Procedure:** triggers when ≥2 outwardly similar situations exist.
 
-- Попарный обход всех forks: «выглядят похоже извне (для пользователя), но требуют разной реакции?»
-- Highlight near-misses оператору.
-- Critery — обычно examples + checklist, не формула.
+- Pairwise pass over forks: «выглядят похоже извне (для пользователя), но требуют разной реакции?»
+- Highlight near-misses to the operator.
+- Criterion is usually examples + checklist, not a formula.
 
-**Важно:** **не изобретай** псевдо-disambiguation для заполнения категории. Если нет реальных near-misses — категория пропускается.
+**Important:** **do not invent** pseudo-disambiguation to fill the category. If there are no real near-misses, skip it.
 
-**Output:** disambiguation forks с критериями + examples.
+**Output:** disambiguation forks with criteria + examples.
 
-### 7. Lifecycle [Conditional: фича имеет state, сохраняющийся после первичного действия]
+### 7. Lifecycle [Conditional: feature has state persisting after the initial action]
 
-**Procedure:** per state-change из Контракта выхода — **5 lifecycle вопросов**:
+**Procedure:** per state-change in Контракт выхода — **5 lifecycle questions**:
 
-- *Expire* — когда state перестаёт быть актуален?
-- *Change* — пользователь хочет изменить?
-- *Abandon* — пользователь забил, что бот делает?
-- *Repeat* — повторное действие через время?
-- *Override* — что если пришёл новый input, перекрывающий старый?
+- *Expire* — when does state stop being relevant?
+- *Change* — user wants to modify?
+- *Abandon* — user dropped it, what does the bot do?
+- *Repeat* — repeated action after some time?
+- *Override* — what if new input overrides the old?
 
 **Output:** lifecycle forks.
 
-### 8. Cross-feature integration [Conditional: в проекте есть существующие фичи]
+### 8. Cross-feature integration [Conditional: project has existing features]
 
 **Procedure:**
-- Прочитай Module Map из `ARCHITECTURE.md` (если есть).
+- Read Module Map from `ARCHITECTURE.md` (if present).
 - Per module/feature: «наша фича взаимодействует? Как — read / write / trigger / depend on?»
 
 **Output:** integration forks.
 
 ### Cross-cutting probe — Make implicit criteria explicit [Always active]
 
-При появлении любой vague-формулировки определи flavor:
+When a vague phrasing appears, classify its flavor:
 
-- **Скрытое число** (быстро / часто / много / низкий темп) → quantify в значение.
-- **Скрытый критерий** (опасный / настойчивый / нереалистичный) → operationalize в правило / checklist.
-- **Genuinely fuzzy** (похоже / естественно / уместно) → accept fuzziness, дать LLM якорные примеры.
+- **Hidden number** (быстро / часто / много / низкий темп) → quantify into a value.
+- **Hidden criterion** (опасный / настойчивый / нереалистичный) → operationalize into a rule / checklist.
+- **Genuinely fuzzy** (похоже / естественно / уместно) → accept fuzziness, give the LLM anchor examples.
 
 ### Cross-cutting check — Contradiction detection [Always active]
 
-После каждого нового fork-ответа сверяй с уже зафиксированными. При противоречии — flag оператору эксплицитно:
+After each new fork answer, cross-check against recorded forks. On contradiction, flag the operator explicitly:
 
 > *«В F1.3 ты сказал X, в текущем F2.4 — предполагается Y. Конфликт. Какое решение верно / нужно ли пересмотр?»*
 
 ### Closing probe — Premortem [Mandatory at end]
 
-После прохождения 8 категорий + cross-cutting checks:
+After the 8 categories + cross-cutting checks:
 
 > *«Представь, что фича запущена и через 3 месяца идут жалобы пользователей. Какие жалобы?»*
 
-Каждая воображаемая жалоба → потенциальный новый fork.
+Each imagined complaint → potential new fork.
 
-## Output Format — product-spec.md
+## Output Format — feature-spec.md
 
 ### File location
 
-`<project>/docs/specs/YYYY-MM-DD-<feature-slug>-product-spec.md` (default; настраиваемо).
+`<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (default; configurable).
 
 ### PRD-as-standalone principle
 
-Спека самодостаточна для product context. Следующая фаза (arch-spec) читает её для понимания продукта, ARCHITECTURE.md для архитектурного контекста — без overlap.
+The spec is self-sufficient for feature context. The next phase (arch-spec) reads it for product understanding plus `ARCHITECTURE.md` for architectural context — no overlap.
 
 ### Plain language principle
 
-Product-spec.md адресован оператору-продуктологу, не разработчику. Default — продуктовый русский язык. Английский жаргон допустим если он:
+`feature-spec.md` is addressed to the product-operator, not a developer. Default — product Russian. English jargon is allowed when:
 
-- (а) объективно упрощает восприятие (короче и точнее русского эквивалента), или
-- (б) широко известен в профессиональной среде (MVP, KPI, UX, ИМТ, BMI, ROI, и т.п.).
+- (a) it objectively simplifies comprehension (shorter and more precise than the Russian equivalent), or
+- (b) it is widely known professionally (MVP, KPI, UX, ИМТ, BMI, ROI, etc.).
 
-Жаргон, понятный только инженеру (extract-all, payload, throughput, idempotency, fallback и т.п.) — переводи или раскрывай на продуктовом языке.
+Engineer-only jargon (extract-all, payload, throughput, idempotency, fallback, etc.) — translate or unpack in product language.
 
 ### Top-level structure
 
@@ -349,13 +334,13 @@ Product-spec.md адресован оператору-продуктологу, 
 
 ### Sample dialogs
 
-3 концетных user path'а в формате диалога:
+Three concrete user paths in dialogue form:
 
-- **Happy path** — всё прошло гладко.
-- **Corrected path** — потребовалась корректировка, всё закрылось.
-- **Refused path** — бот отказал. Если refuse-сценарий не применим — заменяется на **Edge path**.
+- **Happy path** — everything went smoothly.
+- **Corrected path** — required a correction, still closed.
+- **Refused path** — bot refused. If a refuse scenario does not apply, replace with **Edge path**.
 
-Якорь для оператора и для следующей фазы.
+Anchor for the operator and for the next phase.
 
 ### Cell format
 
@@ -374,22 +359,22 @@ Product-spec.md адресован оператору-продуктологу, 
 ```
 
 **Cardinality tags:**
-- `[XOR]` — ровно одна ветка срабатывает
-- `[OR]` — могут срабатывать одновременно
-- `[OPT]` — необязательная ветка
+- `[XOR]` — exactly one branch fires
+- `[OR]` — branches may fire simultaneously
+- `[OPT]` — optional branch
 
 **Status tags:**
-- `RESOLVED` — решение принято
-- `OPEN` — нужно решение, blocker для следующей фазы
-- `OUT-OF-SCOPE` — явно выведено из scope
-- `DEFERRED` — отложено, не блокирует
+- `RESOLVED` — decision made
+- `OPEN` — needs decision, blocker for next phase
+- `OUT-OF-SCOPE` — explicitly excluded
+- `DEFERRED` — postponed, not a blocker
 
 **Terminal markers:**
-- `END.` — ветка завершается этим действием
-- `→ see Fx.y.z` — развёрнут глубже
-- `→ see CC1` / `→ see P-NAME` — переход к cross-cutting / sub-policy
+- `END.` — branch terminates with this action
+- `→ see Fx.y.z` — expanded deeper
+- `→ see CC1` / `→ see P-NAME` — jump to cross-cutting / sub-policy
 
-**Resolution-first:** Resolution всегда первая строка после header.
+**Resolution-first:** Resolution is always the first line after the header.
 
 ### Cross-cutting policies — orthogonal forks
 
@@ -408,46 +393,48 @@ Product-spec.md адресован оператору-продуктологу, 
 **Used in:** F1.3.2.2, F2.5.1, F4.2
 ```
 
-## Operational Rules — что skill enforce'ит
+## Operational Rules — what the skill enforces
 
-1. **Happy path first.** Проводи happy path end-to-end до того, как разрешишь branching. Reviewer всегда имеет cohesive narrative spine.
+1. **Happy path first.** Run the happy path end-to-end before allowing branching. Reviewer always has a cohesive narrative spine.
 
-2. **Sample dialog cohesion check.** При написании sample dialogs проверяй, что каждый bot turn consistent с предыдущим user input. Если bot говорит / спрашивает то, что не следует из текущего state — это сигнал missing fork. Эксплицитно подними вопрос оператору и зафиксируй fork в дереве, прежде чем продолжать диалог. Sample dialogs — integrative test для forks tree, вторая safety net после coverage-based closure.
+2. **Sample dialog cohesion check.** When writing sample dialogs, verify each bot turn is consistent with the preceding user input. If the bot says / asks something that does not follow from current state — that is a missing fork signal. Raise the question to the operator and record the fork in the tree before continuing the dialog. Sample dialogs are an integrative test for the forks tree, a second safety net after coverage-based closure.
 
-3. **Depth budget — cap 3-4 уровней.** При превышении предложи выделить sub-tree в named P-policy.
+3. **Depth budget — cap 3-4 levels.** On overflow, propose extracting the sub-tree into a named P-policy.
 
-4. **Cross-cutting detection.** Если rule (a) **pre-empts** основной flow независимо от branch (например, медицинский отказ — отказывает на любой ветке F1.x), ИЛИ (b) повторяется в ≥2 ветках — suggest move в Cross-cutting section. Hard policies всегда уходят в CC по критерию (a).
+4. **Cross-cutting detection.** If a rule (a) **pre-empts** the main flow regardless of branch (e.g. a medical refusal applies on any F1.x branch), OR (b) repeats in ≥2 branches — suggest moving it to the Cross-cutting section. Hard policies always go to CC by criterion (a).
 
-5. **Reusable block extraction.** Suggest factor в P-policy если: (a) sub-tree логически идентичен другому fork'у, ИЛИ (b) блок описывает алгоритм / правило, на которое ссылаются ≥2 forks (как нормализация форматов ввода), ИЛИ (c) блок содержательно автономен (полноценная процедура с внутренней логикой, не сводимая к одной строке reasoning'а).
+5. **Reusable block extraction.** Suggest factoring into a P-policy when: (a) the sub-tree is logically identical to another fork's, OR (b) the block describes an algorithm / rule referenced by ≥2 forks (like input-format normalization), OR (c) the block is substantively self-contained (a full procedure with internal logic, not reducible to a one-line reasoning).
 
-6. **Decision tables вместо 2^N веток.** Когда fork зависит от N независимых булевых флагов — предложи таблицу с don't-care.
+6. **Decision tables instead of 2^N branches.** When a fork depends on N independent boolean flags, propose a table with don't-care.
 
-7. **Out-of-scope inline.** Не отдельная секция. Если есть явные исключения, описывай inline в Цели или Контракте выхода.
+7. **Out-of-scope inline.** Not a separate section. Describe explicit exclusions inline in Цель or Контракт выхода.
+
+8. **Escalation, not restart.** When ambiguity cannot be resolved from data, escalate to the operator — do not restart an upstream skill.
 
 ## Format Rules
 
-1. **Hierarchical IDs (Cockburn-style).** Основное дерево forks: F1, F1.3, F1.3.2.1. Семантические prefixes для категорий probing'а:
+1. **Hierarchical IDs (Cockburn-style).** Main forks tree: F1, F1.3, F1.3.2.1. Semantic prefixes for probing categories:
    - **Lifecycle forks** — `F-life-N` (F-life-1, F-life-2, ...).
    - **Disambiguation forks** — `F-disamb-N`.
    - **Cross-feature integration forks** — `F-integ-N`.
    - **Cross-cutting policies** — `CC1, CC2, CC3, ...`.
-   - **Reusable sub-policies** — `P-NAME` (например P-NORMALIZATION-DEADLINE, P-INSIST-HANDLING — UPPER_CASE-WITH-DASHES).
-2. **ID присваивается ⇔ cell существует.** Никаких dangling IDs без cells. Никаких cells без IDs. Тривиальные терминальные branches описываются inline в parent'е без присвоения ID.
-3. **Resolution-first** в каждом cell'е.
-4. **Cardinality tag** обязателен на forks с branches.
-5. **Status tag** обязателен на каждом fork.
-6. **`Открыто`, `Связи`, `Examples`** — опциональные. Если пусты, строка не пишется.
-7. **`END.`** на терминальных ветках.
-8. **Без summary** в конце спеки. Оператор читает целиком.
+   - **Reusable sub-policies** — `P-NAME` (e.g. P-NORMALIZATION-DEADLINE, P-INSIST-HANDLING — UPPER_CASE-WITH-DASHES).
+2. **ID assigned ⇔ cell exists.** No dangling IDs without cells. No cells without IDs. Trivial terminal branches stay inline in the parent without an ID.
+3. **Resolution-first** in every cell.
+4. **Cardinality tag** required on forks with branches.
+5. **Status tag** required on every fork.
+6. **`Открыто`, `Связи`, `Examples`** — optional. If empty, omit the line.
+7. **`END.`** on terminal branches.
+8. **No summary** at the end of the spec. Operator reads in full.
 
 ## References
 
-- **Reference example** of completed product-spec.md: `references/example-goal-setting.md`. Read this when generating own product-spec.md to anchor format and style.
-- **Product-spec template** with placeholders: `references/product-spec-template.md`. Use as starting structure when writing.
+- **Reference example** of a completed feature-spec.md: `references/example-goal-setting.md`. Read this when generating output to anchor format and style.
+- **Feature-spec template** with placeholders: `references/feature-spec-template.md`. Use as the starting structure when writing.
 - **Self-assessment proposal template:** `references/self-assessment-template.md`.
 
 ## Implementation Notes
 
-- При запуске skill, сначала читай эти reference files для якорения output format.
-- Self-assessment proposal — generate using self-assessment-template.md format.
-- При генерации product-spec.md — использовать product-spec-template.md как скелет, заполнять по результатам brainstorm'а.
+- On skill start, read the reference files first to anchor output format.
+- Generate the self-assessment proposal using `self-assessment-template.md`.
+- When writing `feature-spec.md`, use `feature-spec-template.md` as the skeleton and fill it from brainstorm results.
