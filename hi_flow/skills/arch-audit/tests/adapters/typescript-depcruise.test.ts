@@ -107,4 +107,27 @@ describe('typescript-depcruise adapter — structural detection', () => {
     })
     expect(findings.some(f => f.rule_id === 'high-fanout')).toBe(true)
   })
+
+  it('detects port-adapter-direction when domain imports infrastructure', async () => {
+    const a = createTypescriptDepcruiseAdapter()
+    const findings = await a.detectStructural({
+      projectPath: '/tmp/x',
+      depGraph: { domain: ['infrastructure'], infrastructure: [] },
+      perModuleRaw: { domain: { ca: 0, ce: 1, loc: 100 }, infrastructure: { ca: 1, ce: 0, loc: 100 } },
+      projectRules: { forbidden: [], required: [] },
+    })
+    expect(findings.some(f => f.rule_id === 'port-adapter-direction')).toBe(true)
+  })
+
+  it('detects domain-no-channel-sdk when domain imports a known channel SDK', async () => {
+    const a = createTypescriptDepcruiseAdapter()
+    const findings = await a.detectStructural({
+      projectPath: '/tmp/x',
+      depGraph: { domain: [] },
+      perModuleRaw: { domain: { ca: 0, ce: 1, loc: 100 } },
+      projectRules: { forbidden: [], required: [] },
+      sdkEdges: [{ from: 'domain', sdk: 'telegraf' }],
+    })
+    expect(findings.some(f => f.rule_id === 'domain-no-channel-sdk')).toBe(true)
+  })
 })

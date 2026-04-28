@@ -28,6 +28,7 @@ export interface TypescriptDepcruiseAdapter {
     depGraph: DepGraph
     perModuleRaw: Record<string, { ca: number; ce: number; loc: number }>
     projectRules: ProjectRules
+    sdkEdges?: { from: string; sdk: string }[]
   }): Promise<RawFinding[]>
 
   // Tooling reporting
@@ -130,7 +131,11 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       depGraph: DepGraph
       perModuleRaw: Record<string, { ca: number; ce: number; loc: number }>
       projectRules: ProjectRules
+      sdkEdges?: { from: string; sdk: string }[]
     }): Promise<RawFinding[]> {
+      // NOTE: rule_id values here are bare names without baseline: prefix.
+      // Namespacing happens in helpers/enrich-findings.ts during enrichment.
+      // See impl-spec section 2 pipeline note.
       const { depGraph, perModuleRaw, projectRules } = args
       const findings: RawFinding[] = []
       const modules = Object.keys(perModuleRaw)
@@ -233,6 +238,40 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
               extras: { layers: [sLayer, tLayer] },
             })
           }
+        }
+      }
+
+      // port-adapter-direction: domain imports infrastructure directly
+      const aliasMap2 = { ...layerNamingMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
+      for (const [src, tgts] of Object.entries(depGraph)) {
+        if (aliasMap2[src] !== 'domain') continue
+        for (const tgt of tgts) {
+          if (aliasMap2[tgt] === 'infrastructure') {
+            findings.push({
+              rule_id: 'port-adapter-direction',
+              raw_severity: 'warn',
+              type: 'boundary',
+              source: { module: src, file: '' },
+              target: { module: tgt, file: '' },
+              extras: {},
+            })
+          }
+        }
+      }
+
+      // domain-no-channel-sdk: domain layer imports channel SDK
+      const channelSdkSet = new Set([...channelSdkList, ...(projectRules.overrides?.channel_sdk_extras ?? [])])
+      for (const edge of args.sdkEdges ?? []) {
+        if (aliasMap2[edge.from] !== 'domain') continue
+        if (channelSdkSet.has(edge.sdk)) {
+          findings.push({
+            rule_id: 'domain-no-channel-sdk',
+            raw_severity: 'warn',
+            type: 'boundary',
+            source: { module: edge.from, file: '' },
+            target: { module: edge.sdk, file: '' },
+            extras: { sdk: edge.sdk },
+          })
         }
       }
 

@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os'
 import { buildReport } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 
+const adapter = createTypescriptDepcruiseAdapter()
+
 // Canned depcruise JSON for a 2-module project with no violations
 const cannedDepcruiseOutput = JSON.stringify({
   summary: { violations: [] },
@@ -24,7 +26,6 @@ describe('report-builder', () => {
     await writeFile(join(dir, 'src/a/index.ts'), 'export const x = 1\n')
     await writeFile(join(dir, 'src/b/index.ts'), 'export const y = 2\n')
 
-    const adapter = createTypescriptDepcruiseAdapter()
     const result = await buildReport(adapter, dir, {
       auditSha: 'uuid:test-sha',
       depcruiseVersion: '16.3.0',
@@ -42,6 +43,25 @@ describe('report-builder', () => {
     expect(json.metrics.dep_graph).toBeDefined()
     expect(Array.isArray(json.findings)).toBe(true)
 
+    await rm(dir, { recursive: true })
+  })
+
+  it('emits baseline:nccd-breach finding when NCCD exceeds threshold (and N>15)', async () => {
+    const mockOutput = JSON.stringify({
+      summary: { violations: [] },
+      modules: Array.from({ length: 16 }, (_, i) => ({
+        source: `src/m${i}/index.ts`,
+        dependencies: i < 15 ? [{ resolved: `src/m${i + 1}/index.ts`, module: `../m${i + 1}` }] : [],
+      })),
+    })
+    const dir = await mkdtemp(join(tmpdir(), 'rb-nccd-'))
+    const report = await buildReport(adapter, dir, {
+      depcruiseVersion: '16.3.0',
+      auditSha: 'test-sha',
+      runDepcruise: () => mockOutput,
+    })
+    const json = JSON.parse(await readFile(report.json_path, 'utf-8'))
+    expect(json.findings.some((f: any) => f.rule_id === 'baseline:nccd-breach')).toBe(true)
     await rm(dir, { recursive: true })
   })
 })
