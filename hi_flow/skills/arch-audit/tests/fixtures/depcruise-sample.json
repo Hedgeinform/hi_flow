@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "violations": [
+      {
+        "type": "cycle",
+        "from": "src/a/index.ts",
+        "to": "src/b/index.ts",
+        "rule": { "name": "no-circular", "severity": "warn" },
+        "cycle": ["src/a/index.ts", "src/b/index.ts", "src/a/index.ts"]
+      }
+    ]
+  },
+  "modules": [
+    {
+      "source": "src/a/index.ts",
+      "dependencies": [
+        { "resolved": "src/b/index.ts", "module": "../b" }
+      ]
+    },
+    {
+      "source": "src/b/index.ts",
+      "dependencies": [
+        { "resolved": "src/a/index.ts", "module": "../a" }
+      ]
+    },
+    {
+      "source": "src/c/index.ts",
+      "dependencies": []
+    }
+  ]
+}
