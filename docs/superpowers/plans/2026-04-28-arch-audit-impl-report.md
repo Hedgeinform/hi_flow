@@ -52,3 +52,28 @@
 - **SKILL.md:** Not implemented in this session (out of scope for runtime implementation plan).
 - **`architectural-principles-index.json`:** Auto-generated artifact — not committed; operator can regenerate via `regenerate-principles-index CLI` on the real D9 library.
 - **Mermaid foundation diagram:** Stub `null` in v1; foundation detection requires adapter to mark utility modules, not yet implemented.
+
+---
+
+## Deviations from spec (continued)
+
+- **`validateRulesPatchSchema` not implemented:** spec section 3.4 specified two exports for d8-schema-validator. v1 only exports `validateD8Report`; patch validation in helper #8 uses field-level runtime checks instead of JSON Schema. Decision: acceptable for v1, defense-in-depth schema validation parked for v2.
+
+## Post-review fixes (2026-04-28)
+
+Per `docs/superpowers/plans/2026-04-28-arch-audit-review-fixes.md`:
+
+- F1: preflight depcruise version check implemented (`core/preflight.ts`).
+- F2: `metadata.parsing_errors` populated end-to-end.
+- F3: fake modules (node_modules, builtins, top-level src files) filtered from dep_graph.
+- F4: `port-adapter-direction`, `domain-no-channel-sdk`, `nccd-breach` baseline rules now emit findings.
+- F5: `audit_sha` resolver with git/UUID fallback (`core/audit-sha.ts`).
+- F6: `project:` prefix normalized on `loadProjectRules`.
+- F7: D9 loader regex fixed to skip Related blocks in fix_alternatives.
+- F8: cluster Mermaid no longer renders self-edges.
+- F9: documentation comment in adapter clarifying namespacing pipeline.
+- F10: SKILL.md helper names synced (`normalize-severity.js` → `enrich-findings`, `apply-suppression.js` → `core/suppression.ts`).
+- F11: validateRulesPatchSchema parked for v2 (operator decision).
+- F12: silent `--yes` install removed from depcruise runner.
+- F13: Windows-compatible CLI guard in regenerate-principles-index.
+- F14: explicit cluster prose fallback marker.
