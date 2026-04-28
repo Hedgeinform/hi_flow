@@ -1,0 +1,12 @@
+{
+  "summary": {
+    "violations": [],
+    "totalCruised": 3,
+    "totalDependenciesCruised": 1
+  },
+  "modules": [
+    { "source": "src/a/index.ts", "dependencies": [{ "resolved": "src/b/index.ts", "module": "../b" }] },
+    { "source": "src/b/index.ts", "dependencies": [] },
+    { "source": "src/c/broken.ts", "dependencies": [], "valid": false, "error": "SyntaxError: Unexpected token" }
+  ]
+}
