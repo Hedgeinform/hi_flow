@@ -1,5 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { dirname, join, basename } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { loadD9 } from '../core/d9-loader.ts'
 
 interface Args {
@@ -21,7 +22,7 @@ export async function regeneratePrinciplesIndex(args: Args): Promise<Result> {
 }
 
 // CLI entry: invoked via `npx tsx hi_flow/skills/arch-audit/helpers/regenerate-principles-index.ts <md-path>`
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const path = process.argv[2]
   if (!path) {
     console.error('Usage: regenerate-principles-index <md-path>')
