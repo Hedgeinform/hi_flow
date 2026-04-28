@@ -1,0 +1,451 @@
+{
+  "metadata": {
+    "audit_sha": "uuid:god-test",
+    "audit_timestamp": "2026-04-28T11:11:45.130Z",
+    "audit_tooling_version": "typescript-depcruise (16.3.0)",
+    "schema_version": "1.1"
+  },
+  "findings": [
+    {
+      "id": "f-001",
+      "rule_id": "baseline:god-object",
+      "type": "coupling",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "god-object-prohibition",
+        "explanation": "Module has high incoming AND outgoing coupling AND large LOC — multiple responsibilities."
+      },
+      "extras": {
+        "ca": 11,
+        "ce": 11,
+        "loc": 400
+      }
+    },
+    {
+      "id": "f-002",
+      "rule_id": "baseline:dependency-hub",
+      "type": "coupling",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "hub-like-dependency",
+        "explanation": "Module is a dependency hub: Ca exceeds max(20% of total modules, 10)."
+      },
+      "extras": {
+        "ca": 11,
+        "threshold": 10
+      }
+    },
+    {
+      "id": "f-003",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "h",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "god",
+          "h"
+        ]
+      }
+    },
+    {
+      "id": "f-004",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "i",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "god",
+          "i"
+        ]
+      }
+    },
+    {
+      "id": "f-005",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "j",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "god",
+          "j"
+        ]
+      }
+    },
+    {
+      "id": "f-006",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "god",
+        "file": ""
+      },
+      "target": {
+        "module": "k",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "god",
+          "k"
+        ]
+      }
+    },
+    {
+      "id": "f-007",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "a",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "a",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-008",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "b",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "b",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-009",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "c",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "c",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-010",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "d",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "d",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-011",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "e",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "e",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-012",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "f",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "f",
+          "god"
+        ]
+      }
+    },
+    {
+      "id": "f-013",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "g",
+        "file": ""
+      },
+      "target": {
+        "module": "god",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "g",
+          "god"
+        ]
+      }
+    }
+  ],
+  "metrics": {
+    "per_module": {
+      "god": {
+        "Ca": 11,
+        "Ce": 11,
+        "I": 0.5,
+        "LOC": 400
+      },
+      "a": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "b": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "c": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "d": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "e": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "f": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "g": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "h": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "i": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "j": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      },
+      "k": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 5
+      }
+    },
+    "nccd": 12,
+    "nccd_threshold": 1,
+    "severity_counts": {
+      "CRITICAL": 0,
+      "HIGH": 13,
+      "MEDIUM": 0,
+      "LOW": 0
+    },
+    "dep_graph": {
+      "god": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k"
+      ],
+      "a": [
+        "god"
+      ],
+      "b": [
+        "god"
+      ],
+      "c": [
+        "god"
+      ],
+      "d": [
+        "god"
+      ],
+      "e": [
+        "god"
+      ],
+      "f": [
+        "god"
+      ],
+      "g": [
+        "god"
+      ],
+      "h": [
+        "god"
+      ],
+      "i": [
+        "god"
+      ],
+      "j": [
+        "god"
+      ],
+      "k": [
+        "god"
+      ]
+    }
+  }
+}
