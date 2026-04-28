@@ -16,7 +16,7 @@ export async function loadD9(mdPath: string): Promise<D9Index> {
     const descMatch = section.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\n|\*\*|$)/)
     const description = descMatch?.[1]?.trim() ?? ''
 
-    const fixMatch = section.match(/\*\*Fix alternatives:\*\*\s*([\s\S]*?)(?=\n\n###|\n\n##|$)/)
+    const fixMatch = section.match(/\*\*Fix alternatives:\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n###|\n##|$)/)
     const alternatives: string[] = []
     if (fixMatch) {
       const block = fixMatch[1] ?? ''

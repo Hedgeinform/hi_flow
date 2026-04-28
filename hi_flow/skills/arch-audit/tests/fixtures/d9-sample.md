@@ -11,6 +11,8 @@
 - Invert dependency direction via interface.
 - Merge tightly-coupled modules.
 
+**Related:** `god-object-prohibition`, `common-reuse`.
+
 ### god-object-prohibition
 
 **Description:** A single module must not have multiple unrelated responsibilities.

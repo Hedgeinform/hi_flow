@@ -20,4 +20,11 @@ describe('d9-loader', () => {
   it('throws on missing file', async () => {
     await expect(loadD9('tests/fixtures/missing.md')).rejects.toThrow()
   })
+
+  it('does not include Related block in fix_alternatives', async () => {
+    const d9 = await loadD9('tests/fixtures/d9-sample.md')
+    const alts = d9.principles['acyclic-dependencies']!.fix_alternatives
+    expect(alts.every(a => !a.includes('Related'))).toBe(true)
+    expect(alts.every(a => !a.includes('god-object-prohibition'))).toBe(true)
+  })
 })
