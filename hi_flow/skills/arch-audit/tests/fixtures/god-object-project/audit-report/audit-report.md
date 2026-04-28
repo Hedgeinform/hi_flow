@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T20:39:44.083Z
+**Date:** 2026-04-28T20:42:23.988Z
 **Audit SHA:** `uuid:god-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 12
@@ -32,13 +32,13 @@ flowchart TD
     i
     j
     k
-    god --> a
-    god --> b
-    god --> c
-    god --> d
-    god --> e
-    god --> f
-    god --> g
+    god ==>|cycle| a
+    god ==>|cycle| b
+    god ==>|cycle| c
+    god ==>|cycle| d
+    god ==>|cycle| e
+    god ==>|cycle| f
+    god ==>|cycle| g
     god ==>|cycle| h
     god ==>|cycle| i
     god ==>|cycle| j
@@ -50,17 +50,17 @@ flowchart TD
     e ==>|cycle| god
     f ==>|cycle| god
     g ==>|cycle| god
-    h --> god
-    i --> god
-    j --> god
-    k --> god
-    linkStyle 0 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 1 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 2 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 3 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 4 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 5 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 6 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    h ==>|cycle| god
+    i ==>|cycle| god
+    j ==>|cycle| god
+    k ==>|cycle| god
+    linkStyle 0 stroke:#d32f2f,stroke-width:3px
+    linkStyle 1 stroke:#d32f2f,stroke-width:3px
+    linkStyle 2 stroke:#d32f2f,stroke-width:3px
+    linkStyle 3 stroke:#d32f2f,stroke-width:3px
+    linkStyle 4 stroke:#d32f2f,stroke-width:3px
+    linkStyle 5 stroke:#d32f2f,stroke-width:3px
+    linkStyle 6 stroke:#d32f2f,stroke-width:3px
     linkStyle 7 stroke:#d32f2f,stroke-width:3px
     linkStyle 8 stroke:#d32f2f,stroke-width:3px
     linkStyle 9 stroke:#d32f2f,stroke-width:3px
@@ -72,10 +72,10 @@ flowchart TD
     linkStyle 15 stroke:#d32f2f,stroke-width:3px
     linkStyle 16 stroke:#d32f2f,stroke-width:3px
     linkStyle 17 stroke:#d32f2f,stroke-width:3px
-    linkStyle 18 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 19 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 20 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
-    linkStyle 21 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 18 stroke:#d32f2f,stroke-width:3px
+    linkStyle 19 stroke:#d32f2f,stroke-width:3px
+    linkStyle 20 stroke:#d32f2f,stroke-width:3px
+    linkStyle 21 stroke:#d32f2f,stroke-width:3px
     classDef hubModule fill:#fce5f3,stroke:#c2185b
     class god hubModule
 ```

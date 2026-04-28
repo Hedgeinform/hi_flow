@@ -35,14 +35,22 @@ function classifyEdges(findings: Finding[]): {
   const highMedBoundaryEdges = new Set<string>()
   for (const f of findings) {
     if (!f.target) continue
-    const edge = `${escId(f.source.module)}-${escId(f.target.module)}`
+    const src = escId(f.source.module)
+    const tgt = escId(f.target.module)
+    const edge = `${src}-${tgt}`
+    const reverseEdge = `${tgt}-${src}`
     if (
       f.type === 'cycle' ||
       f.rule_id === 'baseline:no-circular' ||
       f.rule_id === 'baseline:inappropriate-intimacy' ||
       f.rule_id === 'baseline:architectural-layer-cycle'
     ) {
+      // Cycles are inherently bidirectional. The adapter emits one finding per
+      // cycle pair (with src < tgt to dedupe), but the dep_graph contains both
+      // directions and both must be styled as cycle edges — otherwise one side
+      // renders red and the other default gray, masking the cycle visually.
       cycleEdges.add(edge)
+      cycleEdges.add(reverseEdge)
     } else if (f.severity === 'CRITICAL') {
       criticalEdges.add(edge)
     } else if (f.type === 'boundary' && (f.severity === 'HIGH' || f.severity === 'MEDIUM')) {

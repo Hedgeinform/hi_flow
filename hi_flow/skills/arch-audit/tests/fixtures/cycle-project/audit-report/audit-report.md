@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T20:39:47.735Z
+**Date:** 2026-04-28T20:42:27.708Z
 **Audit SHA:** `uuid:cycle-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 2
@@ -23,9 +23,9 @@ flowchart TD
     a
     b
     a ==>|cycle| b
-    b --> a
+    b ==>|cycle| a
     linkStyle 0 stroke:#d32f2f,stroke-width:3px
-    linkStyle 1 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 1 stroke:#d32f2f,stroke-width:3px
 ```
 
 ## Layered architecture
