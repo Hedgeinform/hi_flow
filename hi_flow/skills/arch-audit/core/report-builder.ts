@@ -2,7 +2,7 @@ import { writeFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { execSync } from 'node:child_process'
 import type { TypescriptDepcruiseAdapter } from '../adapters/typescript-depcruise.ts'
-import type { D8AuditReport, Finding, SeverityCounts, ModuleMetrics } from './types.ts'
+import type { D8AuditReport, Finding, SeverityCounts, ModuleMetrics, RawFinding } from './types.ts'
 import { getBaselineRules } from './baseline-rules.ts'
 import { loadProjectRules } from './project-rules.ts'
 import { loadD9 } from './d9-loader.ts'
@@ -13,9 +13,11 @@ import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
 import { computeNCCD } from '../helpers/compute-nccd.ts'
 import { enrichFindings } from '../helpers/enrich-findings.ts'
 import { generateMermaid } from '../helpers/generate-mermaid.ts'
+import { checkDepcruiseVersion } from './preflight.ts'
+import { resolveAuditSha } from './audit-sha.ts'
 
 export interface BuildOpts {
-  auditSha: string
+  auditSha?: string
   depcruiseVersion: string
   d9MdPath?: string
   clusterProsefn?: (clusterId: string, findings: Finding[]) => { name: string; root_cause: string }
@@ -28,9 +30,13 @@ export async function buildReport(
   projectRoot: string,
   opts: BuildOpts,
 ): Promise<{ json_path: string; md_path: string }> {
+  const auditSha = opts.auditSha ?? resolveAuditSha(projectRoot)
   const baselineRules = getBaselineRules()
   const projectRules = await loadProjectRules(projectRoot)
   const d9 = opts.d9MdPath ? await loadD9(opts.d9MdPath) : { principles: {}, fix_alternatives: {} }
+
+  // Preflight: check depcruise version compatibility
+  checkDepcruiseVersion(opts.depcruiseVersion, adapter.requiredTooling[0]!)
 
   // Step 1: generate depcruise config
   const configPath = await generateDepcruiseConfig({ baselineRules, projectRules, projectRoot })
@@ -38,10 +44,10 @@ export async function buildReport(
   // Step 2: run depcruise (real or injected mock)
   const runner = opts.runDepcruise ?? ((cfg: string, src: string) => {
     try {
-      return execSync(`npx --yes dependency-cruiser --output-type json --config ${cfg} ${src}`, {
-        cwd: projectRoot,
-        encoding: 'utf-8',
-      })
+      return execSync(
+        `npx --no-install dependency-cruiser --output-type json --config ${cfg} ${src}`,
+        { cwd: projectRoot, encoding: 'utf-8' },
+      )
     } catch (e: any) {
       // depcruise exits non-zero when violations found; stdout still contains JSON
       return (e.stdout as string) || ''
@@ -58,16 +64,30 @@ export async function buildReport(
     depGraph: parsed.dep_graph,
     perModuleRaw: parsed.per_module_raw,
     projectRules,
+    sdkEdges: parsed.sdk_edges,
   })
 
   // Step 5: NCCD
   const nccd = computeNCCD(parsed.dep_graph)
   const nccd_threshold = projectRules.overrides?.nccd_threshold ?? 1.0
 
+  // NCCD breach finding
+  const moduleCount = Object.keys(parsed.dep_graph).length
+  const nccdRaw: RawFinding[] = []
+  if (moduleCount > 15 && nccd > nccd_threshold) {
+    nccdRaw.push({
+      rule_id: 'nccd-breach',
+      raw_severity: 'error',
+      type: 'nccd',
+      source: { module: '<project>', file: '' },
+      target: { module: '<project>', file: '' },
+      extras: { nccd, threshold: nccd_threshold, module_count: moduleCount },
+    })
+  }
+
   // Step 6: enrich
-  const allRawFindings = [...parsed.findings, ...structural]
   let findings = enrichFindings({
-    rawFindings: allRawFindings,
+    rawFindings: [...parsed.findings, ...structural, ...nccdRaw],
     baselineRules,
     projectRules,
   })
@@ -83,7 +103,10 @@ export async function buildReport(
     clusters.get(key)!.push(f)
   }
 
-  const clusterProse = opts.clusterProsefn ?? ((id: string) => ({ name: id, root_cause: '' }))
+  const clusterProse = opts.clusterProsefn ?? ((id: string) => ({
+    name: id,
+    root_cause: '_(cluster prose not generated — clusterProsefn not provided to buildReport)_',
+  }))
 
   // Step 9: per-module metrics
   const per_module: Record<string, ModuleMetrics> = {}
@@ -102,10 +125,11 @@ export async function buildReport(
   // Step 12: assemble D8 report
   const report: D8AuditReport = {
     metadata: {
-      audit_sha: opts.auditSha,
+      audit_sha: auditSha,
       audit_timestamp: new Date().toISOString(),
       audit_tooling_version: adapter.getToolingVersionString(),
       schema_version: '1.1',
+      ...(parsed.parsing_errors ? { parsing_errors: parsed.parsing_errors } : {}),
     },
     findings,
     metrics: {
