@@ -146,37 +146,35 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
         const { ca, ce, loc } = perModuleRaw[m]!
 
         // god-object: Ca>10 AND Ce>10 AND LOC>300
+        // Module-property finding — describes m itself, not an edge. target omitted.
         if (ca > 10 && ce > 10 && loc > 300) {
           findings.push({
             rule_id: 'god-object',
             raw_severity: 'error',
             type: 'coupling',
             source: { module: m, file: '' },
-            target: { module: m, file: '' },
             extras: { ca, ce, loc },
           })
         }
 
-        // dependency-hub: Ca > max(20% N, 10)
+        // dependency-hub: Ca > max(20% N, 10) — module-property
         if (ca > hubThreshold) {
           findings.push({
             rule_id: 'dependency-hub',
             raw_severity: 'error',
             type: 'coupling',
             source: { module: m, file: '' },
-            target: { module: m, file: '' },
             extras: { ca, threshold: hubThreshold },
           })
         }
 
-        // high-fanout: Ce > 15
+        // high-fanout: Ce > 15 — module-property
         if (ce > 15) {
           findings.push({
             rule_id: 'high-fanout',
             raw_severity: 'warn',
             type: 'coupling',
             source: { module: m, file: '' },
-            target: { module: m, file: '' },
             extras: { ce },
           })
         }
@@ -226,6 +224,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
         }
         // architectural-layer-cycle: inappropriate-intimacy where modules are in different layers
         for (const f of findings.filter(f => f.rule_id === 'inappropriate-intimacy')) {
+          if (!f.target) continue
           const sLayer = aliasMap[f.source.module]
           const tLayer = aliasMap[f.target.module]
           if (sLayer && tLayer && sLayer !== tLayer) {

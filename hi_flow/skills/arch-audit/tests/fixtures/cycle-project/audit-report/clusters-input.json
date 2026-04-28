@@ -1,0 +1,12 @@
+{
+  "acyclic-dependencies": {
+    "finding_ids": [
+      "f-001",
+      "f-002"
+    ],
+    "modules": [
+      "a",
+      "b"
+    ]
+  }
+}

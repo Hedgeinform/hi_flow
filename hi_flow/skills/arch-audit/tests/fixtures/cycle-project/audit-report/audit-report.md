@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T12:00:19.801Z
+**Date:** 2026-04-28T19:44:04.401Z
 **Audit SHA:** `uuid:cycle-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 2
@@ -20,9 +20,24 @@
 
 ```mermaid
 flowchart TD
+    a
+    b
     a ==>|cycle| b
     b --> a
+    linkStyle 0 stroke:#d32f2f,stroke-width:3px
+    linkStyle 1 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
 ```
+
+## Layered architecture
+
+Layered structure не detected — closed list имён слоёв (domain / core / business / services / api / web / ui / infrastructure / ...) не совпал с module naming проекта. Conditional rules `baseline:layered-respect`, `baseline:port-adapter-direction`, `baseline:architectural-layer-cycle` не применялись.
+
+## Module Metrics
+
+| Module | Ca | Ce | I | LOC |
+|---|---:|---:|---:|---:|
+| `a` | 1 | 1 | 0.50 | 0 |
+| `b` | 1 | 1 | 0.50 | 0 |
 
 ## Findings (2)
 

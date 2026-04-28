@@ -49,7 +49,7 @@ export function enrichFindings(args: Args): Finding[] {
       type: raw.type,
       severity: finalSeverity,
       source: raw.source,
-      target: raw.target,
+      ...(raw.target ? { target: raw.target } : {}),
       reason: {
         principle: baseline?.principle ?? projectRule?.principle ?? 'unknown',
         explanation: baseline?.explanation ?? projectRule?.comment ?? '',

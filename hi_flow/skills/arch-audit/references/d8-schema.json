@@ -48,7 +48,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "rule_id", "type", "severity", "source", "target", "reason"],
+        "required": ["id", "rule_id", "type", "severity", "source", "reason"],
         "properties": {
           "id": {
             "type": "string",

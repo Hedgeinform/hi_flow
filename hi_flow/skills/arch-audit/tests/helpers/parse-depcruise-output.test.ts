@@ -11,7 +11,7 @@ describe('parse-depcruise-output', () => {
     expect(result.findings[0]!.rule_id).toBe('no-circular')
     expect(result.findings[0]!.raw_severity).toBe('warn')
     expect(result.findings[0]!.source.module).toBe('a')
-    expect(result.findings[0]!.target.module).toBe('b')
+    expect(result.findings[0]!.target!.module).toBe('b')
     expect(result.findings[0]!.type).toBe('cycle')
   })
 

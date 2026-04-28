@@ -10,7 +10,9 @@ export interface RawFinding {
   raw_severity: DepcruiseSeverity      // depcruise raw severity
   type: string                         // 'cycle' | 'orphan' | 'cross-module' | 'metric' | etc
   source: { module: string; file: string }
-  target: { module: string; file: string }
+  // Optional: module-property findings (god-object, dependency-hub, high-fanout, no-orphans)
+  // describe a property of source itself, not an edge — target is omitted.
+  target?: { module: string; file: string }
   extras?: Record<string, unknown>
 }
 
@@ -21,7 +23,7 @@ export interface Finding {
   type: string
   severity: Severity                   // D8 enum
   source: { module: string; file: string }
-  target: { module: string; file: string }
+  target?: { module: string; file: string }
   reason: { principle: string; explanation: string }
   extras?: Record<string, unknown>
 }

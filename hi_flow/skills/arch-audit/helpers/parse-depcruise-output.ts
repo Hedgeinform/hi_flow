@@ -50,20 +50,36 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
 
   const findings: RawFinding[] = []
   const violations = data?.summary?.violations ?? []
+  // Module-property rules describe a property of source itself, not an edge.
+  // For these, target is omitted (depcruise emits to == from as a marker).
+  const MODULE_PROPERTY_RULES = new Set(['no-orphans'])
   for (const v of violations) {
     const sourceFile = v.from ?? ''
     const targetFile = v.to ?? v.from ?? ''
     const srcMod = fileToModule(sourceFile, modulePattern)
-    const tgtMod = fileToModule(targetFile, modulePattern)
-    if (!srcMod || !tgtMod) continue
-    findings.push({
-      rule_id: v.rule?.name ?? 'unknown',
-      raw_severity: (v.rule?.severity ?? 'warn') as DepcruiseSeverity,
-      type: normalizeViolationType(v.type),
-      source: { module: srcMod, file: sourceFile },
-      target: { module: tgtMod, file: targetFile },
-      extras: v.cycle ? { cycle: v.cycle } : undefined,
-    })
+    const ruleName = v.rule?.name ?? 'unknown'
+    const isModuleProperty = MODULE_PROPERTY_RULES.has(ruleName) || sourceFile === targetFile
+    if (!srcMod) continue
+    if (!isModuleProperty) {
+      const tgtMod = fileToModule(targetFile, modulePattern)
+      if (!tgtMod) continue
+      findings.push({
+        rule_id: ruleName,
+        raw_severity: (v.rule?.severity ?? 'warn') as DepcruiseSeverity,
+        type: normalizeViolationType(v.type),
+        source: { module: srcMod, file: sourceFile },
+        target: { module: tgtMod, file: targetFile },
+        extras: v.cycle ? { cycle: v.cycle } : undefined,
+      })
+    } else {
+      findings.push({
+        rule_id: ruleName,
+        raw_severity: (v.rule?.severity ?? 'warn') as DepcruiseSeverity,
+        type: normalizeViolationType(v.type),
+        source: { module: srcMod, file: sourceFile },
+        extras: v.cycle ? { cycle: v.cycle } : undefined,
+      })
+    }
   }
 
   const dep_graph: DepGraph = {}
@@ -85,10 +101,15 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
       }
       const tgtMod = fileToModule(dep.resolved, modulePattern)
       if (!tgtMod || tgtMod === srcMod) continue
-      if (!dep_graph[srcMod]!.includes(tgtMod)) dep_graph[srcMod]!.push(tgtMod)
-      per_module_raw[srcMod]!.ce++
       if (!per_module_raw[tgtMod]) per_module_raw[tgtMod] = { ca: 0, ce: 0, loc: 0 }
-      per_module_raw[tgtMod]!.ca++
+      // Dedup at module-pair level: increment Ca/Ce only when a new module edge is added.
+      // Without this, multiple file-level imports between the same module pair inflate metrics
+      // while dep_graph remains correctly deduplicated, causing per_module ↔ dep_graph drift.
+      if (!dep_graph[srcMod]!.includes(tgtMod)) {
+        dep_graph[srcMod]!.push(tgtMod)
+        per_module_raw[srcMod]!.ce++
+        per_module_raw[tgtMod]!.ca++
+      }
     }
   }
 

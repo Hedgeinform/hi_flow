@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T12:00:15.603Z
+**Date:** 2026-04-28T19:43:59.817Z
 **Audit SHA:** `uuid:god-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 12
@@ -20,6 +20,18 @@
 
 ```mermaid
 flowchart TD
+    god
+    a
+    b
+    c
+    d
+    e
+    f
+    g
+    h
+    i
+    j
+    k
     god --> a
     god --> b
     god --> c
@@ -42,16 +54,61 @@ flowchart TD
     i --> god
     j --> god
     k --> god
+    linkStyle 0 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 1 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 2 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 3 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 4 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 5 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 6 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 7 stroke:#d32f2f,stroke-width:3px
+    linkStyle 8 stroke:#d32f2f,stroke-width:3px
+    linkStyle 9 stroke:#d32f2f,stroke-width:3px
+    linkStyle 10 stroke:#d32f2f,stroke-width:3px
+    linkStyle 11 stroke:#d32f2f,stroke-width:3px
+    linkStyle 12 stroke:#d32f2f,stroke-width:3px
+    linkStyle 13 stroke:#d32f2f,stroke-width:3px
+    linkStyle 14 stroke:#d32f2f,stroke-width:3px
+    linkStyle 15 stroke:#d32f2f,stroke-width:3px
+    linkStyle 16 stroke:#d32f2f,stroke-width:3px
+    linkStyle 17 stroke:#d32f2f,stroke-width:3px
+    linkStyle 18 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 19 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 20 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    linkStyle 21 stroke:#bdbdbd,stroke-width:1px,opacity:0.5
+    classDef hubModule fill:#fce5f3,stroke:#c2185b
+    class god hubModule
 ```
+
+## Layered architecture
+
+Layered structure не detected — closed list имён слоёв (domain / core / business / services / api / web / ui / infrastructure / ...) не совпал с module naming проекта. Conditional rules `baseline:layered-respect`, `baseline:port-adapter-direction`, `baseline:architectural-layer-cycle` не применялись.
+
+## Module Metrics
+
+| Module | Ca | Ce | I | LOC |
+|---|---:|---:|---:|---:|
+| `a` | 1 | 1 | 0.50 | 5 |
+| `b` | 1 | 1 | 0.50 | 5 |
+| `c` | 1 | 1 | 0.50 | 5 |
+| `d` | 1 | 1 | 0.50 | 5 |
+| `e` | 1 | 1 | 0.50 | 5 |
+| `f` | 1 | 1 | 0.50 | 5 |
+| `g` | 1 | 1 | 0.50 | 5 |
+| `god` | 11 | 11 | 0.50 | 400 |
+| `h` | 1 | 1 | 0.50 | 5 |
+| `i` | 1 | 1 | 0.50 | 5 |
+| `j` | 1 | 1 | 0.50 | 5 |
+| `k` | 1 | 1 | 0.50 | 5 |
 
 ## Findings (13)
 
 ### f-001 — baseline:god-object (HIGH)
-**Source → Target:** `god` → `god`
+**Module:** `god`
 **Reason:** god-object-prohibition — Module has high incoming AND outgoing coupling AND large LOC — multiple responsibilities.
 
 ### f-002 — baseline:dependency-hub (HIGH)
-**Source → Target:** `god` → `god`
+**Module:** `god`
 **Reason:** hub-like-dependency — Module is a dependency hub: Ca exceeds max(20% of total modules, 10).
 
 ### f-003 — baseline:inappropriate-intimacy (HIGH)

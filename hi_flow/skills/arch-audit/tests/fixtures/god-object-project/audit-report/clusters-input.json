@@ -1,0 +1,47 @@
+{
+  "god-object-prohibition": {
+    "finding_ids": [
+      "f-001"
+    ],
+    "modules": [
+      "god"
+    ]
+  },
+  "hub-like-dependency": {
+    "finding_ids": [
+      "f-002"
+    ],
+    "modules": [
+      "god"
+    ]
+  },
+  "acyclic-dependencies": {
+    "finding_ids": [
+      "f-003",
+      "f-004",
+      "f-005",
+      "f-006",
+      "f-007",
+      "f-008",
+      "f-009",
+      "f-010",
+      "f-011",
+      "f-012",
+      "f-013"
+    ],
+    "modules": [
+      "god",
+      "h",
+      "i",
+      "j",
+      "k",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g"
+    ]
+  }
+}

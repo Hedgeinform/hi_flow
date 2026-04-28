@@ -1,0 +1,11 @@
+{
+  "port-adapter-separation": {
+    "finding_ids": [
+      "f-001"
+    ],
+    "modules": [
+      "domain",
+      "infrastructure"
+    ]
+  }
+}

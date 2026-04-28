@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "audit_sha": "uuid:layered-test",
+    "audit_timestamp": "2026-04-28T19:44:04.054Z",
+    "audit_tooling_version": "typescript-depcruise (16.3.0)",
+    "schema_version": "1.1"
+  },
+  "findings": [
+    {
+      "id": "f-001",
+      "rule_id": "baseline:port-adapter-direction",
+      "type": "boundary",
+      "severity": "MEDIUM",
+      "source": {
+        "module": "domain",
+        "file": ""
+      },
+      "target": {
+        "module": "infrastructure",
+        "file": ""
+      },
+      "reason": {
+        "principle": "port-adapter-separation",
+        "explanation": "Domain imports infrastructure directly — should go through ports/adapters."
+      },
+      "extras": {}
+    }
+  ],
+  "metrics": {
+    "per_module": {
+      "api": {
+        "Ca": 0,
+        "Ce": 2,
+        "I": 1,
+        "LOC": 0
+      },
+      "application": {
+        "Ca": 1,
+        "Ce": 2,
+        "I": 0.6666666666666666,
+        "LOC": 0
+      },
+      "utils": {
+        "Ca": 6,
+        "Ce": 0,
+        "I": 0,
+        "LOC": 0
+      },
+      "domain": {
+        "Ca": 1,
+        "Ce": 2,
+        "I": 0.6666666666666666,
+        "LOC": 0
+      },
+      "infrastructure": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 0
+      },
+      "m1": {
+        "Ca": 0,
+        "Ce": 1,
+        "I": 1,
+        "LOC": 0
+      },
+      "m2": {
+        "Ca": 0,
+        "Ce": 1,
+        "I": 1,
+        "LOC": 0
+      }
+    },
+    "nccd": 2.7142857142857144,
+    "nccd_threshold": 1,
+    "severity_counts": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 1,
+      "LOW": 0
+    },
+    "dep_graph": {
+      "api": [
+        "application",
+        "utils"
+      ],
+      "application": [
+        "domain",
+        "utils"
+      ],
+      "utils": [],
+      "domain": [
+        "infrastructure",
+        "utils"
+      ],
+      "infrastructure": [
+        "utils"
+      ],
+      "m1": [
+        "utils"
+      ],
+      "m2": [
+        "utils"
+      ]
+    }
+  }
+}
