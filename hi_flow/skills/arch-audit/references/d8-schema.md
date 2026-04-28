@@ -174,7 +174,7 @@ If you produce `audit-report.json` from a tool other than `hi_flow:arch-audit` (
 - All required fields above must be present, including `rule_id` and `schema_version`.
 - `reason.principle` values must reference principle ids from the canonical D9 library. Custom principle names will fail schema check.
 - `audit_sha` is mandatory — without it, freshness check is impossible (and proceeding without it is unsafe).
-- Set `schema_version` to the D8 version your output conforms to (current: `"1.0"`).
+- Set `schema_version` to the D8 version your output conforms to (current: `"1.1"`).
 
 If your audit tool does not natively know about D9 principles, add a mapping layer in your converter that translates native rule names into D9 principle ids.
 
