@@ -115,8 +115,9 @@ Check depcruise:
 npx --no-install dependency-cruiser --version
 ```
 - Success → continue.
-- Fail → try `npx --yes dependency-cruiser --version` (npx will install/cache itself).
-- Second failure → hard fail with: «depcruise недоступен. Установи: `npm install -g dependency-cruiser` или `npm install -D dependency-cruiser`.»
+- Fail → hard fail with: «depcruise недоступен. Установи: `npm install -g dependency-cruiser` или `npm install -D dependency-cruiser`.»
+
+After version is detected, run preflight check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 17.0.0`). Out-of-range version → hard fail with downgrade/upgrade instructions per Q-1.5.
 
 ### Generate config + run depcruise
 
@@ -127,10 +128,11 @@ Helper `generate-depcruise-config.js`:
 
 Run:
 ```
-npx --yes dependency-cruiser --output-type json --config <temp-config> src/
+npx --no-install dependency-cruiser --output-type json --config <temp-config> src/
 ```
 - Capture stdout (JSON) + stderr.
 - Timeout: 60s default, tunable via project rules.
+- `--no-install` is intentional — silent installs violate global principle 5; depcruise must be pre-installed (Tool availability step above hard-fails otherwise).
 
 ### Parse + normalize
 
