@@ -136,7 +136,7 @@ npx --yes dependency-cruiser --output-type json --config <temp-config> src/
 
 Helper `parse-depcruise-output.js`:
 - Parse JSON.
-- Map violations → D8 findings via `normalize-severity.js` (depcruise `error` → D8 `HIGH`, or `CRITICAL` if promoted; `warn` → `MEDIUM`; `info` → `LOW`).
+- Map violations → D8 findings via `enrich-findings` (depcruise `error` → D8 `HIGH`, or `CRITICAL` if promoted; `warn` → `MEDIUM`; `info` → `LOW`).
 - Map modules → D8 `metrics.dep_graph` + `metrics.per_module`.
 
 Helper `compute-nccd.js` computes NCCD from dep_graph (depcruise does not emit it directly).
@@ -153,7 +153,7 @@ Checks:
 
 ### Apply suppression precedence
 
-Helper `apply-suppression.js`. Rules with more specific semantics suppress general informational findings on the same import edge:
+Helper `core/suppression.ts`. Rules with more specific semantics suppress general informational findings on the same import edge:
 
 1. CRITICAL: `architectural-layer-cycle`.
 2. HIGH: `god-object`, `dependency-hub`, `inappropriate-intimacy`, `nccd-breach`, `no-circular`, `not-to-test-from-prod`.
