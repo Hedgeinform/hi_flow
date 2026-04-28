@@ -309,11 +309,20 @@ On validation failure the patch is **not applied**. The error report contains ac
 
 On validation success — atomic ordering: **merge first, on success — archive**. If the merge fails on write, the patch stays in place and archive does not run.
 
-- Helper `merge-rules-patch.js` applies the patch into the project rules file (`<project>/.audit-rules.yaml`).
+- Helper `helpers/cli-apply-patch.ts` orchestrates validate → merge → archive.
+- Merge writes to the project rules file (`<project>/.audit-rules.yaml`).
 - On success — move the patch file into archive: `<project>/audit-report/applied-patches/<date>-<original-name>.yaml`. Not deleted — non-destructive default; git history holds the full audit trail.
 - Returns success report:
 
 > Patch applied: N rules added, M rules updated. Project rules файл обновлён. Patch заархивирован в `<archive-path>`.
+
+**CLI:**
+
+```
+npx tsx hi_flow/skills/arch-audit/helpers/cli-apply-patch.ts <patch-path> [project-root] [d9-md-path]
+```
+
+Defaults: `project-root` = current working directory; `d9-md-path` resolves to the bundled `hi_flow/references/architectural-principles.md`. On hard validation fail — non-zero exit + actionable diagnostics on stderr; patch stays in place.
 
 ### D9 evolution mechanism
 
