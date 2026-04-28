@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T11:08:10.016Z
+**Date:** 2026-04-28T12:00:19.801Z
 **Audit SHA:** `uuid:cycle-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 2
@@ -37,7 +37,7 @@ flowchart TD
 ## Cluster suggestions
 
 ### acyclic-dependencies (2 findings)
-**Root cause:** 
+**Root cause:** _(cluster prose not generated — clusterProsefn not provided to buildReport)_
 
 ```mermaid
 flowchart TD

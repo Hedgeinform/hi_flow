@@ -1,6 +1,6 @@
 # Audit Report
 
-**Date:** 2026-04-28T11:11:45.130Z
+**Date:** 2026-04-28T12:00:15.603Z
 **Audit SHA:** `uuid:god-test`
 **Stack:** typescript-depcruise (16.3.0)
 **Total modules:** 12
@@ -101,23 +101,23 @@ flowchart TD
 ## Cluster suggestions
 
 ### god-object-prohibition (1 findings)
-**Root cause:** 
+**Root cause:** _(cluster prose not generated — clusterProsefn not provided to buildReport)_
 
 ```mermaid
 flowchart TD
-    god --> god
+    god
 ```
 
 ### hub-like-dependency (1 findings)
-**Root cause:** 
+**Root cause:** _(cluster prose not generated — clusterProsefn not provided to buildReport)_
 
 ```mermaid
 flowchart TD
-    god --> god
+    god
 ```
 
 ### acyclic-dependencies (11 findings)
-**Root cause:** 
+**Root cause:** _(cluster prose not generated — clusterProsefn not provided to buildReport)_
 
 ```mermaid
 flowchart TD
