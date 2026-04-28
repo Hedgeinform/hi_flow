@@ -21,6 +21,21 @@ describe('d9-loader', () => {
     await expect(loadD9('tests/fixtures/missing.md')).rejects.toThrow()
   })
 
+  it('strips parenthesised abbreviation suffix from heading to derive canonical id', async () => {
+    // Headings like `### acyclic-dependencies (ADP)` carry a human-friendly
+    // abbreviation. Canonical id must drop the suffix so it matches the short
+    // form used by baseline-rules.ts and rules-patch templates. Without this,
+    // d9 lookup misses for ADP/SDP/SAP/CRP and Fix alternatives disappear.
+    const d9 = await loadD9('tests/fixtures/d9-with-suffixes.md')
+    expect(d9.principles['acyclic-dependencies']).toBeDefined()
+    expect(d9.principles['stable-dependencies']).toBeDefined()
+    expect(d9.principles['god-object-prohibition']).toBeDefined()
+    // Suffix-form must NOT appear as a separate key
+    expect(d9.principles['acyclic-dependencies (ADP)']).toBeUndefined()
+    expect(d9.fix_alternatives['acyclic-dependencies']).toHaveLength(2)
+    expect(d9.fix_alternatives['stable-dependencies']).toHaveLength(1)
+  })
+
   it('does not include Related block in fix_alternatives', async () => {
     const d9 = await loadD9('tests/fixtures/d9-sample.md')
     const alts = d9.principles['acyclic-dependencies']!.fix_alternatives

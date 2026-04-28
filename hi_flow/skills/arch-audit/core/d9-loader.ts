@@ -10,8 +10,16 @@ export async function loadD9(mdPath: string): Promise<D9Index> {
   const sections = content.split(/^### /m).slice(1)
   for (const section of sections) {
     const lines = section.split('\n')
-    const id = lines[0]?.trim() ?? ''
-    if (!id || id.startsWith('#')) continue
+    const fullHeading = lines[0]?.trim() ?? ''
+    if (!fullHeading || fullHeading.startsWith('#')) continue
+    // Canonical id is the first token before any whitespace or parenthesised
+    // suffix. Headings carry human-friendly abbreviations (e.g.
+    // `acyclic-dependencies (ADP)`) for readability, but the id used by
+    // baseline-rules.ts and rules-patch principle: refs is the short form.
+    // Without this, lookups by short form silently miss and Fix alternatives
+    // disappear from the report for 4/17 principles.
+    const id = fullHeading.replace(/\s*\([^)]*\)\s*$/, '').split(/\s+/)[0] ?? ''
+    if (!id) continue
 
     const descMatch = section.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\n|\*\*|$)/)
     const description = descMatch?.[1]?.trim() ?? ''
