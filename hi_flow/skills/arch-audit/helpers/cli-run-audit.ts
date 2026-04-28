@@ -13,11 +13,16 @@ import { buildReportData, renderReport, type ClusterProseFn } from '../core/repo
  *
  * Programmatic callers can pass `clusterProsefn` to render the markdown in a single call
  * (legacy single-shot mode — used by tests). Production agent flow is two-phase.
+ *
+ * `outDir` overrides the default output directory (`<projectRoot>/audit-report/`). Use this
+ * when the project has its own tooling that writes to `audit-report/` to avoid namespace
+ * collision (e.g. existing `depgraph-audit.mjs` baselines + patches ledgers).
  */
 export async function runAudit(
   projectRoot: string,
   d9MdPath?: string,
   clusterProsefn?: ClusterProseFn,
+  outDir?: string,
 ): Promise<{ json_path: string; md_path: string | null; clusters_input_path: string }> {
   let depcruiseVersion: string
   try {
@@ -27,7 +32,7 @@ export async function runAudit(
   }
 
   const adapter = createTypescriptDepcruiseAdapter()
-  const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath })
+  const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath, outDir })
   const clusters_input_path = `${data.outDir}/clusters-input.json`
 
   if (clusterProsefn) {
@@ -38,15 +43,50 @@ export async function runAudit(
   return { json_path: data.json_path, md_path: null, clusters_input_path }
 }
 
-// CLI entry: invoked via `npx tsx helpers/cli-run-audit.ts <project-root> [d9-md-path]`
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const projectRoot = process.argv[2]
-  if (!projectRoot) {
-    console.error('Usage: npx tsx helpers/cli-run-audit.ts <project-root> [d9-md-path]')
-    process.exit(1)
+interface ParsedCliArgs {
+  projectRoot?: string
+  d9MdPath?: string
+  outDir?: string
+  help: boolean
+}
+
+function parseCliArgs(argv: string[]): ParsedCliArgs {
+  const out: ParsedCliArgs = { help: false }
+  const positional: string[] = []
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]!
+    if (a === '--out-dir' || a === '-o') {
+      out.outDir = argv[++i]
+    } else if (a === '--help' || a === '-h') {
+      out.help = true
+    } else if (a.startsWith('--out-dir=')) {
+      out.outDir = a.slice('--out-dir='.length)
+    } else {
+      positional.push(a)
+    }
   }
-  const d9MdPath = process.argv[3]
-  runAudit(resolve(projectRoot), d9MdPath ? resolve(d9MdPath) : undefined)
+  out.projectRoot = positional[0]
+  out.d9MdPath = positional[1]
+  return out
+}
+
+// CLI entry: invoked via `npx tsx helpers/cli-run-audit.ts [--out-dir <path>] <project-root> [d9-md-path]`
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const args = parseCliArgs(process.argv.slice(2))
+  if (args.help || !args.projectRoot) {
+    console.error('Usage: npx tsx helpers/cli-run-audit.ts [--out-dir <path>] <project-root> [d9-md-path]')
+    console.error('')
+    console.error('Options:')
+    console.error('  --out-dir, -o <path>   Override default output directory (default: <project-root>/audit-report).')
+    console.error('                          Use this when the project already has tooling writing to audit-report/.')
+    process.exit(args.help ? 0 : 1)
+  }
+  runAudit(
+    resolve(args.projectRoot),
+    args.d9MdPath ? resolve(args.d9MdPath) : undefined,
+    undefined,
+    args.outDir ? resolve(args.outDir) : undefined,
+  )
     .then(({ json_path, clusters_input_path }) => {
       console.log('audit-report.json:    ', json_path)
       console.log('clusters-input.json:  ', clusters_input_path)
