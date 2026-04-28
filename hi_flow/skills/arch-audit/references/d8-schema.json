@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hi_flow/skills/arch-audit/references/d8-schema.json",
+  "title": "D8 Audit-Report Schema",
+  "description": "JSON Schema for audit-report.json produced by hi_flow:arch-audit. Version 1.0.",
+  "type": "object",
+  "required": ["metadata", "findings", "metrics"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["audit_sha", "schema_version"],
+      "properties": {
+        "audit_sha": {
+          "type": "string",
+          "description": "Git commit hash on which audit was run. Used by arch-redesign for freshness check."
+        },
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+          "default": "1.0",
+          "description": "Semver D8 schema version. Current: 1.0. Protects downstream consumers from breaking changes without warning."
+        },
+        "audit_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of audit run. Optional, used for debug and session log."
+        },
+        "audit_tooling_version": {
+          "type": "string",
+          "description": "Version string of audit tooling (e.g., 'typescript-depcruise (16.3.0)'). Optional, helps interpret rule sets behind the run."
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rule_id", "type", "severity", "source", "target", "reason"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable identifier for the finding."
+          },
+          "rule_id": {
+            "type": "string",
+            "description": "Cross-reference to the baseline rule or project rule whose violation is recorded in this finding. Naming convention: 'baseline:no-circular', 'project:custom-rule-name'. Plain rule names are acceptable when no disambiguation is needed."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["boundary", "cycle", "sdp", "coupling", "nccd"],
+            "description": "Violation type."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+            "description": "Normalized D8 severity. Depcruise native severities (error/warn/info) are mapped to this enum by the adapter before writing to audit-report.json."
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "module": { "type": "string" },
+              "file":   { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "module": { "type": "string" },
+              "file":   { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "reason": {
+            "type": "object",
+            "required": ["principle"],
+            "properties": {
+              "principle": {
+                "type": "string",
+                "description": "Canonical principle id from D9 library at hi_flow/references/architectural-principles.md."
+              },
+              "explanation": {
+                "type": "string",
+                "description": "Free-form formulation invoking the principle in concrete terms."
+              }
+            },
+            "additionalProperties": false
+          },
+          "extras": {
+            "type": "object",
+            "description": "Type-specific extras: cycle members for cycles, type-only flag for boundary, etc."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "per_module": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["Ca", "Ce", "I"],
+            "properties": {
+              "Ca":  { "type": "number", "description": "Afferent coupling — incoming dependencies." },
+              "Ce":  { "type": "number", "description": "Efferent coupling — outgoing dependencies." },
+              "I":   { "type": "number", "minimum": 0, "maximum": 1, "description": "Instability metric, 0..1." },
+              "A":   { "type": "number", "minimum": 0, "maximum": 1, "description": "Abstractness metric, 0..1." },
+              "D":   { "type": "number", "description": "Distance from the main sequence." },
+              "LOC": { "type": "integer", "description": "Lines of code." }
+            }
+          }
+        },
+        "nccd": {
+          "type": "number",
+          "description": "Normalized Cumulative Component Dependency metric."
+        },
+        "nccd_threshold": {
+          "type": "number",
+          "description": "Project-configured NCCD threshold (default 1.0)."
+        },
+        "severity_counts": {
+          "type": "object",
+          "properties": {
+            "CRITICAL": { "type": "integer", "minimum": 0 },
+            "HIGH":     { "type": "integer", "minimum": 0 },
+            "MEDIUM":   { "type": "integer", "minimum": 0 },
+            "LOW":      { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "dep_graph": {
+          "type": "object",
+          "description": "Module dependency graph as adjacency list, e.g., { 'moduleA': ['moduleB', 'moduleC'], ... }.",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
