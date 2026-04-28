@@ -17,8 +17,8 @@
         "schema_version": {
           "type": "string",
           "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
-          "default": "1.0",
-          "description": "Semver D8 schema version. Current: 1.0. Protects downstream consumers from breaking changes without warning."
+          "default": "1.1",
+          "description": "Semver D8 schema version. Current: 1.1. Protects downstream consumers from breaking changes without warning."
         },
         "audit_timestamp": {
           "type": "string",
@@ -28,6 +28,18 @@
         "audit_tooling_version": {
           "type": "string",
           "description": "Version string of audit tooling (e.g., 'typescript-depcruise (16.3.0)'). Optional, helps interpret rule sets behind the run."
+        },
+        "parsing_errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": { "type": "string" },
+              "error": { "type": "string" }
+            },
+            "required": ["file", "error"]
+          }
         }
       },
       "additionalProperties": false

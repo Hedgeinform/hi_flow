@@ -32,7 +32,7 @@ Default path: `<project>/audit-report/`. Operator may pass an alternative path o
         "schema_version": {
           "type": "string",
           "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
-          "description": "Semver D8 schema version. Current: 1.0. Protects downstream consumers from breaking changes without warning."
+          "description": "Semver D8 schema version. Current: 1.1. Protects downstream consumers from breaking changes without warning."
         },
         "audit_timestamp": {
           "type": "string",
@@ -42,6 +42,10 @@ Default path: `<project>/audit-report/`. Operator may pass an alternative path o
         "audit_tooling_version": {
           "type": "string",
           "description": "Version string of audit tooling (e.g., dependency-cruiser version). Optional, helps interpret rule sets behind the run."
+        },
+        "parsing_errors": {
+          "type": "array",
+          "description": "Optional array of `{file, error}` objects describing TypeScript source files that dependency-cruiser could not parse. Allows producing a partial audit report when some files have syntax errors."
         }
       }
     },
@@ -173,3 +177,8 @@ If you produce `audit-report.json` from a tool other than `hi_flow:arch-audit` (
 - Set `schema_version` to the D8 version your output conforms to (current: `"1.0"`).
 
 If your audit tool does not natively know about D9 principles, add a mapping layer in your converter that translates native rule names into D9 principle ids.
+
+## Changelog
+
+- 1.1 (2026-04-28): added optional metadata.parsing_errors for partial-parse audits.
+- 1.0: initial schema.
