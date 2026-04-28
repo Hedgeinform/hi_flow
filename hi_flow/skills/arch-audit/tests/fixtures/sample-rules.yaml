@@ -1,0 +1,17 @@
+forbidden:
+  - name: project:dispatcher-no-pipeline
+    severity: HIGH
+    principle: layered-architecture-respect
+    from: { path: "^src/dispatcher" }
+    to: { path: "^src/pipeline" }
+    comment: "Dispatcher must not bypass routing"
+
+required: []
+
+overrides:
+  nccd_threshold: 1.5
+  baseline_disables:
+    - rule_id: baseline:no-orphans
+      comment: "We use barrel exports — orphans are common false positives"
+  channel_sdk_extras:
+    - "@my/custom-bot-lib"
