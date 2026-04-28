@@ -11,7 +11,7 @@ describe('d9-loader', () => {
 
   it('extracts description and fix_alternatives', async () => {
     const d9 = await loadD9('tests/fixtures/d9-sample.md')
-    const p = d9.principles['acyclic-dependencies']
+    const p = d9.principles['acyclic-dependencies']!
     expect(p.description).toMatch(/No cycles/)
     expect(p.fix_alternatives).toHaveLength(3)
     expect(p.fix_alternatives[0]).toMatch(/Extract shared logic/)

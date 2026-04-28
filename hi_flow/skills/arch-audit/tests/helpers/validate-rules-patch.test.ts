@@ -20,7 +20,7 @@ describe('validate-rules-patch', () => {
     const d9NoPrinciple: D9Index = { principles: {}, fix_alternatives: {} }
     const r = await validateRulesPatch({ patchPath: 'tests/fixtures/sample-patch.yaml', projectRules: emptyRules, d9Index: d9NoPrinciple })
     expect(r.valid).toBe(false)
-    expect(r.errors[0].message).toMatch(/principle/i)
+    expect(r.errors[0]!.message).toMatch(/principle/i)
   })
 
   it('rejects name collision with existing project rule', async () => {
@@ -30,7 +30,7 @@ describe('validate-rules-patch', () => {
     }
     const r = await validateRulesPatch({ patchPath: 'tests/fixtures/sample-patch.yaml', projectRules: collidingRules, d9Index: d9 })
     expect(r.valid).toBe(false)
-    expect(r.errors[0].message).toMatch(/uniqueness|collision|exists/i)
+    expect(r.errors[0]!.message).toMatch(/uniqueness|collision|exists/i)
   })
 
   it('returns structured result on parse failure (does not throw)', async () => {

@@ -17,18 +17,18 @@ const mkRaw = (rule_id: string, raw_severity: 'error' | 'warn' | 'info' = 'warn'
 describe('enrich-findings', () => {
   it('namespaces baseline rule_id with baseline: prefix', () => {
     const result = enrichFindings({ rawFindings: [mkRaw('no-circular')], baselineRules: baseline, projectRules: emptyProjectRules })
-    expect(result[0].rule_id).toBe('baseline:no-circular')
+    expect(result[0]!.rule_id).toBe('baseline:no-circular')
   })
 
   it('assigns severity from baseline definition (not from raw)', () => {
     const result = enrichFindings({ rawFindings: [mkRaw('no-circular', 'warn')], baselineRules: baseline, projectRules: emptyProjectRules })
     // baseline:no-circular is HIGH per Layer A definition, regardless of raw 'warn'
-    expect(result[0].severity).toBe('HIGH')
+    expect(result[0]!.severity).toBe('HIGH')
   })
 
   it('populates reason.principle from baseline rule', () => {
     const result = enrichFindings({ rawFindings: [mkRaw('no-circular')], baselineRules: baseline, projectRules: emptyProjectRules })
-    expect(result[0].reason.principle).toBe('acyclic-dependencies')
+    expect(result[0]!.reason.principle).toBe('acyclic-dependencies')
   })
 
   it('applies project severity_overrides', () => {
@@ -38,7 +38,7 @@ describe('enrich-findings', () => {
       overrides: { severity_overrides: [{ rule_id: 'baseline:no-orphans', severity: 'CRITICAL' }] },
     }
     const result = enrichFindings({ rawFindings: [mkRaw('no-orphans')], baselineRules: baseline, projectRules })
-    expect(result[0].severity).toBe('CRITICAL')
+    expect(result[0]!.severity).toBe('CRITICAL')
   })
 
   it('drops findings disabled via baseline_disables', () => {

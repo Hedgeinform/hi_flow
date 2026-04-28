@@ -26,7 +26,7 @@ describe('suppression', () => {
     ]
     const result = applySuppression(findings)
     expect(result).toHaveLength(1)
-    expect(result[0].id).toBe('f-1')
+    expect(result[0]!.id).toBe('f-1')
   })
 
   it('keeps LOW info on edge with no higher findings', () => {

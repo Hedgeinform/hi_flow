@@ -1,2 +1,2 @@
 import { fromB } from '../b/index.ts'
-export const fromA = () => fromB() + 1
+export const fromA = (): number => fromB() + 1

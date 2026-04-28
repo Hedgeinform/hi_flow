@@ -9,9 +9,9 @@ describe('typescript-depcruise adapter — identity', () => {
     const a = createTypescriptDepcruiseAdapter()
     expect(a.name).toBe('typescript-depcruise')
     expect(a.version).toMatch(/^\d+\.\d+\.\d+$/)
-    expect(a.requiredTooling[0].name).toBe('dependency-cruiser')
-    expect(a.requiredTooling[0].min).toBe('16.0.0')
-    expect(a.requiredTooling[0].max).toBe('17.0.0')
+    expect(a.requiredTooling[0]!.name).toBe('dependency-cruiser')
+    expect(a.requiredTooling[0]!.min).toBe('16.0.0')
+    expect(a.requiredTooling[0]!.max).toBe('17.0.0')
   })
 
   it('layerNamingMap covers canonical layer names from baseline-rules', () => {

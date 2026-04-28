@@ -12,6 +12,17 @@ interface ParseResult {
   per_module_raw: Record<string, PerModuleRaw>
 }
 
+// Map depcruise violation types to D8 schema enum values
+function normalizeViolationType(raw: string | undefined | null): 'boundary' | 'cycle' | 'sdp' | 'coupling' | 'nccd' {
+  switch (raw) {
+    case 'cycle': return 'cycle'
+    case 'dependency': return 'boundary'
+    case 'reachability': return 'boundary'
+    case 'module': return 'coupling'
+    default: return 'coupling'
+  }
+}
+
 // Default module pattern: top-level subdir of src/
 function fileToModule(filePath: string, modulePattern = 'src'): string {
   const parts = filePath.split('/')
@@ -36,7 +47,7 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     findings.push({
       rule_id: v.rule?.name ?? 'unknown',
       raw_severity: (v.rule?.severity ?? 'warn') as DepcruiseSeverity,
-      type: v.type ?? 'rule-violation',
+      type: normalizeViolationType(v.type),
       source: { module: fileToModule(sourceFile, modulePattern), file: sourceFile },
       target: { module: fileToModule(targetFile, modulePattern), file: targetFile },
       extras: v.cycle ? { cycle: v.cycle } : undefined,
