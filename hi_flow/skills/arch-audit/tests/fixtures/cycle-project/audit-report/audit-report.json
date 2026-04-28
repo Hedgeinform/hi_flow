@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "audit_sha": "uuid:cycle-test",
+    "audit_timestamp": "2026-04-28T11:08:10.016Z",
+    "audit_tooling_version": "typescript-depcruise (16.3.0)",
+    "schema_version": "1.1"
+  },
+  "findings": [
+    {
+      "id": "f-001",
+      "rule_id": "baseline:no-circular",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "a",
+        "file": "src/a/index.ts"
+      },
+      "target": {
+        "module": "b",
+        "file": "src/b/index.ts"
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Circular dependency detected between modules."
+      },
+      "extras": {
+        "cycle": [
+          {
+            "name": "src/b/index.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/a/index.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "f-002",
+      "rule_id": "baseline:inappropriate-intimacy",
+      "type": "cycle",
+      "severity": "HIGH",
+      "source": {
+        "module": "a",
+        "file": ""
+      },
+      "target": {
+        "module": "b",
+        "file": ""
+      },
+      "reason": {
+        "principle": "acyclic-dependencies",
+        "explanation": "Two-module cycle — modules know each other intimately."
+      },
+      "extras": {
+        "cycle": [
+          "a",
+          "b"
+        ]
+      }
+    }
+  ],
+  "metrics": {
+    "per_module": {
+      "a": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 0
+      },
+      "b": {
+        "Ca": 1,
+        "Ce": 1,
+        "I": 0.5,
+        "LOC": 0
+      }
+    },
+    "nccd": 2,
+    "nccd_threshold": 1,
+    "severity_counts": {
+      "CRITICAL": 0,
+      "HIGH": 2,
+      "MEDIUM": 0,
+      "LOW": 0
+    },
+    "dep_graph": {
+      "a": [
+        "b"
+      ],
+      "b": [
+        "a"
+      ]
+    }
+  }
+}

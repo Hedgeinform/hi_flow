@@ -8,7 +8,10 @@ interface Args {
 
 export function enrichFindings(args: Args): Finding[] {
   const { rawFindings, baselineRules, projectRules } = args
-  const baselineByName = new Map(baselineRules.map(r => [r.name, r]))
+  const baselineByName = new Map([
+    ...baselineRules.map(r => [r.name, r] as [string, BaselineRule]),
+    ...baselineRules.map(r => [r.id, r] as [string, BaselineRule]),
+  ])
   const projectByName = new Map(
     [...projectRules.forbidden, ...projectRules.required].map(r => [r.name.replace(/^project:/, ''), r]),
   )

@@ -50,7 +50,8 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
   for (const m of modules) {
     const srcMod = fileToModule(m.source, modulePattern)
     if (!dep_graph[srcMod]) dep_graph[srcMod] = []
-    if (!per_module_raw[srcMod]) per_module_raw[srcMod] = { ca: 0, ce: 0, loc: 0 }
+    if (!per_module_raw[srcMod]) per_module_raw[srcMod] = { ca: 0, ce: 0, loc: m.metrics?.loc ?? 0 }
+    else if (m.metrics?.loc) per_module_raw[srcMod].loc = m.metrics.loc
     for (const dep of m.dependencies ?? []) {
       const tgtMod = fileToModule(dep.resolved, modulePattern)
       if (tgtMod === srcMod) continue

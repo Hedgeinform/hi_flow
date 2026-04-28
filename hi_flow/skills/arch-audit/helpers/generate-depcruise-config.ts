@@ -71,7 +71,6 @@ export async function generateDepcruiseConfig(args: Args): Promise<string> {
       doNotFollow: { path: 'node_modules' },
       tsConfig: { fileName: 'tsconfig.json' },
       enhancedResolveOptions: { exportsFields: ['exports'], conditionNames: ['import', 'require', 'node', 'default'] },
-      reporterOptions: { json: { showTitle: false } },
     },
   }
 

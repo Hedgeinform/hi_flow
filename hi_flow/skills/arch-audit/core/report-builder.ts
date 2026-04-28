@@ -47,7 +47,7 @@ export async function buildReport(
       return (e.stdout as string) || ''
     }
   })
-  const depcruiseOut = runner(configPath, 'src/')
+  const depcruiseOut = runner(configPath, 'src/**/*.ts')
 
   // Step 3: parse
   const parsed = parseDepcruiseOutput(depcruiseOut)
