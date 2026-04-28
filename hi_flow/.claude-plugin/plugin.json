@@ -1,7 +1,7 @@
 {
   "name": "hi_flow",
   "description": "Three-Phase Flow methodology for solo+AI development: product spec, architecture spec, implementation plan.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"

@@ -6,6 +6,26 @@ interface Args {
   projectRules: ProjectRules
 }
 
+/**
+ * Replace `{key}` placeholders in the explanation template using values from extras
+ * + source/target module names. Unknown keys are left as-is so the gap is visible.
+ *
+ * Example: 'Project NCCD ({nccd}) exceeds threshold ({threshold}) — ...' with
+ * extras { nccd: 7.06, threshold: 1, module_count: 18 } becomes
+ * 'Project NCCD (7.06) exceeds threshold (1) — ...'
+ */
+function interpolateExplanation(template: string, raw: RawFinding): string {
+  return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (match, key) => {
+    if (key === 'source') return raw.source.module
+    if (key === 'target') return raw.target?.module ?? match
+    const v = raw.extras?.[key]
+    if (v === undefined || v === null) return match
+    if (typeof v === 'number') return Number.isInteger(v) ? String(v) : v.toFixed(2)
+    if (Array.isArray(v)) return v.join(', ')
+    return String(v)
+  })
+}
+
 export function enrichFindings(args: Args): Finding[] {
   const { rawFindings, baselineRules, projectRules } = args
   const baselineByName = new Map([
@@ -52,7 +72,10 @@ export function enrichFindings(args: Args): Finding[] {
       ...(raw.target ? { target: raw.target } : {}),
       reason: {
         principle: baseline?.principle ?? projectRule?.principle ?? 'unknown',
-        explanation: baseline?.explanation ?? projectRule?.comment ?? '',
+        explanation: interpolateExplanation(
+          baseline?.explanation ?? projectRule?.comment ?? '',
+          raw,
+        ),
       },
       extras: raw.extras,
     })

@@ -169,13 +169,14 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
         }
 
         // high-fanout: Ce > 15 — module-property
-        if (ce > 15) {
+        const HIGH_FANOUT_THRESHOLD = 15
+        if (ce > HIGH_FANOUT_THRESHOLD) {
           findings.push({
             rule_id: 'high-fanout',
             raw_severity: 'warn',
             type: 'coupling',
             source: { module: m, file: '' },
-            extras: { ce },
+            extras: { ce, threshold: HIGH_FANOUT_THRESHOLD },
           })
         }
       }
