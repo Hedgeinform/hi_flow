@@ -59,4 +59,25 @@ describe('generate-mermaid', () => {
     const result = generateMermaid(report)
     expect(Object.keys(result.clusters).length).toBeGreaterThan(0)
   })
+
+  it('does not render self-edges in cluster diagrams', () => {
+    const report = minimalReport({
+      findings: [
+        {
+          id: 'f-001',
+          rule_id: 'baseline:god-object',
+          type: 'coupling',
+          severity: 'HIGH',
+          source: { module: 'a', file: '' },
+          target: { module: 'a', file: '' },
+          reason: { principle: 'god-object-prohibition', explanation: 'god object' },
+        },
+      ],
+      metrics: { ...minimalReport().metrics, dep_graph: { a: [] } },
+    })
+    const result = generateMermaid(report)
+    for (const block of Object.values(result.clusters)) {
+      expect(block).not.toMatch(/a --> a/)
+    }
+  })
 })

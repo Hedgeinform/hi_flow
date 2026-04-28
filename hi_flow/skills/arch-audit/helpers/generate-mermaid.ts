@@ -52,11 +52,17 @@ function buildClusters(findings: Finding[], graph: DepGraph): Record<string, str
     const lines = ['flowchart TD']
     const seen = new Set<string>()
     for (const f of group) {
-      const e = `${escId(f.source.module)} --> ${escId(f.target.module)}`
-      if (!seen.has(e)) {
-        lines.push(`    ${e}`)
-        seen.add(e)
+      if (f.source.module === f.target.module) {
+        // self-rule: render as single node annotation, not edge
+        const node = escId(f.source.module)
+        if (!seen.has(node)) {
+          lines.push(`    ${node}`)
+          seen.add(node)
+        }
+        continue
       }
+      const e = `${escId(f.source.module)} --> ${escId(f.target.module)}`
+      if (!seen.has(e)) { lines.push(`    ${e}`); seen.add(e) }
     }
     out[`cluster-${principle}`] = lines.join('\n')
   }
