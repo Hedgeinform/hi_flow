@@ -1,0 +1,96 @@
+# Rules-patch template
+#
+# Шаблон второго output cluster-mode сессии скилла `hi_flow:arch-redesign`.
+# Patch — кандидат на расширение project rules. Не applied автоматически.
+# Apply — explicit operator action: `arch-audit apply-patch <path>` или
+# interactive prompt при следующем audit прогоне. См. D11 в ARCHITECTURE.md.
+#
+# Canonical project rules path: `<project>/.audit-rules.yaml` (в корне проекта).
+# Именно в этот файл arch-audit merge'ит правила из patch'а при apply.
+#
+# Granularity: один patch на cluster (один файл на cluster session).
+#
+# Требования к каждому правилу:
+#   - `name` — уникальное в пределах project rules-файла.
+#       Соответствует имени fitness checkpoint'а в refactor plan'е (трассируемость).
+#       Convention: kebab-case, начинается с глагола ('no-X-to-Y') или constraint
+#       ('X-module-exists'). Имя правила становится rule_id в D8 findings
+#       при следующем arch-audit прогоне.
+#   - `severity` — CRITICAL | HIGH | MEDIUM | LOW (normalized D8 enum).
+#       CRITICAL — структурный блокер (например, architectural-layer-cycle).
+#       HIGH     — нарушение границ, кольца, dependency hub.
+#       MEDIUM   — нарушение без немедленного critical impact.
+#       LOW      — информационные / наблюдения.
+#       Depcruise native severities (error/warn/info) НЕ используются в patch'е —
+#       arch-audit validation проверяет именно этот enum.
+#   - `principle` — canonical principle id из D9 библиотеки
+#       (`hi_flow/references/architectural-principles.md`).
+#       Это требование D8 (semantic reason-field), применённое к rules.
+
+# ---
+
+# Метаданные patch'а
+
+# Cluster name: <Имя кластера, к которому относится patch>
+# Generated: YYYY-MM-DD
+# From refactor plan: docs/superpowers/specs/<date>-arch-redesign-<cluster-name>.md
+# Source audit: <путь к audit-report директории>; audit_sha=<...>
+# Schema version: 1.0   # опционально — версия D8 schema, для которой написан patch
+
+# ---
+
+# Forbidden rules — запрещённые зависимости / ребра между модулями.
+# Каждое правило соответствует одному checkpoint'у вида «нет ребра X → Y».
+
+forbidden:
+  - name: no-<source>-to-<target>
+    severity: HIGH
+    from:
+      path: ^src/<source-module>/
+    to:
+      path: ^src/<target-module>/
+    principle: <canonical-principle-id-from-D9>
+    # Трассируемость: соответствует checkpoint'у "<Checkpoint-N>" в refactor plan'е.
+
+  # Пример из Zhenka cluster C1 («нет transport-слоя»):
+  # - name: no-dispatcher-to-pipeline
+  #   severity: HIGH
+  #   from:
+  #     path: ^src/dispatcher/
+  #   to:
+  #     path: ^src/pipeline/
+  #   principle: acyclic-dependencies
+
+  # - name: no-pipeline-to-dispatcher
+  #   severity: HIGH
+  #   from:
+  #     path: ^src/pipeline/
+  #   to:
+  #     path: ^src/dispatcher/
+  #   principle: acyclic-dependencies
+
+# ---
+
+# Required rules — требуемые структурные инварианты.
+# Каждое правило соответствует checkpoint'у вида «модуль X существует» или
+# «между X и Y всегда проходит Z».
+
+required:
+  - name: <constraint-name>
+    severity: MEDIUM
+    description: <Human-readable формулировка инварианта.>
+    principle: <canonical-principle-id-from-D9>
+    # Трассируемость: соответствует checkpoint'у "<Checkpoint-N>" в refactor plan'е.
+
+  # Пример:
+  # - name: transport-module-exists
+  #   severity: MEDIUM
+  #   description: Module 'src/transport/' must exist.
+  #   principle: port-adapter-separation
+
+# ---
+
+# Notes (опционально):
+# - Любые tooling-specific детали, которые arch-audit может не подхватить
+#   автоматически (например, custom matchers).
+# - Замечания оператора по кампании, релевантные для apply-сессии.

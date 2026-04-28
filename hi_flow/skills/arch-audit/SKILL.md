@@ -117,7 +117,7 @@ npx --no-install dependency-cruiser --version
 - Success → continue.
 - Fail → hard fail with: «depcruise недоступен. Установи: `npm install -g dependency-cruiser` или `npm install -D dependency-cruiser`.»
 
-After version is detected, run preflight check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 17.0.0`). Out-of-range version → hard fail with downgrade/upgrade instructions per Q-1.5.
+After version is detected, run preflight check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 18.0.0`; v16 and v17 explicitly tested). Out-of-range version → hard fail with downgrade/upgrade instructions per Q-1.5.
 
 ### Generate config + run depcruise
 
@@ -313,6 +313,70 @@ D8-compliant structured data. Full schema — `references/d8-schema.json`. Top-l
 ### audit-report.md
 
 Section structure — see workflow «Build artifacts» above plus `references/audit-report-template.md` (template). Visual reference of a complete report — `examples/zhenka-audit-report-mock.md`.
+
+---
+
+## How to invoke (CLI)
+
+The runtime is a Node.js package. The skill agent calls it via CLI during a full audit. It can also be run manually for debugging.
+
+### Prerequisites
+
+```
+npm install -g dependency-cruiser@^16.0.0
+```
+
+Supported: `16.x.x` and `17.x.x` (both tested). Verify: `npx --no-install dependency-cruiser --version`.
+
+### Run
+
+```
+cd <skill-install-path>
+npx tsx helpers/cli-run-audit.ts <project-root> [d9-md-path]
+```
+
+- `<project-root>` — absolute or relative path to the project being audited.
+- `[d9-md-path]` — optional path to a custom D9 architectural-principles markdown file. Defaults to the bundled `hi_flow/references/architectural-principles.md`.
+
+Output:
+```
+audit-report.json: <project-root>/audit-report/audit-report.json
+audit-report.md:   <project-root>/audit-report/audit-report.md
+```
+
+### Example
+
+```
+cd ~/.claude/skills/arch-audit
+npx tsx helpers/cli-run-audit.ts ~/Projects/my-project
+```
+
+---
+
+## Deployment
+
+The skill is a Node.js package with dependencies. Before any session can use it, the package must be installed.
+
+### Simplest path (recommended for solo operator)
+
+```bash
+# 1. Copy skill directory (no node_modules)
+cp -r <repo>/hi_flow/skills/arch-audit ~/.claude/skills/arch-audit
+
+# 2. Install dependencies
+cd ~/.claude/skills/arch-audit && npm install
+
+# 3. Install depcruise globally (if not already at v16)
+npm install -g dependency-cruiser@^16.0.0
+```
+
+After this, every Claude Code session sees the skill via the standard skills directory. No restart required.
+
+**On skill update:** re-copy the directory and re-run `npm install`. The `node_modules/` in `~/.claude/skills/arch-audit/` is not tracked in the repo — always regenerate after copy.
+
+### Alternative (Claude Code plugin install)
+
+Install via the marketplace entry in `.claude-plugin/marketplace.json` using the Claude Code plugin install flow. This installs the whole `hi_flow` plugin including `arch-audit`. After install, run `npm install` inside the installed skill directory.
 
 ---
 

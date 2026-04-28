@@ -79,7 +79,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
   return {
     name: 'typescript-depcruise',
     version: '1.0.0',
-    requiredTooling: [{ name: 'dependency-cruiser', min: '16.0.0', max: '17.0.0' }],
+    requiredTooling: [{ name: 'dependency-cruiser', min: '16.0.0', max: '18.0.0' }],
     testFilePatterns: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx', '__tests__/**/*'],
     channelSdkList,
     layerNamingMap,

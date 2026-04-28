@@ -16,7 +16,7 @@
 
 | Skill                    | Уровень              | Статус       |
 |--------------------------|----------------------|--------------|
-| `hi_flow:product-spec`   | Phase 1, product     | **TO DESIGN** (next session) |
+| `hi_flow:product-spec`   | Phase 0, product     | **TO DESIGN** (next session) |
 | `hi_flow:feature-spec`   | Phase 1, feature     | READY (v0.1.0, в реальном тесте ещё не был) |
 | `hi_flow:arch-spec`      | Phase 2              | **TO DESIGN** (session после product-spec) |
 | `hi_flow:impl-plan`      | Phase 3              | parked — Superpowers TDD пока покрывает |
@@ -55,7 +55,7 @@
 
 Из изначального видения оператора (записано в этой сессии):
 
-- **Архитектура должна прямо следовать из продукта.** Input — product-spec.md (output feature-spec). Архитектурные решения выводятся из продуктовых, не изобретаются параллельно.
+- **Архитектура должна прямо следовать из продукта.** Input — feature-spec.md (output feature-spec). Архитектурные решения выводятся из продуктовых, не изобретаются параллельно.
 - **Fitness functions methodology применяется в полном объёме.** Это ядерная часть arch-spec — не парковочная. Декларация архитектурных инвариантов (структурных + dynamic) в формате, пригодном для автоматической проверки. Static fitness functions = dependency-cruiser-стиль graph constraints; dynamic = latency budgets, error rates; triggered = pre-merge gates; continual = monitoring. Baseline freeze (FreezingArchRule паттерн) для brownfield.
 - **Phase 2 → Phase 1 feedback loop:** если архитектурное проектирование показывает, что конкретное продуктовое решение даёт неоправданное усложнение — агент сообщает оператору, либо возвращаемся на product-spec / feature-spec для упрощения, либо принимаем расширение архитектуры осознанно.
 - **Раздел Summary:** обязательная компактная сводка архитектурных принципов. Оператор читает arch-spec менее детально, чем product-spec — ему нужен якорь для быстрого восприятия.
