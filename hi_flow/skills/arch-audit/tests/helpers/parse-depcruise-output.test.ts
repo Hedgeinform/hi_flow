@@ -43,6 +43,20 @@ describe('parse-depcruise-output', () => {
     expect(result.parsing_errors![0]!.error).toMatch(/SyntaxError/)
   })
 
+  it('does NOT treat valid:false-without-error as a parse error (no-orphans violation marker)', () => {
+    const raw = JSON.stringify({
+      summary: { violations: [] },
+      modules: [
+        { source: 'src/a/index.ts', dependencies: [] },
+        // Real orphan that depcruise marked valid:false but with no error message —
+        // this is a violation flag, NOT a parse error.
+        { source: 'src/b/index.ts', dependencies: [], valid: false, orphan: true },
+      ],
+    })
+    const result = parseDepcruiseOutput(raw)
+    expect(result.parsing_errors === undefined || result.parsing_errors!.length === 0).toBe(true)
+  })
+
   it('parsing_errors absent when no broken modules', async () => {
     const raw = await readFile('tests/fixtures/depcruise-sample.json', 'utf-8')
     const result = parseDepcruiseOutput(raw)

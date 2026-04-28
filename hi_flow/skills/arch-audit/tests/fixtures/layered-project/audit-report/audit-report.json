@@ -1,7 +1,7 @@
 {
   "metadata": {
     "audit_sha": "uuid:layered-test",
-    "audit_timestamp": "2026-04-28T20:42:27.312Z",
+    "audit_timestamp": "2026-04-28T20:58:39.414Z",
     "audit_tooling_version": "typescript-depcruise (16.3.0)",
     "schema_version": "1.1"
   },
@@ -88,7 +88,6 @@
         "domain",
         "utils"
       ],
-      "utils": [],
       "domain": [
         "infrastructure",
         "utils"
@@ -96,6 +95,7 @@
       "infrastructure": [
         "utils"
       ],
+      "utils": [],
       "m1": [
         "utils"
       ],

@@ -9,7 +9,7 @@
     {
       "name": "hi_flow",
       "description": "Three-Phase Flow methodology for solo+AI development: feature-level product spec generation with hierarchical fork discovery (8-category probing taxonomy + HAZOP guidewords + premortem). Currently includes feature-spec skill; product-spec, arch-spec, impl-plan, fitness, sanity-check, handoff are parked for future iterations.",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "source": "./hi_flow",
       "author": {
         "name": "viessedo",

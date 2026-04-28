@@ -70,7 +70,22 @@ export async function generateDepcruiseConfig(args: Args): Promise<string> {
     options: {
       doNotFollow: { path: 'node_modules' },
       tsConfig: { fileName: 'tsconfig.json' },
-      enhancedResolveOptions: { exportsFields: ['exports'], conditionNames: ['import', 'require', 'node', 'default'] },
+      // Required for type-only files and `import type` resolution. Without this,
+      // depcruise cannot follow the import graph through type-only barrels
+      // (common pattern: `src/types/*.ts` re-exporting interfaces, or modules
+      // importing only type aliases). Such files end up flagged as
+      // `invalid module` in metadata.parsing_errors.
+      tsPreCompilationDeps: true,
+      enhancedResolveOptions: {
+        exportsFields: ['exports'],
+        conditionNames: ['import', 'require', 'node', 'default'],
+        // Required for projects using `allowImportingTsExtensions: true` in
+        // tsconfig — they import with explicit `.ts` extensions (e.g.
+        // `import { x } from './foo.ts'`). Without `.ts` in extensions,
+        // depcruise's resolver fails on these imports and marks the importing
+        // module invalid.
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'],
+      },
     },
   }
 

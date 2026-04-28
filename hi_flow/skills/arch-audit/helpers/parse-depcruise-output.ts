@@ -115,8 +115,13 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
 
   const parsing_errors: { file: string; error: string }[] = []
   for (const m of modules) {
-    if (m.valid === false || m.error) {
-      parsing_errors.push({ file: m.source ?? '<unknown>', error: m.error ?? 'invalid module' })
+    // depcruise sets `m.error` only on real parse/resolution failures.
+    // `m.valid === false` alone is NOT a parse error — it's a violation marker
+    // (e.g., depcruise sets valid=false on modules that violated no-orphans).
+    // Conflating the two causes legitimate orphans to be filed as parse errors,
+    // which then get suppressed by D2 logic and never surface to the operator.
+    if (m.error) {
+      parsing_errors.push({ file: m.source ?? '<unknown>', error: m.error })
     }
   }
 
