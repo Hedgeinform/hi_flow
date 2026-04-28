@@ -9,6 +9,7 @@ import {
   addRules,
 } from '../../core/project-rules.ts'
 import { copyFile } from 'node:fs/promises'
+// readFile import already via destructuring above
 
 describe('project-rules', () => {
   it('returns empty rules when file absent', async () => {
@@ -50,6 +51,30 @@ describe('project-rules', () => {
     const reloaded = await loadProjectRules(dir)
     expect(reloaded.forbidden).toHaveLength(1)
     expect(reloaded.forbidden[0]!.name).toBe('project:test')
+    await rm(dir, { recursive: true })
+  })
+
+  it('prepends project: prefix to rule names lacking it on load', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      `forbidden:\n  - name: legacy-rule\n    severity: HIGH\n    principle: p1\nrequired: []\n`,
+      'utf-8',
+    )
+    const rules = await loadProjectRules(dir)
+    expect(rules.forbidden[0]!.name).toBe('project:legacy-rule')
+    await rm(dir, { recursive: true })
+  })
+
+  it('preserves existing project: prefix', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      `forbidden:\n  - name: project:already-prefixed\n    severity: HIGH\n    principle: p1\nrequired: []\n`,
+      'utf-8',
+    )
+    const rules = await loadProjectRules(dir)
+    expect(rules.forbidden[0]!.name).toBe('project:already-prefixed')
     await rm(dir, { recursive: true })
   })
 })

@@ -9,6 +9,11 @@ function emptyRules(): ProjectRules {
   return { forbidden: [], required: [] }
 }
 
+function normalizeName(r: Rule): Rule {
+  if (r.name.startsWith('project:') || r.name.startsWith('baseline:')) return r
+  return { ...r, name: `project:${r.name}` }
+}
+
 export async function loadProjectRules(projectRoot: string): Promise<ProjectRules> {
   const path = join(projectRoot, PROJECT_RULES_FILENAME)
   try {
@@ -20,8 +25,8 @@ export async function loadProjectRules(projectRoot: string): Promise<ProjectRule
   const parsed = yaml.load(raw) as Partial<ProjectRules> | null | undefined
   if (!parsed || typeof parsed !== 'object') return emptyRules()
   return {
-    forbidden: parsed.forbidden ?? [],
-    required: parsed.required ?? [],
+    forbidden: (parsed.forbidden ?? []).map(normalizeName),
+    required: (parsed.required ?? []).map(normalizeName),
     overrides: parsed.overrides,
   }
 }
