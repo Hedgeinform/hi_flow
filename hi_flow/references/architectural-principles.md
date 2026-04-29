@@ -33,6 +33,7 @@ This is **not an exhaustive catalog** of all industry architectural principles �
 ## Index by id (alphabetical)
 
 - [`acyclic-dependencies`](#acyclic-dependencies-adp) — Martin's Package Principles
+- [`barrel-discipline`](#barrel-discipline) — Structural Classics
 - [`channel-agnosticism`](#channel-agnosticism) — Hexagonal / Boundaries
 - [`common-reuse`](#common-reuse-crp) — Martin's Package Principles
 - [`dead-code-elimination`](#dead-code-elimination) — Structural Classics
@@ -50,7 +51,7 @@ This is **not an exhaustive catalog** of all industry architectural principles �
 - [`stable-dependencies`](#stable-dependencies-sdp) — Martin's Package Principles
 - [`vertical-slice-cohesion`](#vertical-slice-cohesion) — Structural Classics
 
-**17 principles total.**
+**18 principles total.**
 
 ---
 
@@ -247,6 +248,18 @@ This is **not an exhaustive catalog** of all industry architectural principles �
   2. Extract shared subsystem — если общая логика нужна нескольким модулям — выделить в `shared/` или `common/`.
   3. Document as accepted boundary — если cross-import оправдан архитектурно, задокументировать в project rules как exception.
 - **Related:** `common-reuse`, `single-responsibility-module`.
+
+### barrel-discipline
+
+- **Source:** Family-imported from package-design conventions; informal industry convention against opaque re-export aggregation.
+- **Formulation:** A module's `index.ts` should not be a pure re-export aggregator (a "barrel") when the module is imported by sibling modules. Barrels hide the real dependency structure — consumers think they import "the module", but actually pull through opaque indirection that may re-export internals across boundaries.
+- **Why:** Barrels distort the dependency graph for static analysis (Ca/Ce metrics under-count true coupling), provoke circular-dependency hazards (when sibling barrels re-export each other), break tree-shaking at build time, and make refactor risk invisible (changing an internal file silently affects all consumers via the barrel).
+- **Detection:** Static. (1) Identify `index.ts`/`.tsx`/`.js`/`.jsx` files at module roots. (2) Parse content; if ≥80% of non-comment, non-import top-level statements are `export ... from`/`export * from` AND there are no value declarations with bodies → it is a barrel. (3) For each barrel, check the dependency graph: is it imported by at least one sibling top-level module? If yes — fire finding.
+- **Fix alternatives:**
+  1. Replace barrel with explicit deep imports — sibling modules import directly from the specific submodule (`src/foo/sub/specific.ts`), not from `src/foo`.
+  2. Reduce re-export surface — if barrel is desired as a public API surface, make consumers import only from a stable subset; move internal re-exports into a different file not re-exported by the barrel.
+  3. Document accepted barrel — if barrel is the explicit public API of the module (package boundary), document in project rules `overrides.baseline_disables` with reason; the rule won't fire for that module.
+- **Related:** `module-boundary-awareness`, `single-responsibility-module`, `interface-segregation`.
 
 ### law-of-demeter
 
