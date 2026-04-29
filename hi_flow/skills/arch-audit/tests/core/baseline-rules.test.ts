@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { getBaselineRules } from '../../core/baseline-rules.ts'
 
 describe('baseline-rules', () => {
-  it('returns 14 baseline rules', () => {
+  it('returns 15 baseline rules', () => {
     const rules = getBaselineRules()
-    expect(rules).toHaveLength(14)
+    expect(rules).toHaveLength(15)
   })
 
   it('every rule has namespaced id with baseline: prefix', () => {
@@ -40,5 +40,12 @@ describe('baseline-rules', () => {
   it('rule ids are unique', () => {
     const ids = getBaselineRules().map(r => r.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('contains baseline:barrel-file rule with MEDIUM severity and barrel-discipline principle', () => {
+    const rule = getBaselineRules().find(r => r.id === 'baseline:barrel-file')
+    expect(rule).toBeDefined()
+    expect(rule?.severity).toBe('MEDIUM')
+    expect(rule?.principle).toBe('barrel-discipline')
   })
 })
