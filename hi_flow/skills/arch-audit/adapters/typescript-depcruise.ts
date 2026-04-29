@@ -1,6 +1,7 @@
 import { access, readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ToolingRequirement, DepGraph, RawFinding, ProjectRules } from '../core/types.ts'
+import { detectBarrels } from '../helpers/detect-barrels.ts'
 
 export interface ModuleInfo {
   name: string
@@ -29,6 +30,8 @@ export interface TypescriptDepcruiseAdapter {
     perModuleRaw: Record<string, { ca: number; ce: number; loc: number }>
     projectRules: ProjectRules
     sdkEdges?: { from: string; sdk: string }[]
+    barrelImports?: { from: string; to: string; targetFile: string }[]
+    modulesList?: string[]
   }): Promise<RawFinding[]>
 
   // Tooling reporting
@@ -132,6 +135,8 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       perModuleRaw: Record<string, { ca: number; ce: number; loc: number }>
       projectRules: ProjectRules
       sdkEdges?: { from: string; sdk: string }[]
+      barrelImports?: { from: string; to: string; targetFile: string }[]
+      modulesList?: string[]
     }): Promise<RawFinding[]> {
       // NOTE: rule_id values here are bare names without baseline: prefix.
       // Namespacing happens in helpers/enrich-findings.ts during enrichment.
@@ -273,6 +278,15 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
             extras: { sdk: edge.sdk },
           })
         }
+      }
+
+      if (args.modulesList && args.barrelImports) {
+        const barrelFindings = await detectBarrels({
+          projectPath: args.projectPath,
+          modulesList: args.modulesList,
+          barrelImports: args.barrelImports,
+        })
+        findings.push(...barrelFindings)
       }
 
       return findings

@@ -130,4 +130,27 @@ describe('typescript-depcruise adapter — structural detection', () => {
     })
     expect(findings.some(f => f.rule_id === 'domain-no-channel-sdk')).toBe(true)
   })
+
+  it('emits barrel-file findings via detectBarrels integration', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tda-barrel-'))
+    await mkdir(join(dir, 'src/foo'), { recursive: true })
+    await mkdir(join(dir, 'src/bar'), { recursive: true })
+    await writeFile(join(dir, 'src/foo/index.ts'), `export * from './a.ts'\n`)
+    await writeFile(join(dir, 'src/foo/a.ts'), 'export const A = 1\n')
+    await writeFile(join(dir, 'src/bar/index.ts'), `export * from '../foo'\n`)
+
+    const a = createTypescriptDepcruiseAdapter()
+    const findings = await a.detectStructural({
+      projectPath: dir,
+      depGraph: { foo: [], bar: ['foo'] },
+      perModuleRaw: { foo: { ca: 1, ce: 0, loc: 1 }, bar: { ca: 0, ce: 1, loc: 1 } },
+      projectRules: { forbidden: [], required: [] },
+      barrelImports: [{ from: 'bar', to: 'foo', targetFile: 'src/foo/index.ts' }],
+      modulesList: ['foo', 'bar'],
+    })
+
+    expect(findings.some(f => f.rule_id === 'barrel-file')).toBe(true)
+
+    await rm(dir, { recursive: true })
+  })
 })

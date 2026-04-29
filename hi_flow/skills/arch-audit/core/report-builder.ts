@@ -74,12 +74,20 @@ export async function buildReportData(
 
   const parsed = parseDepcruiseOutput(depcruiseOut)
 
+  let modulesList: string[]
+  try {
+    modulesList = (await adapter.identifyModules(projectRoot)).map(m => m.name)
+  } catch {
+    modulesList = []
+  }
   const structural = await adapter.detectStructural({
     projectPath: projectRoot,
     depGraph: parsed.dep_graph,
     perModuleRaw: parsed.per_module_raw,
     projectRules,
     sdkEdges: parsed.sdk_edges,
+    barrelImports: parsed.barrel_imports,
+    modulesList,
   })
 
   const nccd = computeNCCD(parsed.dep_graph)
