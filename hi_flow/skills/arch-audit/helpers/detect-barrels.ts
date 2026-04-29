@@ -94,7 +94,7 @@ export async function detectBarrels(args: DetectBarrelsArgs): Promise<RawFinding
       findings.push({
         rule_id: 'barrel-file',
         raw_severity: 'warn',
-        type: 'module-boundary',
+        type: 'boundary',
         source: { module: importer, file: '' },
         target: { module: moduleName, file: indexRelative },
         extras: {

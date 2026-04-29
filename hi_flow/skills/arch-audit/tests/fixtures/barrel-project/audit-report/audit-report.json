@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "audit_sha": "uuid:barrel-test",
+    "audit_timestamp": "2026-04-29T02:23:01.751Z",
+    "audit_tooling_version": "typescript-depcruise (16.3.0)",
+    "schema_version": "1.1"
+  },
+  "findings": [
+    {
+      "id": "f-001",
+      "rule_id": "baseline:barrel-file",
+      "type": "boundary",
+      "severity": "MEDIUM",
+      "source": {
+        "module": "bar",
+        "file": ""
+      },
+      "target": {
+        "module": "foo",
+        "file": "src/foo/index.ts"
+      },
+      "reason": {
+        "principle": "barrel-discipline",
+        "explanation": "Module {module} has a barrel index file (src/foo/index.ts) imported by sibling modules (bar). Barrels obscure the real dependency graph; prefer explicit deep imports."
+      },
+      "extras": {
+        "barrel_file": "src/foo/index.ts",
+        "importing_modules": [
+          "bar"
+        ]
+      }
+    }
+  ],
+  "metrics": {
+    "per_module": {
+      "bar": {
+        "Ca": 0,
+        "Ce": 1,
+        "I": 1,
+        "LOC": 0
+      },
+      "foo": {
+        "Ca": 2,
+        "Ce": 0,
+        "I": 0,
+        "LOC": 0
+      },
+      "baz": {
+        "Ca": 0,
+        "Ce": 1,
+        "I": 1,
+        "LOC": 0
+      }
+    },
+    "nccd": 1.6666666666666667,
+    "nccd_threshold": 1,
+    "severity_counts": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 1,
+      "LOW": 0
+    },
+    "dep_graph": {
+      "bar": [
+        "foo"
+      ],
+      "foo": [],
+      "baz": [
+        "foo"
+      ]
+    }
+  }
+}

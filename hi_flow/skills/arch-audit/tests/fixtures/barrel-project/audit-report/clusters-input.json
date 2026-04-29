@@ -1,0 +1,11 @@
+{
+  "barrel-discipline": {
+    "finding_ids": [
+      "f-001"
+    ],
+    "modules": [
+      "bar",
+      "foo"
+    ]
+  }
+}
