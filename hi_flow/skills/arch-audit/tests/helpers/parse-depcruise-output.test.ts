@@ -83,6 +83,28 @@ describe('parse-depcruise-output', () => {
     expect(result.dep_graph['a']).toEqual(['b'])
   })
 
+  it('surfaces barrel_imports for edges resolving to an index file', async () => {
+    const raw = await readFile('tests/fixtures/depcruise-barrel-sample.json', 'utf-8')
+    const result = parseDepcruiseOutput(raw)
+    expect(result.barrel_imports).toBeDefined()
+    // bar -> foo, target file is src/foo/index.ts
+    const edge = result.barrel_imports!.find(e => e.from === 'bar' && e.to === 'foo')
+    expect(edge).toBeDefined()
+    expect(edge!.targetFile).toBe('src/foo/index.ts')
+  })
+
+  it('does NOT surface barrel_imports for non-index targets', async () => {
+    const raw = JSON.stringify({
+      summary: { violations: [] },
+      modules: [
+        { source: 'src/a/index.ts', dependencies: [{ resolved: 'src/b/specific.ts', module: '../b/specific' }] },
+        { source: 'src/b/specific.ts', dependencies: [] },
+      ],
+    })
+    const result = parseDepcruiseOutput(raw)
+    expect(result.barrel_imports ?? []).toHaveLength(0)
+  })
+
   it('skips top-level src/*.ts files (only src/<dir>/ counts)', async () => {
     const raw = JSON.stringify({
       summary: { violations: [] },

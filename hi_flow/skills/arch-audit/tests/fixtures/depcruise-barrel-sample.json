@@ -1,0 +1,26 @@
+{
+  "summary": { "violations": [] },
+  "modules": [
+    {
+      "source": "src/foo/index.ts",
+      "dependencies": [
+        { "resolved": "src/foo/internal/a.ts", "module": "./internal/a" },
+        { "resolved": "src/foo/internal/b.ts", "module": "./internal/b" }
+      ]
+    },
+    {
+      "source": "src/foo/internal/a.ts",
+      "dependencies": []
+    },
+    {
+      "source": "src/foo/internal/b.ts",
+      "dependencies": []
+    },
+    {
+      "source": "src/bar/index.ts",
+      "dependencies": [
+        { "resolved": "src/foo/index.ts", "module": "../foo" }
+      ]
+    }
+  ]
+}

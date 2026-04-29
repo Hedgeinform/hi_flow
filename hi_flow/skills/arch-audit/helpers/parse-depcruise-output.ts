@@ -12,6 +12,7 @@ interface ParseResult {
   per_module_raw: Record<string, PerModuleRaw>
   sdk_edges: { from: string; sdk: string }[]
   parsing_errors?: { file: string; error: string }[]
+  barrel_imports?: { from: string; to: string; targetFile: string }[]
 }
 
 // Map depcruise violation types to D8 schema enum values
@@ -85,6 +86,8 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
   const dep_graph: DepGraph = {}
   const per_module_raw: Record<string, PerModuleRaw> = {}
   const sdk_edges: { from: string; sdk: string }[] = []
+  const barrel_imports: { from: string; to: string; targetFile: string }[] = []
+  const INDEX_FILENAME_RE = /\/index\.(ts|tsx|js|jsx)$/
   const modules = data?.modules ?? []
 
   for (const m of modules) {
@@ -101,6 +104,9 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
       }
       const tgtMod = fileToModule(dep.resolved, modulePattern)
       if (!tgtMod || tgtMod === srcMod) continue
+      if (INDEX_FILENAME_RE.test(dep.resolved ?? '')) {
+        barrel_imports.push({ from: srcMod, to: tgtMod, targetFile: dep.resolved })
+      }
       if (!per_module_raw[tgtMod]) per_module_raw[tgtMod] = { ca: 0, ce: 0, loc: 0 }
       // Dedup at module-pair level: increment Ca/Ce only when a new module edge is added.
       // Without this, multiple file-level imports between the same module pair inflate metrics
@@ -131,5 +137,6 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     per_module_raw,
     sdk_edges,
     ...(parsing_errors.length > 0 ? { parsing_errors } : {}),
+    ...(barrel_imports.length > 0 ? { barrel_imports } : {}),
   }
 }
