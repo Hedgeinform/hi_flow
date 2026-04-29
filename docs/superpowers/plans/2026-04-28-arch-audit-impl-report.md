@@ -77,3 +77,16 @@ Per `docs/superpowers/plans/2026-04-28-arch-audit-review-fixes.md`:
 - F12: silent `--yes` install removed from depcruise runner.
 - F13: Windows-compatible CLI guard in regenerate-principles-index.
 - F14: explicit cluster prose fallback marker.
+
+## Barrel detection (added 2026-04-29 per `docs/superpowers/plans/2026-04-28-arch-audit-barrel-detection.md`)
+
+- BR1: D9 principle `barrel-discipline` added (18 principles total).
+- BR2: baseline rule `baseline:barrel-file` added (15 baseline rules total, severity MEDIUM).
+- BR3: `parse-depcruise-output` surfaces `barrel_imports` edges resolving to index files.
+- BR4: `helpers/detect-barrels.ts` — content classification + sibling-importer cross-reference.
+- BR5: adapter `detectStructural` integrates barrel detection via injected modulesList + barrelImports.
+- BR6: integration test on `tests/fixtures/barrel-project` — barrel detected for `bar → foo`, not for direct `baz → foo/a.ts`.
+
+Variant locked: B (barrels imported by sibling modules). Per-module-internal barrels are NOT flagged.
+
+**Note:** D8 schema type `module-boundary` does not exist — correct value is `boundary`. Fixed during BR6 integration test.
