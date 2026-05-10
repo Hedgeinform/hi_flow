@@ -310,8 +310,10 @@ Premortem на 6 месяцев после запуска MVP:
 
 **Branches [XOR]:**
 
-- Sf2.1 — single-tenant per customer → impact: каждый заказчик получает отдельную инсталляцию. Простая модель данных, нет cross-tenant security concerns. **CURRENT (default по умолчанию).**
-- Sf2.2 — multi-tenant SaaS → impact: появляется концепция организации (Tenant) над пользователями, изоляция данных per tenant, billing model, self-service регистрация. Существенно меняет состав фич: добавляется F-tenancy-1, F-billing-1, F-onboarding-1. **DEFERRED.**
+- Sf2.1 — single-tenant per customer → impact: каждый заказчик получает отдельную инсталляцию. Простая модель данных, нет cross-tenant security concerns.
+- Sf2.2 — multi-tenant SaaS → impact: появляется концепция организации (Tenant) над пользователями, изоляция данных per tenant, billing model, self-service регистрация. Существенно меняет состав фич: добавляется F-tenancy-1, F-billing-1, F-onboarding-1.
+
+(Развилка целиком DEFERRED — обе ветки живы до момента resolution в будущей итерации.)
 
 **Триггер для resolution:** appearance второго заказчика, либо стратегическое решение заказчика про продажу инструмента третьим сторонам.
 

@@ -48,6 +48,8 @@ Cell-формат как у feature-spec, с явной фиксацией impac
 
 ### Sf1. <название> [decision: что решаем] [status: RESOLVED | OUT-OF-SCOPE]
 
+(DEFERRED forks при closure уже мигрированы в backlog § Deferred forks per D17, в spec'е после closure они не остаются — поэтому в `status` тут только RESOLVED или OUT-OF-SCOPE.)
+
 **Resolution:** ответ + reasoning
 **Branches [XOR | OR | OPT]:**
 - Sf1.1 — <label> → impact: <какие функции добавляются / удаляются / меняют scope>
@@ -55,7 +57,7 @@ Cell-формат как у feature-spec, с явной фиксацией impac
 **Связи:** ссылки на F-...
 **Examples:** опциональные конкретные сценарии
 
-(DEFERRED forks при closure мигрируют в backlog § Deferred forks per D17, в spec'е после closure не остаются. OPEN forks недопустимы при closure — должны быть либо RESOLVED, либо DEFERRED, либо OUT-OF-SCOPE.)
+(OPEN forks недопустимы при closure — должны быть либо RESOLVED, либо DEFERRED, либо OUT-OF-SCOPE.)
 
 ## 6. Сквозные политики
 [результат Шагов 7, 8, 10 — только новые в этой итерации; standing policies из предыдущих spec'ов inherited через поле `Inherits` в карточках Section 4, см. D17]
