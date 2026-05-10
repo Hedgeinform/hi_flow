@@ -11,13 +11,13 @@
 Проект `hi_flow` — семейство Claude Code скиллов, реализующих методологию Three-Phase Flow для solo+AI разработки. Опубликован на GitHub как Claude Code marketplace + плагин.
 
 **Работает end-to-end:**
+- `hi_flow:product-spec` (v0.1.0) — Phase 0 продуктовая декомпозиция.
 - `hi_flow:feature-spec` (v0.1.0) — Phase 1 продуктовая спека.
 - `hi_flow:arch-redesign` (v0.1.0) — Phase 2 corrective.
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical. Runtime + SKILL.md готовы; первый боевой прогон завершён без новых проблем.
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **Не начато:**
-- `hi_flow:product-spec` (low priority — operator strong zone).
 - `hi_flow:arch-spec` (следующий design).
 
 **Текущий фокус:** scope hi_flow расширен per D10 amendment (2026-04-29) до L3 hygiene enforcement layer. Следующий крупный шаг — design-сессия по L3 hygiene (hooks scope, baselines relocation, arch-audit blocking mode, decoupling от operator-personal скилла `architecture` per OQ6 critical path).
@@ -78,6 +78,20 @@
 
 Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~54 dispatch'а на 18 задач — избыточно для documentation work. Адаптация: батчинг последовательных markdown-задач в один dispatch + selective review (spec compliance после batch, behavioral validation после complete skill). Quality gate сохраняется, dispatch count снижается до ~10-12.
 
+### P6. Дисциплина обращения к оператору.
+
+Скилл соблюдает чёткое разграничение, когда обращаться к оператору, а когда действовать самостоятельно, по двум осям:
+
+1. Не принимает решения за оператора в зонах его сильной экспертизы. Для hi_flow по умолчанию это продуктовые решения (что входит в продукт, какие приоритеты, какие компромиссы, кто целевая аудитория). Инженерные решения скилл может принимать самостоятельно — у hi_flow аудитории инженерная экспертиза слабее продуктовой (см. P1).
+
+2. Не задаёт оператору вопросы по детерминированным действиям — те, ответ на которые однозначно выводится из правил (смена статуса спеки, проверка целостности, валидация формата, проверка замкнутости зависимостей, миграция содержимого между артефактами). К оператору обращаться только если событие требует продуктового суждения (выбор между альтернативами с компромиссами, разрешение неоднозначности, решения о составе продукта).
+
+Антипаттерн «лишний вопрос оператору»: «спрошу-ка на всякий случай», когда ответ однозначен.
+
+Антипаттерн «решение за оператора»: «решу сам», когда вопрос про продуктовые компромиссы.
+
+Применяется ко всем скиллам семейства hi_flow.
+
 ---
 
 ## Module Map
@@ -98,8 +112,12 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Purpose:** Скилл feature-level продуктовой спеки. Ведёт оператора от запроса фичи к подписанной product-spec.md через self-assessment + brainstorm с probing taxonomy + closure. Output — `<project>/docs/specs/YYYY-MM-DD-<feature>-product-spec.md`.
 - **References:** product-spec-template.md, self-assessment-template.md, example-goal-setting.md.
 
-#### `hi_flow/skills/product-spec/` (planned)
-- **Status:** PLANNED (low priority — operator strong zone). **Purpose:** Product-level декомпозиция продукта на фичи + roadmap + cross-feature deps.
+#### `hi_flow/skills/product-spec/`
+- **Status:** BUILT (v0.1.0)
+- **Path:** `hi_flow/skills/product-spec/`
+- **Purpose:** Product-level top-down декомпозиция: одна продуктовая спека на одну итерацию + per-product backlog (shipped как pointers, parked / deferred full content). Двенадцатишаговая probing taxonomy с adaptive depth по типу проекта.
+- **References:** product-spec-template.md, product-backlog-template.md, example-contact-tracker-mvp.md.
+- **Spec:** `docs/superpowers/specs/2026-05-10-hi_flow-product-spec-design.md`. **Report:** `docs/superpowers/specs/2026-05-10-hi_flow-product-spec-design-report.md`.
 
 #### `hi_flow/skills/arch-redesign/` (BUILT v0.1.0)
 - **Status:** BUILT — design + SKILL.md + 3 references templates готовы (2026-04-27). **Purpose:** Project-level corrective. Консьюмит arch-audit findings + existing arch state, выдаёт refactor plan. См. D7. **Spec:** `docs/superpowers/specs/2026-04-27-hi_flow-arch-redesign-design.md`. **Report:** `docs/superpowers/specs/2026-04-27-hi_flow-arch-redesign-design-report.md`.
