@@ -3,13 +3,13 @@
 > **Reference example for `hi_flow:product-spec` skill.** Это сводный пример: полная `product-spec.md` для одной итерации (MVP) небольшого commercial-leaning продукта **плюс** сопроводительная `product-backlog.md`, которая получится после closure migration этой итерации. Используй как якорь формата и tone при генерации реальных product-spec.md и product-backlog.md.
 >
 > **Что демонстрирует пример:**
-> - Все 12 секций product-spec.md (per D12), включая mandatory Mermaid в Section 4.
-> - Корректное D6 card format: Type / Status / Назначение / Входит / Не входит / Зависит от + опционально Доступно группам.
-> - Asymmetric pointer discipline в backlog (per D17): 5-6 строк для shipped enabler, 3 строки для shipped domain, full content для parked / deferred, one-liner для rejected.
+> - Все 12 секций product-spec.md, включая module-level Mermaid в Section 4 — из трёх стандартных категорий используются две (Infra / Domain), Passive опущен как пустая категория для этого MVP.
+> - Корректное card format: Type / Status / Назначение / Входит / Не входит / Зависит от + опционально Доступно группам.
+> - Асимметричная дисциплина указателей в бэклоге: 5-6 строк для committed enabler, 3 строки для committed domain, full content для parked / deferred, one-liner для rejected.
 > - Один resolved strategic fork (Sf1) → остаётся только в spec'е.
 > - Один deferred strategic fork (Sf2) → переезжает в backlog § Deferred forks.
-> - Одна standing CC policy (CC1: audit log) → впервые введена в этой итерации, добавляется pointer'ом в backlog § Standing CC policies.
-> - Status: `signed` — дизайн закрыт после User Review Gate, готов идти в feature-spec (per D18).
+> - Одна standing CC policy (CC1: журнал действий) → впервые введена в этой итерации, добавляется pointer'ом в backlog § Standing CC policies.
+> - Status: `signed` — дизайн закрыт после User Review Gate, готов идти в feature-spec.
 > - Plain Russian product language — engineer-only жаргон не используется.
 
 ---
@@ -24,6 +24,25 @@
 **Версия итерации:** mvp (v1.0)
 **Автор:** [operator name]
 **Iteration slug:** mvp
+
+## Содержание
+
+- [1. Описание продукта](#1-описание-продукта)
+- [2. Группы пользователей](#2-группы-пользователей)
+- [3. Задачи пользователей](#3-задачи-пользователей)
+- [4. Модули и функции](#4-модули-и-функции)
+  - [Модуль: Identity](#модуль-identity)
+  - [Модуль: Contacts](#модуль-contacts)
+  - [Модуль: Leads](#модуль-leads)
+  - [Модуль: Reports](#модуль-reports)
+- [5. Стратегические развилки](#5-стратегические-развилки)
+- [6. Сквозные политики](#6-сквозные-политики)
+- [7. Переиспользуемые подполитики](#7-переиспользуемые-подполитики)
+- [8. Базовые требования к нагрузке и доступности](#8-базовые-требования-к-нагрузке-и-доступности)
+- [9. Примерные сценарии работы](#9-примерные-сценарии-работы)
+- [10. Ссылки на парковку](#10-ссылки-на-парковку)
+- [11. Что может пойти не так](#11-что-может-пойти-не-так)
+- [12. Открытые вопросы на момент закрытия сессии](#12-открытые-вопросы-на-момент-закрытия-сессии)
 
 ## 1. Описание продукта
 
@@ -57,21 +76,41 @@
 
 ```mermaid
 graph TD
-    F-id-1[F-id-1: User CRUD]
-    F-id-2[F-id-2: Permissions]
-    F-contacts-1[F-contacts-1: Contacts CRUD]
-    F-leads-1[F-leads-1: Leads / opportunities]
-    F-followup-1[F-followup-1: Follow-up reminders]
-    F-pipeline-1[F-pipeline-1: Pipeline view]
-    F-id-1 --> F-id-2
-    F-id-2 --> F-contacts-1
-    F-id-2 --> F-leads-1
-    F-contacts-1 --> F-leads-1
-    F-leads-1 --> F-followup-1
-    F-leads-1 --> F-pipeline-1
+    %% Module-level зависимости.
+    %% В этом MVP нет cross-cutting политик — категория Passive пустая, опущена.
+    %% Все wow / structure различения нет — Domain одной группой (Contacts / Leads / Reports).
+
+    subgraph Infra ["Поддержка (load-bearing enablers)"]
+        IM1["Identity"]
+    end
+
+    subgraph Domain ["Пользовательские (domain modules)"]
+        DM1["Contacts"]
+        DM2["Leads"]
+        DM3["Reports"]
+    end
+
+    DM1 --> IM1
+    DM2 --> IM1
+    DM2 --> DM1
+    DM3 --> DM2
+    DM3 --> DM1
+
+    classDef infraStyle fill:#1e3a8a,stroke:#1e40af,color:#fff
+    classDef domainStyle fill:#065f46,stroke:#047857,color:#fff
+    class IM1 infraStyle
+    class DM1,DM2,DM3 domainStyle
+
+    linkStyle 0 stroke:#065f46,stroke-width:2.5px
+    linkStyle 1 stroke:#065f46,stroke-width:2.5px
+    linkStyle 2 stroke:#065f46,stroke-width:2.5px
+    linkStyle 3 stroke:#065f46,stroke-width:2.5px
+    linkStyle 4 stroke:#065f46,stroke-width:2.5px
 ```
 
 ### Модуль: Identity
+
+Load-bearing-модуль: управление учётками сотрудников фирмы и ролевая модель (rep / manager / owner). От него зависят все пользовательские модули — без identity нельзя проверить кто видит контакты и заявки.
 
 #### F-id-1. User CRUD
 
@@ -93,6 +132,8 @@ graph TD
 
 ### Модуль: Contacts
 
+Учёт контактов с компанией-клиентом плюс история взаимодействий внутри карточки. Основа для всех sales-операций фирмы — контакты приходят в систему до заявок.
+
 #### F-contacts-1. Contacts CRUD
 
 **Тип:** пользовательская
@@ -104,6 +145,8 @@ graph TD
 **Доступно группам:** sales rep (свои), manager (свои rep'ов), owner (все)
 
 ### Модуль: Leads
+
+Заявки от контактов и сопровождение их через статусы (от первичного интереса до закрытия). Включает напоминания о повторных касаниях — основной рабочий поток sales-команды.
 
 #### F-leads-1. Leads / opportunities
 
@@ -126,6 +169,8 @@ graph TD
 **Доступно группам:** sales rep, manager (overview)
 
 ### Модуль: Reports
+
+Сводки и pipeline view для manager'а и владельца — обзор того, что происходит в команде. Не CRUD-операции, а data-display.
 
 #### F-pipeline-1. Pipeline view
 
@@ -227,11 +272,11 @@ Premortem на 6 месяцев после запуска MVP:
 |------------|------|--------|-----------------------------------------------------------------------|
 | 2026-05-15 | mvp  | signed | docs/specs/2026-05-15-contact-tracker-mvp-product-spec.md             |
 
-## Shipped features
+## Committed features
 
 ### Module: Identity
 
-#### F-id-1. User CRUD [shipped iter1: mvp]
+#### F-id-1. User CRUD [committed iter1: mvp]
 **Module:** Identity
 **Type:** enabler
 **Назначение:** учёт пользователей системы (3 роли: rep, manager, owner) — добавление, удаление, смена роли
@@ -239,7 +284,7 @@ Premortem на 6 месяцев после запуска MVP:
 **Не входит:** самостоятельная регистрация; восстановление пароля через email
 **Spec:** docs/specs/2026-05-15-contact-tracker-mvp-product-spec.md § F-id-1
 
-#### F-id-2. Permissions [shipped iter1: mvp]
+#### F-id-2. Permissions [committed iter1: mvp]
 **Module:** Identity
 **Type:** enabler
 **Назначение:** простая ролевая модель: rep видит свои контакты, manager — контакты своих rep'ов, owner — всё
@@ -249,7 +294,7 @@ Premortem на 6 месяцев после запуска MVP:
 
 ### Module: Contacts
 
-#### F-contacts-1. Contacts CRUD [shipped iter1: mvp]
+#### F-contacts-1. Contacts CRUD [committed iter1: mvp]
 **Module:** Contacts
 **Type:** domain
 **Назначение:** карточка контакта (имя, компания, телефон, email, заметки) с историей взаимодействий
@@ -257,13 +302,13 @@ Premortem на 6 месяцев после запуска MVP:
 
 ### Module: Leads
 
-#### F-leads-1. Leads / opportunities [shipped iter1: mvp]
+#### F-leads-1. Leads / opportunities [committed iter1: mvp]
 **Module:** Leads
 **Type:** domain
 **Назначение:** заявка = возможность сделки, привязана к контакту, со статусом и assigned rep
 **Spec:** docs/specs/2026-05-15-contact-tracker-mvp-product-spec.md § F-leads-1
 
-#### F-followup-1. Follow-up reminders [shipped iter1: mvp]
+#### F-followup-1. Follow-up reminders [committed iter1: mvp]
 **Module:** Leads
 **Type:** domain
 **Назначение:** установка даты follow-up'а на заявку с email-напоминанием в назначенный день
@@ -271,7 +316,7 @@ Premortem на 6 месяцев после запуска MVP:
 
 ### Module: Reports
 
-#### F-pipeline-1. Pipeline view [shipped iter1: mvp]
+#### F-pipeline-1. Pipeline view [committed iter1: mvp]
 **Module:** Reports
 **Type:** domain
 **Назначение:** табличный обзор всех заявок с фильтрами для manager / owner
@@ -281,7 +326,7 @@ Premortem на 6 месяцев после запуска MVP:
 
 ### F-import-1. Bulk contact import из CSV (level: partial)
 
-**Status:** parked
+**Статус:** parked
 **Originating analysis:** docs/specs/2026-05-15-contact-tracker-mvp-product-spec.md (Шаг 4 Domain feature enumeration)
 **Reason for parking:** заказчик подтвердил, что в MVP вручную справляются (контактов <50 на старте); автоимпорт упрощает миграцию из существующей Excel-таблицы — нужен, но не блокирует запуск.
 **Carry-over candidate for:** iter2+ (когда команда вырастет или появится клиент с большой существующей базой).
@@ -294,7 +339,7 @@ Premortem на 6 месяцев после запуска MVP:
 
 ### F-quote-1. Генерация коммерческого предложения из заявки (level: note)
 
-**Status:** parked
+**Статус:** parked
 **Originating analysis:** docs/specs/2026-05-15-contact-tracker-mvp-product-spec.md (Premortem Шаг 11 + buyer outcome «упрощение продажного цикла»)
 **Reason for parking:** идея пришла во время дизайна, помогает закрывать сделки быстрее, но требует значительной template-работы (брендинг, реквизиты, варианты ценообразования) и интеграции с docs / PDF generation. Не вписывается в MVP-бюджет.
 **Carry-over candidate for:** iter3+ (после стабилизации основного workflow).

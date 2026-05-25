@@ -9,18 +9,20 @@
 
 (пусто на старте; запись добавляется при closure каждой итерации)
 
-## Shipped features
+## Committed features
 
 [Asymmetric pointers — см. форматы ниже. Сгруппированы по модулям для читаемости.]
 
 (пусто на старте; entries добавляются при closure итерации — in-scope features migrate как pointers)
 
 <!--
+Terminology: «Committed» = функция в спеке со статусом signed или shipped (commitment по продуктовому дизайну). Не значит «отгружено в production» — статус реальной отгрузки фиксируется отдельно полем `Статус` в Iteration index.
+
 Pointer formats:
 
-**Shipped enabler** (5-6 строк, нужны Входит / Не входит для scope match при reuse):
+**Committed enabler** (5-6 строк, нужны Входит / Не входит для scope match при reuse):
 
-### F-<module>-N. <Name> [shipped iter<N>: <slug>]
+### F-<module>-N. <Name> [committed iter<N>: <slug>]
 **Module:** <Module>
 **Type:** enabler
 **Назначение:** <одна строка>
@@ -28,9 +30,9 @@ Pointer formats:
 **Не входит:** <что явно за рамками>
 **Spec:** <path to originating spec> § F-<module>-N
 
-**Shipped domain** (3 строки — name-level dedup, scope inquiry через spec read on-demand):
+**Committed domain** (3 строки — name-level dedup, scope inquiry через spec read on-demand):
 
-### F-<module>-N. <Name> [shipped iter<N>: <slug>]
+### F-<module>-N. <Name> [committed iter<N>: <slug>]
 **Module:** <Module>
 **Type:** domain
 **Назначение:** <одна строка>
@@ -39,7 +41,7 @@ Pointer formats:
 При появлении entries сгруппировать их по модулям:
 
 ### Module: <Module name>
-[shipped enabler / domain pointers]
+[committed enabler / domain pointers]
 -->
 
 ## Parked features
