@@ -50,6 +50,32 @@
 
 **Связи:** D10 amendment (scope включает hygiene baseline distribution), D14 (self-consistency как infrastructure layer), `~/.claude/architecture/stacks/references/typescript-baseline.md` (canonical reference). Опосредованно — это OQ6 critical path подход (когда baseline переедет внутрь плагина, надо чтобы сам плагин ему соответствовал).
 
+### v0.7.0 product-spec retrospective improvements — implementation deferred до next product-spec trigger event
+
+**Локация:** `hi_flow/skills/product-spec/SKILL.md` + dependent `references/product-spec-template.md`.
+
+**Источник:** retrospective REH-ERP сессии 2026-05-25 + integrated analysis 2026-05-26 (см. History 2026-05-26).
+
+**План:** design v0.7.0 пишется немедленно в `docs/superpowers/specs/2026-05-26-hi_flow-product-spec-v0.7-retrospective-improvements-design.md` для preserving retrospective context. 13 пунктов:
+
+1. Probe-iteration always per module (не per function) + coverage matrix `function × probe`.
+2. CCP2 self-application — перед closure Шага 5 и перед Шагом 12 скилл re-reads свои earlier closure decisions.
+3. Architectural axes checkpoint после Module assignment — «есть ли product axes (org, geographic, multi-language) требующие отдельных модулей помимо probe-detectable enablers?».
+4. Module-card revisit после module map pivots — обязательный re-pass карточек.
+5. Pre-baked Mermaid skeleton в template (готовый блок subgraph + classDef + linkStyle, копировать as-is).
+6. Описания модулей перед карточками функций — 1-2 строки per модуль.
+7. CC naming convention enforcement — sequential CC1, CC2..., no placeholder X/Y.
+8. Section 2/3 — explicit permission на адаптивные форматы (flat / matrix / hierarchy-by-context).
+9. Premortem сценарии tagging — `[delta → ...]` или `[no delta, mitigation external/post-conversion/process]`.
+10. Reason for parking — обязательная строка в backlog parked entries.
+11. Standing-policy checker при Шаге 12 — кандидаты в backlog § Standing.
+12. Multi-message dump pattern — explicit advance signal от оператора.
+13. Sf-ID gap пометки в спеке — placeholder для deferred Sf'ов вместо silent skip.
+
+Implementation deferred до **trigger event = «следующая реальная product-spec session со scope, активирующим affected pathways» (probe-iteration на >1 модуле, premortem с дельтой, multi-module pivots; не trivial single-module spec).** При наступлении trigger — **review pass design'а v0.7** перед implementation для stale-protection.
+
+**Связи:** D17 (parallel scope расширение в v0.6.0), D15 (предыдущий iteration feedback v0.5.0 — часть retrospective findings уже закрыта в v0.5.0, design v0.7 reflectет actual delta), v0.6.0 decomposition design (некоторые пункты — 11, 14 — частично включены в v0.6 как технически необходимое для closure phase shape).
+
 ---
 
 ## LOW

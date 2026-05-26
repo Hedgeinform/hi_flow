@@ -1,6 +1,8 @@
 # <Название продукта>
 
-[Метаданные: дата, статус (draft / signed / shipped), версия, автор]
+[Метаданные: дата, статус (draft / signed / shipped), версия, автор.
+
+Опциональное поле v0.6.0: `decomposition: skipped` — выставляется когда оператор явно отказался от decomposition phase per Entry A option 3 в Шаге 12.5. Маркер ставится только на `signed` спеке (на `shipped` запрещено per D18 frozen invariant). Existence маркера suppresses Entry B auto-prompt в session setup при последующих открытиях. Оператор может удалить маркер вручную для restore detection.]
 
 ## Содержание
 
