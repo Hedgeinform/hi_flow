@@ -19,6 +19,27 @@ Systematically surface hierarchical product forks — concrete behavioral decisi
 
 A single `feature-spec.md`. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
 
+## Feature scope clarification (post product-spec v0.6.1 / D19 terminology alignment)
+
+«Feature» в этом скилле = **фича** в product-spec terminology (D19 in `ARCHITECTURE.md` of consuming project, либо canonical pair в product-spec Operational Rule 11) — группа связанных функций (capabilities), представляющая блок функциональности продукта. **НЕ atomic capability** (это отдельный концепт «функция» per D2 atomicity gate).
+
+Скилл structurally поддерживает **aggregate feature scope** — 8 probe categories масштабируются на whole feature:
+
+- **Input space** — across all capability entry points фичи
+- **Boundary HAZOP** — per capability surface
+- **Lifecycle** — per state transitions внутри фичи
+- **Cross-feature integration** — через upstream / downstream contracts (из bundle file если product-spec'у предшествовала decomposition phase)
+- **Hard policies / CC** — inheritance из bundle verbatim
+- **Disambiguation** — между similar capabilities внутри фичи
+- **Invalid combinations** — across capabilities
+- **User reactions** — per output
+
+**Input pattern when invoked from product-spec output:** оператор attach'ит `bundle-<feature-slug>.md` файл (product-spec decomposition phase output, v0.6.0+). Bundle описывает фичу целиком — feature-spec работает с ней as single scope, output — один `feature-spec.md` на всю фичу с hierarchical развилками (F1 / F1.3 / F1.3.2 Cockburn-style per capability area).
+
+**Когда spec'ать одну capability изолированно бывает оправдано:** если capability ultra-complex (требует ultra-deep specialized analysis — например, payment processing с тяжёлыми edge cases) — это сигнал к extraction её в свою отдельную фичу через update mode product-spec'а (один capability = одна фича в этом частном случае). Не narrow capability-spec session в составе большой фичи — context теряется без surrounding capabilities.
+
+**Direct path criterion clarification:** «isolated feature; ≤3-4 forks; low-stakes» — applicable когда фича = single capability с minimal forks. Aggregate фичи из bundle (≥3 capabilities) — default brainstorm path; aggregate scope требует probing taxonomy для proper coverage.
+
 ## Anti-triggers (do NOT auto-activate)
 
 - Bare feature-shape request («хочу добавить X», «давай добавим tool Z») — could be research / chatter / arch request. Clarify or propose the skill, do not run it.

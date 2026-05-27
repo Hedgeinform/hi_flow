@@ -7,7 +7,11 @@
 
 ---
 
-**Использование с feature-spec:** этот пакет описывает фичу — aggregate of N функций. При запуске feature-spec session: указать одну функцию из списка как target в operator-dump («работаем с F-X из этого пакета»). Для всей фичи целиком — N feature-spec sessions, каждая с одной функцией как target. Bundle reusable в каждой session для контекста.
+**Использование с feature-spec:** этот пакет описывает фичу целиком (aggregate of N функций). Запусти feature-spec session с этим bundle как input — feature-spec работает с фичей как единый scope. 8 probe categories масштабируются на feature-level: Input space across all capability entry points, Boundary HAZOP per capability surface, Lifecycle per state transitions, Cross-feature integration через upstream/downstream contracts (см. раздел «Зависим от» и «Используется» bundle'а), Hard policies / CC inheritance из bundle verbatim, Disambiguation между similar capabilities внутри фичи, Invalid combinations across capabilities, User reactions per output.
+
+Output — один `feature-spec.md` на всю фичу с hierarchical развилками: F1 / F1.3 / F1.3.2 (Cockburn-style) организованы per capability area внутри фичи. Sample dialogs (happy / corrected / refused) covering ключевые user paths through capabilities. CC и Sf naturally inherit из bundle.
+
+**Одна фича = одна feature-spec session = один feature-spec.md output.** Спецать отдельные функции (F-X) изолированно — обычно бессмысленно (capabilities внутри фичи тесно связаны, atomic spec теряет context). Если конкретная capability требует ultra-deep dive (например, payment processing с тяжёлыми edge cases) — это сигнал к extraction её в свою отдельную фичу через update mode product-spec'а, не к narrow capability-spec session.
 
 ---
 

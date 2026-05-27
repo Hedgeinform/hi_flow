@@ -1,12 +1,12 @@
-# Handoff: hi_flow:product-spec v0.6.2+ — deferred amendments design
+# Handoff: hi_flow:product-spec v0.6.3+ — deferred amendments design
 
 **Date:** 2026-05-27
-**Source sessions:** v0.6.0 decomposition phase design + implementation 2026-05-26 + v0.6.1 terminology cleanup 2026-05-27.
-**Audience:** будущая design-сессия по v0.6.2+ amendments. Self-contained — не предполагает доступа к conversation transcript'у.
+**Source sessions:** v0.6.0 decomposition phase design + implementation 2026-05-26 + v0.6.1 terminology cleanup 2026-05-27 + v0.6.2 feature-spec compatibility patch 2026-05-27.
+**Audience:** будущая design-сессия по v0.6.3+ amendments. Self-contained — не предполагает доступа к conversation transcript'у.
 
 **Назначение документа:** дать достаточный контекст следующей сессии, чтобы она стартовала с осмысленного места без перечитывания транскрипта source-сессий.
 
-**Note on filename:** изначально handoff назывался `v0.6.1+`, но v0.6.1 был выделен под terminology cleanup (terminology realignment D19; фича = aggregate, функция = capability). Defer scope сдвинут на v0.6.2+. Filename и internal references обновлены.
+**Note on filename:** изначально handoff назывался `v0.6.1+`, потом `v0.6.2+`. v0.6.1 был выделен под terminology cleanup (D19), v0.6.2 — под feature-spec compatibility patch (bundle hint correction + minimal Group F). Defer scope для deferred substantive amendments (Group A-E + расширение Group F) сдвинут на v0.6.3+. Filename и internal references обновлены.
 
 ---
 
@@ -36,11 +36,21 @@ V0.6.1 — terminology cleanup без structural mechanics changes:
 - Module Map в ARCHITECTURE.md preserved as separate concept (code-modules).
 - REH-ERP existing artefacts cleanup find-replace применён в product-spec, backlog, iteration-1-plan directory.
 
-**Scope v0.6.0 + v0.6.1 был ограничен сознательно** — только **initial decomposition** в Fresh + Update session modes + terminology realignment. Несколько features были defer'нуты в v0.6.2+ (см. §3 ниже). Эта сессия — об implementation defer'нутых amendments.
+### v0.6.2 (released 2026-05-27 — feature-spec compatibility patch + Group F minimal start)
+
+Post-release discovery: implementation bug в v0.6.1 — bundle-template.md usage hint содержал неверный per-function workflow. Operator caught contradiction перед feature-spec прогоном (не было fact damage). Fix:
+
+- **`bundle-template.md`** — hint corrected на правильный aggregate workflow («Bundle описывает фичу целиком; feature-spec работает с фичей как единый scope; output — один feature-spec.md на всю фичу с hierarchical развилками per capability area»).
+- **13 REH-ERP existing bundles** — corrected hint header inserted в каждый файл.
+- **`feature-spec/SKILL.md`** — added «Feature scope clarification» section: explicit aggregate scope explanation + 8 probes масштабирование на feature-level + bundle input pattern + Direct path criterion clarification + extraction guidance для ultra-deep capabilities.
+
+V0.6.2 = **minimal Group F start** — full feature-spec amendment остаётся открытым (auto-read bundle, formal aggregate mode flag, capability-spec consideration — defer'нуты до empirical signal post-v0.6.2 прогона).
+
+**Scope v0.6.0 + v0.6.1 + v0.6.2 был ограничен сознательно** — только **initial decomposition** в Fresh + Update session modes + terminology realignment + feature-spec compatibility hint correction. Несколько features были defer'нуты в v0.6.3+ (см. §3 ниже). Эта сессия — об implementation defer'нутых amendments.
 
 ### Боевой прогон ещё не выполнен
 
-**Боевой прогон v0.6.0/v0.6.1 на REH-ERP feature-spec не выполнен** на момент handoff'а. Это **важный context** — empirical findings из боевого прогона могут изменить приоритизацию amendments или surface новые. Recommended sequence: боевой прогон first → retrospective findings → re-prioritize v0.6.2+ scope. Если эта сессия запускается **до** боевого прогона — операторское решение, явно зафиксировать в design'е, что некоторые amendments могут быть пересмотрены post-прогон.
+**Боевой прогон v0.6.0/v0.6.1/v0.6.2 на REH-ERP feature-spec не выполнен** на момент handoff'а. Это **важный context** — empirical findings из боевого прогона могут изменить приоритизацию amendments или surface новые. Recommended sequence: боевой прогон first → retrospective findings → re-prioritize v0.6.3+ scope. Если эта сессия запускается **до** боевого прогона — операторское решение, явно зафиксировать в design'е, что некоторые amendments могут быть пересмотрены post-прогон.
 
 ---
 
@@ -48,7 +58,7 @@ V0.6.1 — terminology cleanup без structural mechanics changes:
 
 **В scope этой design-сессии:**
 
-Проектирование amendments для v0.6.2+. Output — `docs/superpowers/specs/<date>-hi_flow-product-spec-v0.6.2-amendments-design.md` (или decomposed на несколько specs если operator решит slice scope).
+Проектирование amendments для v0.6.3+. Output — `docs/superpowers/specs/<date>-hi_flow-product-spec-v0.6.3-amendments-design.md` (или decomposed на несколько specs если operator решит slice scope).
 
 **Не в scope:**
 
@@ -59,9 +69,9 @@ V0.6.1 — terminology cleanup без structural mechanics changes:
 
 ---
 
-## 3. Defer'нутые features из v0.6.0+v0.6.1 (candidate scope для v0.6.2+)
+## 3. Defer'нутые features из v0.6.0+v0.6.1 (candidate scope для v0.6.3+)
 
-Сгруппированы по логической независимости. Operator выбирает в design-сессии, какие включать в v0.6.2, какие отложить дальше (v0.6.3 / v0.7+).
+Сгруппированы по логической независимости. Operator выбирает в design-сессии, какие включать в v0.6.3, какие отложить дальше (v0.6.3 / v0.7+).
 
 ### Group A — Re-decomposition mechanism (update mode amendments)
 
@@ -131,20 +141,23 @@ V0.6.1 — terminology cleanup без structural mechanics changes:
 - Splitting plan'а при very large products (≥15 фич): single plan file достаточен или нужно splitting на multiple files / sub-directories?
 - Relation к Mermaid в product-spec.md § 4 (feature-level): roadmap Mermaid — это другой view (фича boundary может refine'ться через splits/merges в decomposition phase), но операторы могут спутать. Visual distinguishing — color scheme, layout, или explicit naming.
 
-### Group F — Feature-spec compatibility refinement (новая группа от v0.6.1 discovery)
+### Group F — Feature-spec compatibility refinement (частично сделано в v0.6.2; остаток открыт)
 
-**Что:** улучшение workflow handoff'а между product-spec output (bundle файлы) и feature-spec input. В v0.6.1 добавлен usage hint header в bundle-template («Использование с feature-spec: указать одну функцию из списка как target в operator-dump»). Это narrow workaround; full feature-spec amendment остаётся открытым.
+**Что:** улучшение workflow handoff'а между product-spec output (bundle файлы) и feature-spec input. Эволюция группы:
 
-**Почему deferred:** требует empirical signal — реальный feature-spec прогон на REH-ERP bundle покажет работает ли workaround или нужны structural changes.
+- **v0.6.1 первоначально:** добавлен usage hint header в bundle-template с **неверным** per-function workflow («указать одну функцию из списка как target»).
+- **v0.6.2 fix:** hint **исправлен** на правильный aggregate workflow («Bundle описывает фичу целиком; feature-spec работает с фичей как единый scope; output — один feature-spec.md на всю фичу с hierarchical развилками per capability area»). Hint also inserted в 13 REH-ERP existing bundles. feature-spec SKILL.md получил clarification note «Feature scope clarification (post product-spec v0.6.1 / D19 terminology alignment)» — explicit aggregate scope + 8 probes масштабирование + Direct path criterion adjustment + extraction guidance для ultra-deep capabilities.
 
-**Design surface:**
+**Что остаётся в Group F для v0.6.3+ (post-empirical-signal):**
 
-- Auto-read bundle file feature-spec'ом? Path discovery через filesystem (bundle path → parent plan dir → roadmap)?
-- Aggregate feature spec mode? Если operator решит spec'ать всю фичу целиком (multi-capability spec) — feature-spec поддерживает или это новый capability-spec skill?
-- Operator workflow visibility: hint header в bundle достаточен или нужна формальная гайд-инструкция в feature-spec SKILL.md?
-- Cross-skill terminology consistency: feature-spec SKILL.md всё ещё использует «feature» в narrow sense (single function). Если v0.6.2+ touches feature-spec — terminology cleanup для consistency.
+- **Auto-read bundle file feature-spec'ом** — path discovery через filesystem (bundle path → parent plan dir → roadmap). v0.6.2 — operator manually attach'ит bundle; auto-read = next iteration.
+- **Formal aggregate mode flag в feature-spec SKILL.md** — current v0.6.2 = clarification note; формальный mode (например, frontmatter `mode: aggregate` либо detection bundle attach) — может быть useful если empirical use surface'ит mode confusion.
+- **Capability-spec skill** consideration — если в боевом прогоне feature-spec на large aggregate (≥5 capabilities) окажется unwieldy и operator захочет ultra-deep dive на specific capability отдельно, capability-spec может стать legitimate fourth layer. **Per current YAGNI assessment — drop**, fallback к extraction capability в свою фичу через update mode product-spec'а.
+- **Cross-skill terminology consistency expansion** — v0.6.2 added clarification note. Если empirical use surface'ит больше terminology gaps в feature-spec — full SKILL.md refresh.
 
-**Note:** Group F discovered post-v0.6.1 (operator interrupt про feature-spec workflow). Может выделиться в отдельный feature-spec amendment session либо handoff в next sequencing decision.
+**Почему остаток deferred:** требует empirical signal — реальный feature-spec прогон на REH-ERP bundle (например, bundle-tickets с 5 capabilities либо bundle-accounts с 6) покажет какие из above items actually нужны, а какие YAGNI. **Recommended sequence:** боевой прогон post-v0.6.2 → retrospective findings → priority decision для остатка Group F в v0.6.3+.
+
+**Note:** Group F discovered post-v0.6.1 (operator interrupt про feature-spec workflow). v0.6.2 — minimal Group F start; остаток открыт.
 
 ---
 
@@ -160,7 +173,7 @@ V0.6.1 — terminology cleanup без structural mechanics changes:
 
 **Не возвращаемся к** core terminology pair: фича = aggregate, функция = capability. Module/cluster/feature concepts collapsed в один — фича. F-* identifiers preserved structurally. Module Map ARCHITECTURE.md preserved as separate concept (code-modules). Operational Rule 11 translation table extended.
 
-Если v0.6.2+ session обнаружит дополнительные terminology gaps (например, в feature-spec интеграции) — это **add'ы** к D19 mapping, не пересмотр core.
+Если v0.6.3+ session обнаружит дополнительные terminology gaps (например, в feature-spec интеграции) — это **add'ы** к D19 mapping, не пересмотр core.
 
 ### 4.3. Scope v0.6.0 был ограничен Fresh + Update session modes / initial decomposition only
 
@@ -172,7 +185,7 @@ Group C (hard enforcement) — это **extension** soft policy, не перес
 
 ### 4.5. Single source of truth для plan existence — directory existence, не metadata
 
-D17 spirit. v0.6.0 использует existence check `<slug>-iteration-<N>-plan/` directory как ground truth «план существует». Не добавлять competing metadata состояние (типа `plan_status: generated` в spec frontmatter) в v0.6.2+.
+D17 spirit. v0.6.0 использует existence check `<slug>-iteration-<N>-plan/` directory как ground truth «план существует». Не добавлять competing metadata состояние (типа `plan_status: generated` в spec frontmatter) в v0.6.3+.
 
 ### 4.6. Operator escalation discipline для feature boundary decisions
 
@@ -201,12 +214,12 @@ P6 ARCHITECTURE. Feature boundary changes в любой форме (initial Feat
 
 Эти вопросы появились на этапе planning amendments, требуют дизайнерского suggestion + operator decision:
 
-1. **Sequencing v0.6.2+ groups.** Какие из Group A-F включать в v0.6.2, какие в v0.6.3 / v0.7? Может быть атомарный v0.6.2 со всеми (один design + impl session), либо decomposition на меньшие amendments. Recommended approach — обсудить в начале сессии перед deep design.
+1. **Sequencing v0.6.3+ groups.** Какие из Group A-F включать в v0.6.3, какие в v0.6.3 / v0.7? Может быть атомарный v0.6.3 со всеми (один design + impl session), либо decomposition на меньшие amendments. Recommended approach — обсудить в начале сессии перед deep design.
 2. **Dependency между Group A (re-decomposition) и Group D (auto status update).** Auto status update предполагает что фича может вернуться в `в работе` после `готов` если re-decomposition её изменил. Эти features нужно проектировать coherently либо ordering важен.
 3. **Group B (new iteration mode) — implementation cost.** Это наиболее сложный из defer'нутых items: requires backlog reading, cross-iteration pointer resolution, possibly migration of legacy terminology. Может быть свой dedicated amendment (v0.6.3 или даже v0.7).
 4. **Group C (hard enforcement) — necessity gate.** Если боевые прогоны v0.6.0/v0.6.1 показали, что soft enforcement достаточен (operator не нарушает frozen invariant accidentally) — Group C может быть deprioritized или dropped. Empirical signal нужен.
 5. **Group E (Mermaid in roadmap) — threshold for trigger.** v0.6.0 explicitly stated «no Mermaid в roadmap, ordered list suffices». Reversing требует empirical justification (REH-ERP прогон с 10-13 фич — был ли operator confused by text-only sequence?). Если signal weak — defer ещё дальше.
-6. **Group F (feature-spec compatibility) — separate skill amendment vs в v0.6.2 scope?** Group F crosses skill boundary (feature-spec). P4 ARCHITECTURE рекомендует separate design sessions per skill. Может пойти как parallel design + sequential implementation, либо feature-spec amendment first, потом v0.6.2 product-spec.
+6. **Group F (feature-spec compatibility) — separate skill amendment vs в v0.6.3 scope?** Group F crosses skill boundary (feature-spec). P4 ARCHITECTURE рекомендует separate design sessions per skill. Может пойти как parallel design + sequential implementation, либо feature-spec amendment first, потом v0.6.3 product-spec.
 7. **Companion feature-spec amendment ordering.** Group D (status auto-update) depends on feature-spec being able to write back to roadmap. Если feature-spec amendment не написан — Group D undeliverable. Sequencing: feature-spec amendment first → product-spec Group D after. Это **out of scope этой сессии** (per §2), но dependency'и нужно зафиксировать.
 
 ---
@@ -215,29 +228,29 @@ P6 ARCHITECTURE. Feature boundary changes в любой форме (initial Feat
 
 Из опыта семейства и v0.6.0/v0.6.1 implementation lessons:
 
-1. **Не объединять design + implementation в одной сессии без явного operator decision.** v0.6.0 и v0.6.1 это сделали per explicit override (см. implementation report deviation). Для v0.6.2+ — default обратно к anti-pattern #8 хенд-оффа v0.6 (separate sessions). Если operator решит иначе — фиксировать как conscious override.
+1. **Не объединять design + implementation в одной сессии без явного operator decision.** v0.6.0 и v0.6.1 это сделали per explicit override (см. implementation report deviation). Для v0.6.3+ — default обратно к anti-pattern #8 хенд-оффа v0.6 (separate sessions). Если operator решит иначе — фиксировать как conscious override.
 2. **Не writeXLarger без empirical signal.** Group E (Mermaid) — классический пример: «возможно понадобится при scale» — нужен real signal до design'а. Premature feature design = wasted token.
 3. **Subagent self-review для critical artifacts.** Spec должна пройти isolated subagent review. v0.6.0 и v0.6.1 этим словили несколько критических issues — confirmation bias реален.
-4. **Не пересматривать v0.6.0 / v0.6.1 decisions.** Amendments расширяют, не пересматривают. Если в ходе session всплывёт желание «давайте переделаем feature boundary algorithm» или «пересмотрим terminology» — это сигнал что нужен **другой** session focus, не v0.6.2.
+4. **Не пересматривать v0.6.0 / v0.6.1 decisions.** Amendments расширяют, не пересматривают. Если в ходе session всплывёт желание «давайте переделаем feature boundary algorithm» или «пересмотрим terminology» — это сигнал что нужен **другой** session focus, не v0.6.3.
 5. **Plain language conditional.** В operator-facing артефактах (roadmap, bundle, dialog patterns) — plain Russian. В чисто инженерных артефактах (design specs, ARCHITECTURE.md) — инженерный OK. См. P1 в ARCHITECTURE.md + Operational Rule 11 SKILL.md (с v0.6.1 extensions).
 6. **Stress-test на реальном кейсе.** Если в design'е появляется конкретный пример affected feature detection / re-decomposition flow — tested на real REH-ERP, не на synthetic примере. REH-ERP — working ground truth.
-7. **Cross-skill changes — отдельные sessions.** Если v0.6.2 потребует change'ей в feature-spec (например, для status callback Group D или для Group F compatibility) — это **другая** design-сессия (P4 ARCHITECTURE). Можно их chain'ить sequentially, но не объединять.
+7. **Cross-skill changes — отдельные sessions.** Если v0.6.3 потребует change'ей в feature-spec (например, для status callback Group D или для Group F compatibility) — это **другая** design-сессия (P4 ARCHITECTURE). Можно их chain'ить sequentially, но не объединять.
 8. **Sequencing per dependency graph.** Если Group D depends on feature-spec amendment — нельзя начинать impl Group D до merged feature-spec amendment в main. CLAUDE.md global principle 10. Документы (specs) можно писать parallel.
 9. **Backlog terminology resilience при боевом прогоне.** REH-ERP бэклог migrated в v0.6.1 (Shipped → Committed), но для других существующих backlog'ов может потребоваться runtime detection. Если operator решит делать new iteration mode (Group B) на новом продукте — decide upfront, не leave silent.
-10. **Terminology consistency check.** V0.6.1 фиксирует core terminology (фича = aggregate, функция = capability) в product-spec. При work на v0.6.2+ — verify consistency в новых artefacts. Operational Rule 11 translation table — single source of truth.
+10. **Terminology consistency check.** V0.6.1 фиксирует core terminology (фича = aggregate, функция = capability) в product-spec. При work на v0.6.3+ — verify consistency в новых artefacts. Operational Rule 11 translation table — single source of truth.
 
 ---
 
 ## 8. После завершения design-сессии
 
-После того как `<date>-hi_flow-product-spec-v0.6.2-amendments-design.md` (или несколько specs если decomposed scope) готовы и operator-signed:
+После того как `<date>-hi_flow-product-spec-v0.6.3-amendments-design.md` (или несколько specs если decomposed scope) готовы и operator-signed:
 
 1. **Implementation report** идёт рядом со спекой (стандарт CLAUDE.md). Каждый spec — отдельный report.
-2. **Update ARCHITECTURE.md:** D18/D19 → реализованный extended scope (или новый D-N entry per amendment); Module Map → BUILT v0.6.2; History entries.
-3. **Update active-issues.md:** если какие-то v0.7 pt'ы становятся obsolete с v0.6.2 mechanism (например, pt 11 standing-policy могло частично слиться с something в Group C) — удалить из active issue либо обновить scope.
+2. **Update ARCHITECTURE.md:** D18/D19 → реализованный extended scope (или новый D-N entry per amendment); Module Map → BUILT v0.6.3; History entries.
+3. **Update active-issues.md:** если какие-то v0.7 pt'ы становятся obsolete с v0.6.3 mechanism (например, pt 11 standing-policy могло частично слиться с something в Group C) — удалить из active issue либо обновить scope.
 4. **Companion sessions** для cross-skill changes (если Group D или Group F в scope) — feature-spec amendment отдельно, sequencing per dependency graph.
-5. **Боевой прогон v0.6.2** — после implementation, на REH-ERP либо новом продукте. Retrospective findings → потенциальные v0.6.3 amendments либо v0.7 items.
-6. **Cleanup pending hand-off'ов и planned items в ARCHITECTURE.md** — если v0.6.2 закрывает какие-то planned/deferred items, обновить refs.
+5. **Боевой прогон v0.6.3** — после implementation, на REH-ERP либо новом продукте. Retrospective findings → потенциальные v0.6.3 amendments либо v0.7 items.
+6. **Cleanup pending hand-off'ов и planned items в ARCHITECTURE.md** — если v0.6.3 закрывает какие-то planned/deferred items, обновить refs.
 
 ---
 
