@@ -365,7 +365,7 @@ Append history entry для v0.6.1.
 
 - **v0.6.0 design spec:** `docs/superpowers/specs/2026-05-26-hi_flow-product-spec-v0.6-decomposition-design.md`
 - **v0.6.0 implementation report:** `docs/superpowers/specs/2026-05-26-hi_flow-product-spec-v0.6-decomposition-design-report.md`
-- **v0.6.1+ amendments handoff:** `docs/handoffs/2026-05-27-product-spec-v0.6.1+-amendments-design-handoff.md` (этот terminology cleanup НЕ был in scope того handoff'а — discovery в session 2026-05-27)
+- **v0.6.2+ amendments handoff:** `docs/handoffs/2026-05-27-product-spec-v0.6.2+-amendments-design-handoff.md` (originally `v0.6.1+`, renamed after v0.6.1 was used for terminology cleanup; этот terminology cleanup НЕ был in scope того handoff'а — discovery в session 2026-05-27)
 - **Original product-spec design:** `docs/superpowers/specs/2026-05-10-hi_flow-product-spec-design.md` (D1 origin)
 - **v0.5.0 amendment:** `docs/superpowers/specs/2026-05-25-hi_flow-product-spec-v0.5.0-amendment.md` (Operational Rule 11 origin)
 - **Current SKILL.md (post-v0.6.0):** `hi_flow/skills/product-spec/SKILL.md`
