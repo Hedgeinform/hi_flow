@@ -11,9 +11,9 @@
 
 ## Committed features
 
-[Asymmetric pointers — см. форматы ниже. Сгруппированы по модулям для читаемости.]
+[Asymmetric pointers — см. форматы ниже. Сгруппированы по фичам для читаемости.]
 
-(пусто на старте; entries добавляются при closure итерации — in-scope features migrate как pointers)
+(пусто на старте; entries добавляются при closure итерации — in-scope functions migrate как pointers)
 
 <!--
 Terminology: «Committed» = функция в спеке со статусом signed или shipped (commitment по продуктовому дизайну). Не значит «отгружено в production» — статус реальной отгрузки фиксируется отдельно полем `Статус` в Iteration index.
@@ -22,25 +22,25 @@ Pointer formats:
 
 **Committed enabler** (5-6 строк, нужны Входит / Не входит для scope match при reuse):
 
-### F-<module>-N. <Name> [committed iter<N>: <slug>]
-**Module:** <Module>
+### F-<feature-slug>-N. <Name> [committed iter<N>: <slug>]
+**Фича:** <Feature name>
 **Type:** enabler
 **Назначение:** <одна строка>
 **Входит:** <что покрывает>
 **Не входит:** <что явно за рамками>
-**Spec:** <path to originating spec> § F-<module>-N
+**Spec:** <path to originating spec> § F-<feature-slug>-N
 
 **Committed domain** (3 строки — name-level dedup, scope inquiry через spec read on-demand):
 
-### F-<module>-N. <Name> [committed iter<N>: <slug>]
-**Module:** <Module>
+### F-<feature-slug>-N. <Name> [committed iter<N>: <slug>]
+**Фича:** <Feature name>
 **Type:** domain
 **Назначение:** <одна строка>
-**Spec:** <path to originating spec> § F-<module>-N
+**Spec:** <path to originating spec> § F-<feature-slug>-N
 
-При появлении entries сгруппировать их по модулям:
+При появлении entries сгруппировать их по фичам:
 
-### Module: <Module name>
+### Фича: <Feature name>
 [committed enabler / domain pointers]
 -->
 
@@ -59,7 +59,7 @@ Level definitions:
 
 Template entry:
 
-### F-<module>-X. <Name> (level: <detailed|partial|note|fragment>)
+### F-<feature-slug>-X. <Name> (level: <detailed|partial|note|fragment>)
 [full card как была на момент парковки + reason for parking + originating spec]
 -->
 
@@ -81,7 +81,7 @@ Template entry:
 <!--
 Template entry:
 
-- F-<module>-Z. <Name> — отвергнуто iter<N>, причина: <одна фраза>; альтернатива — <если есть>.
+- F-<feature-slug>-Z. <Name> — отвергнуто iter<N>, причина: <одна фраза>; альтернатива — <если есть>.
 -->
 
 ## Standing cross-cutting policies

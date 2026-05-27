@@ -5,31 +5,31 @@
 **Дата создания:** YYYY-MM-DD
 **Статус:** signed (план зафиксирован) | shipped (итерация отгружена)
 **Исходная спека:** ../YYYY-MM-DD-<product-slug>-<iteration-slug>-product-spec.md
-**Всего блоков:** N
+**Всего фич:** N
 **Всего функций:** M
 
 ---
 
 ## Последовательность реализации
 
-Порядок блоков с учётом межблочных зависимостей. Каждый блок реализуется после своих предшественников. Блоки без относительной зависимости (отмечены «Взаимозаменяем с:») можно делать в любом порядке или параллельно.
+Порядок фич с учётом межфичевых зависимостей. Каждая фича реализуется после своих предшественниц. Фичи без относительной зависимости (отмечены «Взаимозаменяем с:») можно делать в любом порядке или параллельно.
 
 <!--
-Skeleton entry для одного cluster'а. Скилл заполняет per cluster в топологическом порядке.
+Skeleton entry для одной фичи. Скилл заполняет per фичу в топологическом порядке.
 
 Поля:
 - Заголовок: `### N. <Human name> (<slug>)` — N это позиция в топологическом порядке (1, 2, 3...).
-  Human name — plain Russian, 1-3 слова, отражает суть блока. Slug — стабильный идентификатор, kebab-case
-  (по умолчанию = module-slug, при splits — operator-defined типа `tickets-intake`).
-- **Назначение:** — 1-2 строки plain-language summary, что блок делает в продукте. Derivation rule:
-  LLM-aggregation Назначений функций кластера + cluster slug semantics. Operator review мандаторен
+  Human name — plain Russian, 1-3 слова, отражает суть фичи. Slug — стабильный идентификатор, kebab-case
+  (по умолчанию = feature-slug из Feature assignment, при splits — operator-defined типа `tickets-intake`).
+- **Назначение:** — 1-2 строки plain-language summary, что фича делает в продукте. Derivation rule:
+  LLM-aggregation Назначений функций фичи + feature slug semantics. Operator review мандаторен
   (продуктовое решение).
-- **Функции:** — список F-ID функций в блоке + общее количество. Cross-reference в спеку: § F-... .
-- **Реализуем после:** — список upstream cluster names (human names). «ничего (это первый блок)»
+- **Функции:** — список F-ID функций в фиче + общее количество. Cross-reference в спеку: § F-... .
+- **Реализуем после:** — список upstream feature names (human names). «ничего (это первая фича)»
   если нет upstream.
-- **Дальше используется в:** — список downstream cluster names (human names). «нигде (это последний блок)»
+- **Дальше используется в:** — список downstream feature names (human names). «нигде (это последняя фича)»
   если нет downstream.
-- **Взаимозаменяем с:** — list peer cluster names. Появляется ТОЛЬКО при tie-break в топо-sort'е
+- **Взаимозаменяем с:** — list peer feature names. Появляется ТОЛЬКО при tie-break в топо-sort'е
   (нет относительной зависимости с peer'ами). Иначе omit field целиком.
 - **Статус:** — initial value «запланирован». Mutable single field в plan'е (manual operator update
   по мере реализации в v0.6.0; auto-callback от feature-spec — v0.6.1+).
@@ -39,12 +39,12 @@ Plain language constraint: plain Russian, без англицизмов. Slug'и
 не переводятся. Per Operational Rule 11.
 -->
 
-### 1. <Human name блока> (<slug>)
-**Назначение:** 1-2 plain-language строки, что блок делает в продукте.
+### 1. <Human name фичи> (<slug>)
+**Назначение:** 1-2 plain-language строки, что фича делает в продукте.
 **Функции:** F-..., F-... (N штук).
-**Реализуем после:** <upstream cluster names>, или «ничего (это первый блок)».
-**Дальше используется в:** <downstream cluster names>, или «нигде».
-**Взаимозаменяем с:** <peer cluster names> — поле появляется ТОЛЬКО при tie-break, иначе omit.
+**Реализуем после:** <upstream feature names>, или «ничего (это первая фича)».
+**Дальше используется в:** <downstream feature names>, или «нигде».
+**Взаимозаменяем с:** <peer feature names> — поле появляется ТОЛЬКО при tie-break, иначе omit.
 **Статус:** запланирован | в работе | готов.
 **Контекст для feature-spec:** [bundle-<slug>.md](./bundle-<slug>.md)
 

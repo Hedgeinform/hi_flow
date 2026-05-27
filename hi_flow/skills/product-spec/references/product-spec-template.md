@@ -9,10 +9,10 @@
 - [1. Описание продукта](#1-описание-продукта)
 - [2. Группы пользователей](#2-группы-пользователей)
 - [3. Задачи пользователей](#3-задачи-пользователей)
-- [4. Модули и функции](#4-модули-и-функции)
-  - [Модуль: <Name1>](#модуль-name1)
-  - [Модуль: <Name2>](#модуль-name2)
-  - [Модуль: <Name3>](#модуль-name3)
+- [4. Фичи и функции](#4-фичи-и-функции)
+  - [Фича: <Name1>](#фича-name1)
+  - [Фича: <Name2>](#фича-name2)
+  - [Фича: <Name3>](#фича-name3)
 - [5. Стратегические развилки](#5-стратегические-развилки)
 - [6. Сквозные политики](#6-сквозные-политики)
 - [7. Переиспользуемые подполитики](#7-переиспользуемые-подполитики)
@@ -42,39 +42,39 @@
 - Multi-segment / коммерческий: matrix «группа × задачи».
 - Single-segment / личный: линейный список задач.
 
-## 4. Модули и функции
-[результат Шагов 4-6, сгруппировано по модулям]
+## 4. Фичи и функции
+[результат Шагов 4-6, сгруппировано по фичам]
 
-**Mermaid-диаграмма зависимостей (mandatory, module-level).** Ноды графа — модули, связи — обобщения inter-module dependencies, выведенные из поля `Зависит от` в карточках функций. Function-level Mermaid out (теряет обзорность при 30+ функциях). Pre-baked skeleton ниже — агент наполняет именами модулей и связями, не изобретает структуру с нуля.
+**Mermaid-диаграмма зависимостей (mandatory, feature-level — historical naming «module-level» preserved как technical descriptor of granularity).** Ноды графа — фичи, связи — обобщения inter-feature dependencies, выведенные из поля `Зависит от` в карточках функций. Function-level Mermaid out (теряет обзорность при 30+ функциях). Pre-baked skeleton ниже — агент наполняет именами фич и связями, не изобретает структуру с нуля.
 
 ```mermaid
 graph TD
-    %% Subgraph группы по типу модулей (агент заполняет имена и состав).
+    %% Subgraph группы по типу фич (агент заполняет имена и состав).
     %% Три универсальные категории по default:
     %%   Infra (load-bearing enablers — учётки, права, изоляция клиентов)
     %%   Passive (cross-cutting политики — журнал действий, нотификации hub, отчётность)
-    %%   Domain (пользовательские модули — Communication, Sales, и т.п.)
+    %%   Domain (пользовательские фичи — Communications, Sales, и т.п.)
     %% Если категория пустая — удалить целиком: subgraph + classDef + class
     %% assignment + linkStyle строки для её edges.
     %% Опциональное расщепление любой категории — см. вариант ниже под skeleton'ом.
 
     subgraph Infra ["Поддержка (load-bearing enablers)"]
-        IM1["Module-A"]
-        IM2["Module-B"]
+        IM1["Feature-A"]
+        IM2["Feature-B"]
     end
 
     subgraph Passive ["Сквозные / passive"]
-        PM1["Module-C"]
+        PM1["Feature-C"]
     end
 
-    subgraph Domain ["Пользовательские (domain modules)"]
-        DM1["Module-D"]
-        DM2["Module-E"]
-        DM3["Module-F"]
+    subgraph Domain ["Пользовательские фичи"]
+        DM1["Feature-D"]
+        DM2["Feature-E"]
+        DM3["Feature-F"]
     end
 
-    %% Связи между модулями (агент заполняет per inter-module deps).
-    %% Solid arrow = active dependency (модуль использует), dashed = passive (политика применяется).
+    %% Связи между фичами (агент заполняет per inter-feature deps).
+    %% Solid arrow = active dependency (фича использует), dashed = passive (политика применяется).
     DM1 --> IM1
     DM2 --> IM2
     DM1 --> DM2
@@ -104,13 +104,13 @@ graph TD
 **Опциональное расщепление категории на под-группы** (если в продукте качественное различение политик / контрактов внутри одной категории — например, demo-продукт с wow / structure доменами, или B2B с двумя identity-системами). Пример фрагмента для Domain split:
 
 ```mermaid
-    subgraph Domain ["Пользовательские (domain modules)"]
+    subgraph Domain ["Пользовательские фичи"]
         subgraph Wow ["Wow (продающие фичи)"]
-            WM1["Module-W1"]
-            WM2["Module-W2"]
+            WM1["Feature-W1"]
+            WM2["Feature-W2"]
         end
         subgraph Structure ["Structure (поддерживающие)"]
-            SM1["Module-S1"]
+            SM1["Feature-S1"]
         end
     end
 
@@ -122,9 +122,9 @@ graph TD
 
 Hex для подгрупп: Infra (`#1e3a8a / #2563eb`), Passive (`#374151 / #6b7280`), Domain (`#065f46 / #0f766e`, третий `#16a34a`).
 
-### Модуль: <Name>
+### Фича: <Name>
 
-[1-2 строки краткого описания модуля — что делает в продукте, для кого, какую часть value proposition покрывает. Перед списком функций.]
+[1-2 строки краткого описания фичи — что делает в продукте, для кого, какую часть value proposition покрывает. Перед списком функций.]
 
 #### F-<slug>-N. <Название функции>
 
