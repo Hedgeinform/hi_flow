@@ -1,4 +1,5 @@
 import type { RawFinding, DepGraph, DepcruiseSeverity } from '../core/types.ts'
+import { computeCoupling } from '../core/graph-core.ts'
 
 interface PerModuleRaw {
   ca: number
@@ -108,15 +109,22 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
         barrel_imports.push({ from: srcMod, to: tgtMod, targetFile: dep.resolved })
       }
       if (!per_module_raw[tgtMod]) per_module_raw[tgtMod] = { ca: 0, ce: 0, loc: 0 }
-      // Dedup at module-pair level: increment Ca/Ce only when a new module edge is added.
-      // Without this, multiple file-level imports between the same module pair inflate metrics
-      // while dep_graph remains correctly deduplicated, causing per_module ↔ dep_graph drift.
+      // Build the deduplicated module-pair graph here; Ca/Ce are derived from it
+      // below via graph-core, not counted inline (single source for the formula).
       if (!dep_graph[srcMod]!.includes(tgtMod)) {
         dep_graph[srcMod]!.push(tgtMod)
-        per_module_raw[srcMod]!.ce++
-        per_module_raw[tgtMod]!.ca++
       }
     }
+  }
+
+  // Ca/Ce = in/out-degree of the deduplicated module graph. The formula lives in
+  // graph-core (computeCoupling) so arch-audit and arch-spec's hypothetical-graph
+  // analysis share one definition (SSoT). loc stays here — it comes from depcruise
+  // metrics and is not derivable from the graph.
+  const coupling = computeCoupling(dep_graph)
+  for (const m of Object.keys(per_module_raw)) {
+    per_module_raw[m]!.ce = coupling[m]?.ce ?? 0
+    per_module_raw[m]!.ca = coupling[m]?.ca ?? 0
   }
 
   const parsing_errors: { file: string; error: string }[] = []

@@ -203,10 +203,10 @@ At the **file** level the task is nearly impossible (predicting non-existent imp
 
 **SSoT requirement (principle 4) — with the real state of arch-audit in mind:**
 
-- **Metric formulas** (NCCD — `helpers/compute-nccd.ts` is already a pure function; Ca/Ce/I if extractable as pure functions) are **imported** from arch-audit, not rewritten. One metric, one formula.
-- **Cycle detection is written anew, NOT imported.** In arch-audit, cycles come from external depcruise output (`helpers/parse-depcruise-output.ts`, field `v.cycle`), which scans real files — it cannot run on the feature's hypothetical graph (no code yet). So the delta graph needs a **new traversal algorithm** over the snapshot's `dep_graph` + the feature's edges. New development, not extraction.
+- **Metric formulas** (NCCD, Ca/Ce, instability) live in `hi_flow/skills/arch-audit/core/graph-core.ts` as pure functions and are **imported** from arch-audit, not rewritten. One metric, one formula.
+- **Cycle detection is written anew, NOT imported from depcruise.** In arch-audit, cycles come from external depcruise output (`helpers/parse-depcruise-output.ts`, field `v.cycle`), which scans real files — it cannot run on the feature's hypothetical graph (no code yet). The delta graph uses a **new traversal algorithm** (`findCycles`, Tarjan SCC) in graph-core, over the snapshot's `dep_graph` + the feature's edges. New development, not extraction.
 
-Concrete implementation requirement: a **shared graph-core module** — pure metric formulas (lifted out of arch-audit) + new graph-traversal for cycles/reachability on a declarative graph, imported by both skills. This is a **separate upstream task** (principle 10: arch-spec impl does not start until it merges); it touches the working arch-audit, so its tests must be re-run after the refactor. arch-spec references graph-core as a tool; it does not build it.
+Concrete implementation: the **shared graph-core module** `hi_flow/skills/arch-audit/core/graph-core.ts` (BUILT, owner arch-audit per D7) — pure metric formulas (`computeNCCD`, `computeCoupling` for Ca/Ce, `instability` for I) + graph-traversal (`reachableFrom`, `findCycles`) over a declarative graph, imported by both skills. This was the upstream blocker per principle 10 (arch-spec block C live computation could not start until it merged). arch-spec imports graph-core as a tool; it does not reimplement it.
 
 Honest cost of module level: boundaries are caught more weakly than a file-level audit (depcruise sees exact imports on files). "Violation of a known rule" is formal; "new suspicious seam" is LLM.
 
@@ -408,5 +408,5 @@ After self-review fixes, present to the operator (User Review Gate): «Arch-spec
 - `references/rules-patch-template.yaml` — rules-patch output structure (reused from arch-redesign / D11 — same format, do not invent a new one).
 - `hi_flow/references/architectural-principles.md` — shared D9 library (principle catalog; owner — arch-audit). Source of `principle` ids for invariants and rules-patch.
 - `hi_flow/skills/arch-audit/references/d8-schema.md` — D8 snapshot schema (audit-report format consumed for block C).
-- **Shared graph-core** (separate upstream task in arch-audit, principle 10) — pure metric formulas + declarative-graph traversal for cycles/reachability. Block C's live computation depends on it; this skill references it as a tool.
+- **Shared graph-core** — `hi_flow/skills/arch-audit/core/graph-core.ts` (BUILT, owner arch-audit per D7). Pure metric formulas (`computeNCCD`, `computeCoupling` for Ca/Ce, `instability` for I) + declarative-graph traversal (`reachableFrom`, `findCycles`). Block C imports these for its live delta computation; this skill does not reimplement them.
 - **backlog-integration** (shared family mechanism, `hi_flow/references/backlog-integration.md`, D22) — closure backlog-sync follows it by name.

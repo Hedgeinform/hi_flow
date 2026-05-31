@@ -80,4 +80,26 @@ Implementation deferred до **trigger event = «следующая реальн
 
 ## LOW
 
-(none)
+### Integration-тесты arch-audit мутируют трекаемые фикстуры
+
+**Локация:** `hi_flow/skills/arch-audit/tests/integration/*` → пишут `audit-report.*` в `tests/fixtures/*/audit-report/`.
+
+**Источник:** graph-core code review 2026-05-31 — прогон integration-сьюта изменяет/удаляет трекаемые файлы фикстур, после прогона нужен `git checkout tests/fixtures/`. Test-hygiene smell.
+
+**План:** генерировать артефакты integration-тестов в tmp/gitignored директорию, не в трекаемые `tests/fixtures/*/audit-report/`.
+
+### dependency-cruiser не объявлен в devDependencies arch-audit
+
+**Локация:** `hi_flow/skills/arch-audit/package.json`.
+
+**Источник:** graph-core code review 2026-05-31 — integration-тесты требуют `dependency-cruiser` через `npx --no-install` в runtime, но он не в devDependencies и отсутствует в окружении → 3 integration-теста (`cycle/barrel/layered-project`) падают на `depcruise output is not valid JSON` (environmental, не регрессия). graph-core сам бинарь не требует.
+
+**План:** добавить `dependency-cruiser` в devDependencies arch-audit (через `npm install --save-dev`, ask-операция) для воспроизводимости integration. Скоординировать с issue «baseline rollout» (там же установка biome + gates).
+
+### Version drift arch-audit: package.json 0.3.0 vs ARCHITECTURE Module Map v0.2.6
+
+**Локация:** `hi_flow/skills/arch-audit/package.json` (0.3.0) vs `ARCHITECTURE.md` Module Map / Current Status (v0.2.6).
+
+**Источник:** graph-core code review 2026-05-31. package.json bump'нулся до 0.3.0 (barrel detection), Module Map не синхронизирован.
+
+**План:** синхронизировать счётчик версии в ARCHITECTURE.md Module Map arch-audit (v0.2.6 → 0.3.0). Тривиально, при следующем касании ARCHITECTURE.md.

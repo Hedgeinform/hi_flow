@@ -1,2 +1,5 @@
 # Operational artifacts not part of distributed plugin
 PROJECT_META.md
+
+# Dependencies (arch-audit TS subproject)
+node_modules/

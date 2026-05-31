@@ -10,7 +10,7 @@ import { validateD8Report } from './d8-schema-validator.ts'
 import { applySuppression } from './suppression.ts'
 import { generateDepcruiseConfig } from '../helpers/generate-depcruise-config.ts'
 import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
-import { computeNCCD } from '../helpers/compute-nccd.ts'
+import { computeNCCD, instability } from './graph-core.ts'
 import { enrichFindings } from '../helpers/enrich-findings.ts'
 import { generateMermaid } from '../helpers/generate-mermaid.ts'
 import { checkDepcruiseVersion } from './preflight.ts'
@@ -125,8 +125,7 @@ export async function buildReportData(
 
   const per_module: Record<string, ModuleMetrics> = {}
   for (const [m, raw] of Object.entries(parsed.per_module_raw)) {
-    const I = raw.ca + raw.ce === 0 ? 0 : raw.ce / (raw.ca + raw.ce)
-    per_module[m] = { Ca: raw.ca, Ce: raw.ce, I, LOC: raw.loc }
+    per_module[m] = { Ca: raw.ca, Ce: raw.ce, I: instability(raw.ca, raw.ce), LOC: raw.loc }
   }
 
   const severity_counts: SeverityCounts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 }
