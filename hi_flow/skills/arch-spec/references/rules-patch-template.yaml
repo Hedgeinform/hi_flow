@@ -1,0 +1,87 @@
+# Rules-patch template — arch-spec
+#
+# Same D11 format as arch-redesign (shared contract — do NOT invent a new one).
+# This patch is the graph-formalizable subset of an arch-spec's fitness invariants,
+# derived from the FEATURE DESIGN (per-feature prophylactic), not from a cluster refactor.
+#
+# Patch is a CANDIDATE for the project rules file. Never applied automatically.
+# Apply = explicit operator action: `arch-audit apply-patch <path>` or interactive
+# prompt at the next audit run. See D11 in ARCHITECTURE.md.
+#
+# Canonical project rules path: `<project>/.audit-rules.yaml` (project root).
+# arch-audit merges the rules from this patch into that file on apply.
+#
+# Granularity: one patch per feature (one file per arch-spec session).
+#
+# Per-rule requirements (identical to arch-redesign):
+#   - `name` — unique within the project rules file.
+#       Traces 1:1 to a fitness invariant name in the arch-spec.md (Fitness invariants section).
+#       Convention: kebab-case, verb-led ('no-X-to-Y') or constraint ('X-module-exists').
+#       Becomes rule_id in D8 findings on the next arch-audit run.
+#   - `severity` — CRITICAL | HIGH | MEDIUM | LOW (normalized D8 enum).
+#       Depcruise native severities (error/warn/info) are NOT used here.
+#   - `principle` — canonical principle id from the D9 library
+#       (`hi_flow/references/architectural-principles.md`). D8 reason-field contract applied to rules.
+#
+# Only TYPE-1 (graph-formalizable) invariants belong here. Type-2 (code-content/schema)
+# and type-3 (dynamic) invariants stay in arch-spec.md with their named check mechanism
+# (test / lint / migration check / monitoring) — they are NOT depcruise rules.
+
+# ---
+
+# Patch metadata
+
+# Feature: <feature-name>
+# Generated: YYYY-MM-DD
+# From arch-spec: docs/specs/<date>-<feature-slug>-arch-spec.md
+# Source audit: <path to audit-report dir>; audit_sha=<...>   # the snapshot block C ran on
+# Schema version: 1.0   # optional — D8 schema version this patch targets
+
+# ---
+
+# Forbidden rules — forbidden dependencies / edges.
+# Each rule corresponds to one invariant of the form "module X may not import Y".
+
+forbidden:
+  - name: no-<source>-to-<target>
+    severity: HIGH
+    from:
+      path: ^src/<source-module>/
+    to:
+      path: ^src/<target-module>/
+    principle: <canonical-principle-id-from-D9>
+    # Traces to fitness invariant "<invariant-name>" in arch-spec.md.
+
+  # Example (audit feature — emission allowed only from bottleneck modules):
+  # - name: no-feature-code-to-audit-emitter
+  #   severity: HIGH
+  #   from:
+  #     path: ^src/(?!auth-middleware|pipeline-engine|admin-crud)/
+  #   to:
+  #     path: ^src/audit-emitter/
+  #   principle: port-adapter-separation
+
+# ---
+
+# Required rules — required structural invariants.
+# Each rule corresponds to an invariant of the form "module X exists" or
+# "X may only be reached through Y".
+
+required:
+  - name: <constraint-name>
+    severity: MEDIUM
+    description: <Human-readable invariant statement.>
+    principle: <canonical-principle-id-from-D9>
+    # Traces to fitness invariant "<invariant-name>" in arch-spec.md.
+
+  # Example:
+  # - name: audit-store-decoupled-from-ui
+  #   severity: MEDIUM
+  #   description: Module 'src/audit-store/' must not depend on 'src/audit-ui/'.
+  #   principle: single-responsibility-module
+
+# ---
+
+# Notes (optional):
+# - Tooling-specific details arch-audit may not pick up automatically.
+# - Operator notes relevant for the apply session.
