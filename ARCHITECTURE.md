@@ -112,7 +112,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Purpose:** Claude Code плагин, контейнер для скиллов семейства. Включает `.claude-plugin/plugin.json`, README, директорию `skills/`.
 
 #### `hi_flow/skills/feature-spec/`
-- **Status:** BUILT (v0.1.0) — clarification note added v0.6.2 для aggregate feature scope compatibility с product-spec D19 terminology. Backlog-sync at closure — designed (D22), impl pending.
+- **Status:** BUILT (v0.1.0) — clarification note added v0.6.2 для aggregate feature scope compatibility с product-spec D19 terminology. Backlog-sync at closure — BUILT (D22).
 - **Path:** `hi_flow/skills/feature-spec/`
 - **Purpose:** Скилл feature-level продуктовой спеки. Ведёт оператора от запроса фичи к подписанной feature-spec.md через self-assessment + brainstorm с probing taxonomy + closure. Output — `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md`. **Feature scope (post v0.6.2 / D19):** aggregate of capabilities, не single capability — 8 probe categories масштабируются на whole feature scope; input — bundle файл из product-spec decomposition phase (когда applicable).
 - **References:** product-spec-template.md, self-assessment-template.md, example-goal-setting.md.
@@ -140,7 +140,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Status:** BUILT — `architectural-principles.md` создан 2026-04-28 в сессии arch-audit design (**18 принципов**, 4 группы, scope = static-only). +1 `barrel-discipline` добавлен 2026-04-29.
 - **Path:** `hi_flow/references/architectural-principles.md` (+ planned `architectural-principles-index.json`, auto-generated).
 - **Purpose:** Family-shared референсы. Library statically-detectable архитектурных принципов с типовыми fix alternatives. Owner — arch-audit (curates content); read-only для arch-redesign, arch-spec. См. D9.
-- **Planned:** `backlog-integration.md` — shared механизм контрибуции в product-backlog (owner — product-spec; потребители feature-spec + arch-spec). Designed 2026-05-29 (D22), impl pending.
+- **BUILT:** `backlog-integration.md` — shared механизм контрибуции в product-backlog (owner — product-spec; потребители feature-spec + arch-spec). D22, 2026-05-31.
 
 #### Other skills (parked)
 - `hi_flow:impl-plan` — Phase 3 implementation plan. Сейчас покрывается Superpowers TDD.
@@ -347,7 +347,7 @@ Per-feature Phase 2 скилл. Производит технический desi
 Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+idempotency по `Originating analysis: <spec> § <id>` → patch+approval → create-if-missing) в `hi_flow/references/backlog-integration.md` (family-shared, owner — product-spec). Формат записи — `product-backlog-template.md`. Потребители: feature-spec + arch-spec (закрывает их принцип-10 зависимость, D21). backlog = shared product-composition artifact (D17). feature-spec работает standalone.
 **Spec:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design.md`.
 **Триггер:** feature-spec фидбэк (REH ERP audit 2026-05-28); resync 2026-05-31 → arch-spec второй потребитель → Approach B.
-**Status:** designed, impl pending.
+**Status:** BUILT (2026-05-31). **Report:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design-report.md`.
 
 ---
 
@@ -605,3 +605,8 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Почему:** фидбэк первой боевой feature-spec сессии (REH ERP audit 2026-05-28) — отложенное скапливается в N спеках без точки агрегации. Resync 2026-05-31 после мёрджа arch-spec аннулировал посылку «единственный consumer» → A заменён на B.
 
 **Spec:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design.md`.
+
+### 2026-05-31 — D22 реализован (shared backlog-integration mechanism)
+
+**Что:** создан `hi_flow/references/backlog-integration.md`; feature-spec SKILL + template, product-backlog-template (формат-авторитет формализован под реальный артефакт), arch-spec SKILL (inline-алгоритм → pointer). Post-review фиксы: B1 (idempotency key — exact + name-fallback для pathless-записей), N1 (кардинальность `**Backlog:**` блока), S1 (mapping → pointer). plugin 0.6.3. Закрывает принцип-10 зависимость arch-spec (D21).
+**Report:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design-report.md`.
