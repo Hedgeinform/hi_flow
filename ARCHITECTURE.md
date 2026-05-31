@@ -49,8 +49,8 @@
 
 - **backlog** — D17, D18, D22, Module Map § product-spec, Module Map § backlog-integration
 - **fork** [aliases: развилка, development fork] — D2, Module Map § feature-spec, OQ1
-- **probing taxonomy** [aliases: probe taxonomy, taxonomy] — D2, OQ2
-- **fitness functions** [aliases: architectural fitness functions] — D3, OQ3, Module Map § arch-spec
+- **probing taxonomy** [aliases: probe taxonomy, taxonomy] — D3, Module Map § feature-spec
+- **fitness functions** [aliases: architectural fitness functions] — D11, D21, Module Map § arch-spec
 - **plain language principle** [aliases: plain language] — D4
 - **subagent-driven** [aliases: subagent dispatch] — D5
 
