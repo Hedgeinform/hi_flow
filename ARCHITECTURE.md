@@ -15,16 +15,18 @@
 - `hi_flow:feature-spec` (v0.1.0) — Phase 1 продуктовая спека. Боевой прогон выполнен (REH ERP audit-фича 2026-05-28).
 - `hi_flow:arch-redesign` (v0.1.0) — Phase 2 corrective.
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical.
-- `hi_flow:arch-spec` (design + SKILL.md + references, BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). Pending: shared graph-core (upstream-задача в arch-audit) + боевой прогон.
+- `hi_flow:arch-spec` (design + SKILL.md + references, BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). Pending: боевой прогон (graph-core построен 2026-05-31, блокер блока C снят).
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
 - `hi_flow:bootstrap` (working name) — project init wizard. Функция 1 порта operator-personal `architecture`.
 - `hi_flow:living-architecture` (working name) — Функция 2 порта operator-personal `architecture` (living document maintenance).
 - L3 hygiene layer — hooks, baselines relocation (Функция 3), arch-audit blocking mode, distribution mechanics.
-- **shared graph-core** — upstream-задача в arch-audit (чистые формулы метрик + новый graph-traversal циклов), блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** arch-spec спроектирован и реализован (D21). Следующее — shared graph-core (для боевой работы блока C) + боевой прогон arch-spec на ERP-фиче, далее bootstrap → living-architecture → L3 hygiene.
+**BUILT с прошлого фокуса:**
+- **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
+
+**Текущий фокус:** arch-spec спроектирован и реализован (D21), shared graph-core построен (блокер блока C снят). Следующее — боевой прогон arch-spec (block C теперь исполним) на ERP-фиче, далее bootstrap → living-architecture → L3 hygiene.
 
 ---
 
@@ -128,12 +130,12 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Status:** BUILT — design + SKILL.md + 3 references templates готовы (2026-04-27). **Purpose:** Project-level corrective. Консьюмит arch-audit findings + existing arch state, выдаёт refactor plan. См. D7. **Spec:** `docs/superpowers/specs/2026-04-27-hi_flow-arch-redesign-design.md`. **Report:** `docs/superpowers/specs/2026-04-27-hi_flow-arch-redesign-design-report.md`.
 
 #### `hi_flow/skills/arch-audit/` (BUILT v0.2.6)
-- **Status:** BUILT — runtime + SKILL.md (434 lines) + первый боевой прогон завершён. 107 unit+integration tests green, 15 baseline rules (incl. barrel-file), 18 D9 principles.
-- **Purpose:** Phase 2 analytical. TS/Node runtime: baseline-rules, enrich-findings, generate-mermaid, report-builder, typescript-depcruise adapter. Output: D8-compliant `audit-report.json` + `audit-report.md`. См. D7, D11, D12.
+- **Status:** BUILT — runtime + SKILL.md (434 lines) + первый боевой прогон завершён. 133 tests (129 unit/component green; 4 integration требуют depcruise-бинарь), 15 baseline rules (incl. barrel-file), 18 D9 principles.
+- **Purpose:** Phase 2 analytical. TS/Node runtime: baseline-rules, enrich-findings, generate-mermaid, report-builder, typescript-depcruise adapter, **`core/graph-core.ts`** (shared graph machinery — Ca/Ce/I/NCCD formulas SSoT + cycle/reachability traversal, импортируется arch-spec block C). Output: D8-compliant `audit-report.json` + `audit-report.md`. См. D7, D11, D12, D21.
 - **Spec:** `docs/superpowers/specs/2026-04-28-hi_flow-arch-audit-design.md`. **Report:** `docs/superpowers/plans/2026-04-28-arch-audit-impl-report.md`.
 
 #### `hi_flow/skills/arch-spec/` (BUILT — design + SKILL.md + references)
-- **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Pending:** shared graph-core (upstream-задача в arch-audit, блокер боевой работы блока C); closure backlog-sync исполним после merge backlog-integration (до тех пор — graceful degradation); боевой прогон. **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
+- **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Pending:** боевой прогон блока C (graph-core построен 2026-05-31 — блокер снят); closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
 - **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
 
 #### `hi_flow/references/` (BUILT, shared)
@@ -338,7 +340,7 @@ arch-spec **orthogonal** этому решению — per-feature Phase 2 proph
 
 Per-feature Phase 2 скилл. Производит технический design-spec, consumable для `superpowers:writing-plans`, + rules-patch (D11). Четыре задачи: вывод архитектуры из продукта / устройство фичи / проверка встраивания (профилактика) / fitness-инварианты. Профилактика встраивания — одна из четырёх, не единственная суть; скилл нужен всегда (на green-field блок C неприменим, остальное работает). Вход: feature-spec + D8-снимок arch-audit (freshness через `audit_sha`; три ситуации green / brown+fresh / brown+нет→громкий сигнал). Блок C (анализ встраивания) — на модульном уровне, дельта = прогноз, гибрид код/LLM. Fitness-инварианты: первичный потребитель — реализация (профилактика), arch-audit вторичен (анти-регрессия); классификация по механизму (граф→rules-patch / код-схема→тест / динамика→текст). Decoupled от `architecture`-скилла (вариант 2, OQ6) — не пишет в ARCHITECTURE.md.
 
-**Зависимость (принцип 10):** shared graph-core (чистые формулы метрик + новый graph-traversal циклов на декларативном графе) — отдельная upstream-задача в arch-audit; блокер боевой работы блока C, не написания SKILL.md.
+**Зависимость (принцип 10) — РАЗРЕШЕНА (2026-05-31):** shared graph-core построен в `hi_flow/skills/arch-audit/core/graph-core.ts` (Ca/Ce/I/NCCD как SSoT + новый Tarjan-traversal циклов/достижимости на декларативном графе). Блокер боевой работы блока C снят; остаётся боевой прогон block C. **Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-graph-core-report.md`.
 
 **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`. **Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design-report.md`.
 
@@ -610,3 +612,9 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 
 **Что:** создан `hi_flow/references/backlog-integration.md`; feature-spec SKILL + template, product-backlog-template (формат-авторитет формализован под реальный артефакт), arch-spec SKILL (inline-алгоритм → pointer). Post-review фиксы: B1 (idempotency key — exact + name-fallback для pathless-записей), N1 (кардинальность `**Backlog:**` блока), S1 (mapping → pointer). plugin 0.6.3. Закрывает принцип-10 зависимость arch-spec (D21).
 **Report:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design-report.md`.
+
+### 2026-05-31 — shared graph-core построен (D21 принцип-10 блокер снят)
+
+**Что:** Создан `hi_flow/skills/arch-audit/core/graph-core.ts` — SSoT чистых граф-функций над декларативным графом: Ca/Ce (`computeCoupling`), I (`instability`), NCCD, `reachableFrom` + новый Tarjan-traversal циклов (`findCycles`). arch-audit runtime (parse-depcruise, report-builder) переведён на него; поведение сохранено (129/129 unit/component green, typecheck чист). arch-spec SKILL.md Block C + References → конкретный путь к модулю.
+**Почему:** upstream-зависимость боевой работы блока C arch-spec (D21, принцип 10). Cycle-детекцию нельзя импортировать из depcruise (он сканирует реальные файлы; у гипотетического графа фичи кода ещё нет) → новый алгоритм обхода. Формулы Ca/Ce/I вынесены из fused-цикла парсера / inline-выражения в единый источник (принцип 4).
+**Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-graph-core-report.md`.
