@@ -47,6 +47,7 @@
 
      При появлении второй записи об одном концепте скилл предложит зарегистрировать его здесь автоматически. -->
 
+- **backlog** — D17, D18, D22, Module Map § product-spec, Module Map § backlog-integration
 - **fork** [aliases: развилка, development fork] — D2, Module Map § feature-spec, OQ1
 - **probing taxonomy** [aliases: probe taxonomy, taxonomy] — D2, OQ2
 - **fitness functions** [aliases: architectural fitness functions] — D3, OQ3, Module Map § arch-spec
@@ -111,7 +112,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Purpose:** Claude Code плагин, контейнер для скиллов семейства. Включает `.claude-plugin/plugin.json`, README, директорию `skills/`.
 
 #### `hi_flow/skills/feature-spec/`
-- **Status:** BUILT (v0.1.0) — clarification note added v0.6.2 для aggregate feature scope compatibility с product-spec D19 terminology.
+- **Status:** BUILT (v0.1.0) — clarification note added v0.6.2 для aggregate feature scope compatibility с product-spec D19 terminology. Backlog-sync at closure — designed (D22), impl pending.
 - **Path:** `hi_flow/skills/feature-spec/`
 - **Purpose:** Скилл feature-level продуктовой спеки. Ведёт оператора от запроса фичи к подписанной feature-spec.md через self-assessment + brainstorm с probing taxonomy + closure. Output — `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md`. **Feature scope (post v0.6.2 / D19):** aggregate of capabilities, не single capability — 8 probe categories масштабируются на whole feature scope; input — bundle файл из product-spec decomposition phase (когда applicable).
 - **References:** product-spec-template.md, self-assessment-template.md, example-goal-setting.md.
@@ -139,6 +140,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Status:** BUILT — `architectural-principles.md` создан 2026-04-28 в сессии arch-audit design (**18 принципов**, 4 группы, scope = static-only). +1 `barrel-discipline` добавлен 2026-04-29.
 - **Path:** `hi_flow/references/architectural-principles.md` (+ planned `architectural-principles-index.json`, auto-generated).
 - **Purpose:** Family-shared референсы. Library statically-detectable архитектурных принципов с типовыми fix alternatives. Owner — arch-audit (curates content); read-only для arch-redesign, arch-spec. См. D9.
+- **Planned:** `backlog-integration.md` — shared механизм контрибуции в product-backlog (owner — product-spec; потребители feature-spec + arch-spec). Designed 2026-05-29 (D22), impl pending.
 
 #### Other skills (parked)
 - `hi_flow:impl-plan` — Phase 3 implementation plan. Сейчас покрывается Superpowers TDD.
@@ -263,6 +265,8 @@ Output decomposition phase — третий тип артефакта product-sp
 
 **Terminology realignment (v0.6.1):** «cluster» в этом D17 переименован в «фича» (industry-aligned). Iteration plan directory содержит roadmap (с фичами) + bundle-<feature-slug>.md × N. См. D19 для full terminology shift detail.
 
+**Ownership уточнение (D22, 2026-05-31):** backlog — shared product-composition artifact, не эксклюзив product-spec; product-spec первичный владелец (создаёт, владеет структурой/шаблоном), feature-spec и arch-spec — read+append+create-if-missing через shared backlog-integration механизм. См. D22.
+
 **Триггер фиксации:** retrospective REH-ERP сессии 2026-05-25 выявил gap между product-spec (33 функции на выходе) и feature-spec (одна фича на входе); анализ trade-off'ов показал что включение в product-spec лучше отдельного скилла — контекст не дублируется, прецедент с backlog (один скилл уже выдаёт два артефакта разной природы), P4 защищает чистоту design (decomposition — execution planning, не design).
 
 **Spec:** `docs/superpowers/specs/2026-05-26-hi_flow-product-spec-v0.6-decomposition-design.md`. Companion handoff (implementation deferred): `docs/handoffs/2026-05-26-product-spec-v0.7-retrospective-improvements-design-handoff.md`.
@@ -337,6 +341,13 @@ Per-feature Phase 2 скилл. Производит технический desi
 **Зависимость (принцип 10):** shared graph-core (чистые формулы метрик + новый graph-traversal циклов на декларативном графе) — отдельная upstream-задача в arch-audit; блокер боевой работы блока C, не написания SKILL.md.
 
 **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`. **Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design-report.md`.
+
+### D22. Shared `backlog-integration` механизм — единая точка контрибуции downstream-скиллов в product-backlog.
+
+Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+idempotency по `Originating analysis: <spec> § <id>` → patch+approval → create-if-missing) в `hi_flow/references/backlog-integration.md` (family-shared, owner — product-spec). Формат записи — `product-backlog-template.md`. Потребители: feature-spec + arch-spec (закрывает их принцип-10 зависимость, D21). backlog = shared product-composition artifact (D17). feature-spec работает standalone.
+**Spec:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design.md`.
+**Триггер:** feature-spec фидбэк (REH ERP audit 2026-05-28); resync 2026-05-31 → arch-spec второй потребитель → Approach B.
+**Status:** designed, impl pending.
 
 ---
 
@@ -413,6 +424,10 @@ D10 amendment (2026-04-29) расширяет hi_flow до design phases (0-2) +
 **Migration existing data.** Для проектов со flat-структурой — один `git mv` в первую кампанию. Для zhenka-bot конкретно: `audit-report/audit-report.json` + routing reports + applied-patches/ → `audit-report/campaigns/2026-04-28-pipeline-god-object/`, депграф-скрипт перенаправить в `audit-report/live/`.
 
 **К дизайну.** Скилл arch-redesign отвечает за contract; arch-audit получает CLI-флаги; SKILL.md обоих обновляются. Не trivial change — затрагивает оба наших скилла плюс конвенцию для проектных live-tools.
+
+### OQ10. Двунаправленная сверка backlog-контрибуций (Approach C) / дивергенция формата.
+
+feature-spec и arch-spec дописывают в backlog снизу-вверх через shared механизм (D22). Открыто: нужна ли product-spec'у активная реконсиляция этих записей при новой итерации (Approach C) и что делать при дивергенции формата записи между скиллами. К решению при первом расхождении или росте числа контрибуций.
 
 ---
 
@@ -582,3 +597,11 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Deferred:** shared graph-core (upstream-задача в arch-audit, код + тесты, блокер боевой работы блока C); боевой прогон arch-spec (green-field на audit проверит блоки A/B/D/E; блок C — на второй фиче); пример выходной спеки в references (после прогона); arch-audit canonical-alignment правки (в chip).
 
 **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`. **Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design-report.md`.
+
+### 2026-05-31 — D22: shared backlog-integration механизм (design + resync)
+
+**Что:** feature-spec closure-sync отложенного в product-backlog, вынесен в shared-референс `hi_flow/references/backlog-integration.md` (Approach B) — т.к. arch-spec (D21) оказался вторым потребителем механизма, ссылающимся на него по имени. backlog = shared product-composition artifact (D17 уточнён). Impl pending (отдельная сессия).
+
+**Почему:** фидбэк первой боевой feature-spec сессии (REH ERP audit 2026-05-28) — отложенное скапливается в N спеках без точки агрегации. Resync 2026-05-31 после мёрджа arch-spec аннулировал посылку «единственный consumer» → A заменён на B.
+
+**Spec:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design.md`.
