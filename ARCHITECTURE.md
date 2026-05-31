@@ -255,7 +255,7 @@ superpowers = methodology of implementation (как именно делать TD
 
 Claude Code marketplace cache живёт в `~/.claude/plugins/marketplaces/hi_flow-marketplace/` как отдельный git clone репозитория. После `git push` в основной репо (с bump'нутой версией плагина) cache **не обновляется автоматически** при `plugin update` — работает по старому snapshot'у. Manual update обязателен: `cd ~/.claude/plugins/marketplaces/hi_flow-marketplace/ && git fetch && git merge --ff-only origin/master`. До этого шага новая версия плагина не видна в Claude Code (включая локальный setup оператора).
 
-**Release flow для hi_flow:** bump версии в `.claude-plugin/plugin.json` → commit → push в master → **manual fetch+ff в cache directory**. Без последнего шага release фактически не доходит до конечного пользователя.
+**Release flow для hi_flow:** bump версии в **обоих** манифестах синхронно — `hi_flow/.claude-plugin/plugin.json` И запись плагина `hi_flow` в корневом `.claude-plugin/marketplace.json` (поле `version`); они обязаны совпадать → commit → push в master → **manual fetch+ff в cache directory**. Без последнего шага release не доходит до пользователя; без синхронного бампа marketplace.json версия в маркетплейсе застревает. **Реальный дрейф (устранён 2026-05-31):** marketplace.json висел на `0.4.0` через релизы 0.5.0-0.6.3, пока plugin.json рос — D16-флоу исходно бампал только plugin.json. Оба синхронизированы на 0.6.4.
 
 ### D17. hi_flow:product-spec scope включает decomposition phase (iteration plan + feature bundles).
 
