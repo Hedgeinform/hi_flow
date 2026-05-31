@@ -337,6 +337,18 @@ The mechanism is the shared family **backlog-integration** mechanism — `hi_flo
 
 **Dependency (satisfied, principle 10):** the backlog-integration mechanism is implemented as a shared family artifact at `hi_flow/references/backlog-integration.md` (D22). Read it as the source of truth for the generic flow — reference it by name; do not restate or fabricate its details.
 
+### arch-spec harvest sources (what this skill supplies to the mechanism)
+
+The mechanism is consumer-agnostic — arch-spec must declare its own structural anchors for backlog-bound items (just as feature-spec declares its DEFERRED forks / `**Backlog:**` blocks / tags). arch-spec's anchors:
+
+1. **§7 Operability limits** — for each limit-assumption that passed triage, its monitoring trigger + next step ("on reaching Z, develop W") → `classification: parked`; `local_ref: §7 / <limit>`.
+2. **§3 Goal and boundaries** — items explicitly marked deferred (open questions delegated to other / higher levels) → `parked`; `local_ref: §3 / <item>`.
+3. **Inherited** — feature-spec "Open items" routed here by the severity sort below (the nice-to-have / operational / discipline rows).
+
+**Slug derivation:** feature-slug from the spec filename (`YYYY-MM-DD-<feature-slug>-arch-spec.md` → `<feature-slug>`); the operator confirms. Same feature as feature-spec, so records group together in the backlog.
+
+For each item supply the harvest contract (`local_ref`, `classification`, `name`, plus proposed `level` / `reason` / `carry-over` — finalized at approval). classification is predominantly `parked` (architectural next-steps); `rejected` / `deferred-fork` are atypical for arch-spec.
+
 ### Sorting feature-spec deferred items (severity → destination)
 
 The feature-spec "Open items at closure" table mixes severities. Sort each row deterministically — do not decide ad-hoc:
@@ -344,10 +356,6 @@ The feature-spec "Open items at closure" table mixes severities. Sort each row d
 - **blocker (for arch-spec)** → must be CLOSED in this spec (§5-8), never deferred.
 - **желательно / RESOLVED-direction** → §10 (delegated to implementation) if it needs code-sight, else §3 (deferred-pointer).
 - **nice-to-have / operational / discipline** → product-backlog.
-
-### Fallback until backlog-integration is merged
-
-backlog-integration is **not yet executable** in this branch — until it merges, the automated patch+approval flow has no procedure. **Degrade gracefully, do not skip silently:** list the backlog-bound items as a **pointer in §3** and present the full list to the operator (escalation), instead of an automated backlog patch. Once backlog-integration is available, switch to the patch+approval flow above. Never silently drop deferred items (principle 5).
 
 ## Operational rules — what the skill enforces
 
