@@ -34,7 +34,16 @@ A single `feature-spec.md`. Default location: `<project>/docs/specs/YYYY-MM-DD-<
 - **Invalid combinations** — across capabilities
 - **User reactions** — per output
 
-**Input pattern when invoked from product-spec output:** оператор attach'ит `bundle-<feature-slug>.md` файл (product-spec decomposition phase output, v0.6.0+). Bundle описывает фичу целиком — feature-spec работает с ней as single scope, output — один `feature-spec.md` на всю фичу с hierarchical развилками (F1 / F1.3 / F1.3.2 Cockburn-style per capability area).
+### Two input modes (product-spec is optional)
+
+feature-spec runs in either mode; **both** must support backlog-sync at closure.
+
+- **After product-spec** — the operator attaches a `bundle-<feature-slug>.md` file (product-spec decomposition phase output, v0.6.0+). The bundle describes the whole feature — feature-spec works with it as a single scope. A product-backlog almost certainly already exists (product-spec created it).
+- **Standalone** — the operator arrives with a ready feature idea for an **existing** product, without a product-spec and without a bundle. A backlog may exist (accumulated by earlier feature-spec sessions or by hand) or may be absent.
+
+Either way, the output is one `feature-spec.md` for the whole feature with hierarchical forks (F1 / F1.3 / F1.3.2 Cockburn-style per capability area).
+
+**Hard requirement:** closure backlog-sync depends only on the presence / absence of a `*backlog*.md` file, **not** on any product-spec artifact (no `product-spec.md`, no bundle required). See "Backlog sync at closure".
 
 **Когда spec'ать одну capability изолированно бывает оправдано:** если capability ultra-complex (требует ultra-deep specialized analysis — например, payment processing с тяжёлыми edge cases) — это сигнал к extraction её в свою отдельную фичу через update mode product-spec'а (один capability = одна фича в этом частном случае). Не narrow capability-spec session в составе большой фичи — context теряется без surrounding capabilities.
 
@@ -156,7 +165,32 @@ After self-review fixes are applied, present the spec to the operator:
 
 > «Spec written to `<path>`. Please review it and let me know if you want any changes before we move to the next phase.»
 
-Wait for the operator's response. If they request changes, apply them and re-run Self-Review. Only proceed once the operator approves.
+Wait for the operator's response. If they request changes, apply them and re-run Self-Review. Only proceed once the operator approves. Once approved, run **Backlog sync at closure** (below) as the final closure sub-phase before any transition to the next phase.
+
+### Backlog sync at closure
+
+After the operator approves the spec (User Review Gate), run backlog-sync as the **final** closure sub-phase. Deliberately deferred items live scattered across the spec — a parked sub-function, a deferred fork, an out-of-scope line; the **product-backlog** is their single aggregation home. This sub-phase harvests them and offers a patch to the backlog.
+
+**Mechanism:** the shared family **backlog-integration** mechanism — `hi_flow/references/backlog-integration.md`. feature-spec follows it **by name** as a bottom-up contributor; it does not reinvent the algorithm. Read that reference for the generic flow (detect `*backlog*.md` → dedup/merge → idempotency by `Originating analysis` (exact key for downstream records; name-fallback surfacing for product-spec's pathless records — see the mechanism) → classify → patch + approval → create-from-template if missing → iteration index untouched). This section supplies only feature-spec's part of the harvest contract.
+
+**When it runs:** at the very end of closure — after the spec is written, self-reviewed, and operator-approved. The deferred set is then stable and the final spec path is known (needed for the `Originating analysis` pointer).
+
+**feature-spec harvest sources (the structural anchors):**
+
+1. A fork with `[status: DEFERRED]` — the whole fork is deferred → `parked`.
+2. A `**Backlog:**` block (bullets) under any fork — the organic convention; the listed sub-points of a RESOLVED fork are → `parked`, **one parked record per bullet**.
+3. `Sf-` forks (deferred strategic forks), if the spec uses them → `deferred-fork`.
+4. `Out of scope` lines (in Цель) and `Premortem findings` items with a light tag: `→ backlog` → `parked`, or `→ rejected: <reason>` → `rejected`. An untagged line is a plain scope boundary / an absorbed finding — **not** backlog-bound.
+
+For each harvested item, supply the mechanism's harvest contract (`local_ref`, `classification`, `name`, plus proposed `level` / `reason` / `carry-over` — proposed, finalized at approval).
+
+**Scan-validate scope (the hybrid safety net):** fuzzy-scan only operator-content sections — `Развилки`, `Цель`, `Premortem findings` — for deferral prose ("backlog" / "отложен") that carries no structural anchor, and surface each discrepancy to the operator per item. **Exclude fenced code blocks** (` ``` `) — they may contain the word "backlog" from template examples copied into the spec, and must not produce false hits.
+
+**Slug derivation:** if a bundle exists (after product-spec) → slug from it; standalone → from the spec filename (`YYYY-MM-DD-<feature-slug>-feature-spec.md` → `<feature-slug>`). The operator confirms at approval. No guessing.
+
+**Marking discipline (during the session, not only at closure):** when you defer something, place the structural anchor **in place** at that moment — `[status: DEFERRED]` on the fork, a `**Backlog:**` bullet under a RESOLVED fork, or a `→ backlog` / `→ rejected` tag on an out-of-scope / premortem line. These are find-ers only; `level` / `carry-over` / `reason` are proposed and finalized at approval and are **not** required inline. Marking as you go makes the closure harvest deterministic instead of a fuzzy re-scan.
+
+**No separate register section** in the spec — deferred items stay in their natural places (the fork / out-of-scope / premortem), marked structurally; the backlog is the only aggregation home (SSoT, principle 4). The decision detail stays in the fork; the backlog gets the `Originating analysis` pointer-with-summary. This is a different axis from "Open items at closure" (unresolved items, kept in the spec) — the two lists do not merge.
 
 ### Coverage-based closure criterion
 
@@ -471,12 +505,16 @@ Anchor for the operator and for the next phase.
 6. **`Открыто`, `Связи`, `Examples`** — optional. If empty, omit the line.
 7. **`END.`** on terminal branches.
 8. **No summary** at the end of the spec. Operator reads in full.
+9. **`**Backlog:**` block (organic convention).** Under a RESOLVED fork whose sub-functions are partly deferred, list the deferred sub-points as bullets under a bold `**Backlog:**` label. This is a harvest anchor (anchor 2 in "Backlog sync at closure") — the listed items are parked at closure. Do **not** introduce a conflicting single-line `**Backlog:** level: ... | ...` form; the block-of-bullets convention is canonical (it already exists in real specs).
+10. **Deferral tags on one-liners.** `Out of scope` (in Цель) and `Premortem findings` lines may carry a light tag: `→ backlog` (parked → Parked features) or `→ rejected: <reason>[; альтернатива <...>]` (hard rejection → Out-of-scope (rejected)). An untagged line is a plain scope boundary / absorbed finding and is **not** transferred. Tags are harvest anchor 4.
 
 ## References
 
 - **Reference example** of a completed feature-spec.md: `references/example-goal-setting.md`. Read this when generating output to anchor format and style.
 - **Feature-spec template** with placeholders: `references/feature-spec-template.md`. Use as the starting structure when writing.
 - **Self-assessment proposal template:** `references/self-assessment-template.md`.
+- **Backlog integration mechanism (shared, family):** `hi_flow/references/backlog-integration.md`. The generic backlog-contribution algorithm feature-spec follows by name at closure (detect → dedup → idempotency → patch + approval → create-if-missing). Read it before running backlog-sync.
+- **Product-backlog template (format authority):** `hi_flow/skills/product-spec/references/product-backlog-template.md`. The single source of backlog record format (Parked features / Deferred strategic forks / Out-of-scope (rejected)). Read-only for feature-spec — owned by product-spec.
 
 ## Implementation Notes
 

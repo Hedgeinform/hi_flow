@@ -333,9 +333,9 @@ The single obligation: provide a clear point **"spec signed = decisions are fina
 
 Deferred items (next architectural steps from Operability limits, open questions for other/higher levels) go to **product-backlog** (an external file), **not into the spec**. At closure, arch-spec gathers the deferred items and **proposes adding them to product-backlog** (a patch for approval, not silently).
 
-The mechanism is the shared family **backlog-integration** mechanism (same one feature-spec uses as a bottom-up contributor: read backlog format → detect `*backlog*.md` → idempotency check → build patch + approval → create-from-template if missing). arch-spec follows it by name; it does not invent its own.
+The mechanism is the shared family **backlog-integration** mechanism — `hi_flow/references/backlog-integration.md` (the same one feature-spec uses as a bottom-up contributor). arch-spec follows it **by name** and does not restate the algorithm; read that reference for the generic flow (detect → dedup → idempotency → patch + approval → create-if-missing).
 
-**Dependency (named, principle 10):** the backlog-integration mechanism is a shared family artifact whose authoritative state lives in the **main** branch (design approved, impl pending as of this writing). When implementing closure backlog-sync, **re-sync with main** — path/name/decisions may have changed. Do not rely on memory; re-read the artifact from main. Reference the mechanism by name; do not fabricate its details.
+**Dependency (satisfied, principle 10):** the backlog-integration mechanism is implemented as a shared family artifact at `hi_flow/references/backlog-integration.md` (D22). Read it as the source of truth for the generic flow — reference it by name; do not restate or fabricate its details.
 
 ### Sorting feature-spec deferred items (severity → destination)
 
@@ -401,4 +401,4 @@ After self-review fixes, present to the operator (User Review Gate): «Arch-spec
 - `hi_flow/references/architectural-principles.md` — shared D9 library (principle catalog; owner — arch-audit). Source of `principle` ids for invariants and rules-patch.
 - `hi_flow/skills/arch-audit/references/d8-schema.md` — D8 snapshot schema (audit-report format consumed for block C).
 - **Shared graph-core** (separate upstream task in arch-audit, principle 10) — pure metric formulas + declarative-graph traversal for cycles/reachability. Block C's live computation depends on it; this skill references it as a tool.
-- **backlog-integration** (shared family mechanism; authoritative state in `main`) — closure backlog-sync follows it by name. Re-sync with main at implementation time.
+- **backlog-integration** (shared family mechanism, `hi_flow/references/backlog-integration.md`, D22) — closure backlog-sync follows it by name.

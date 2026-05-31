@@ -32,6 +32,17 @@ Bot:   <финальное подтверждение>
 **Out of scope (если применимо):**
 - <явные исключения>
 
+<!-- Однострочники Out of scope могут нести опциональный deferral-тег для backlog-sync
+     (harvest-якорь 4). Пример — внутри fenced-блока, чтобы closure scan-валидация
+     не ловила слово «backlog» в самом шаблоне: -->
+
+```markdown
+**Out of scope:**
+- Export CSV → backlog
+- Tamper-proof хранение → rejected: вне scope baseline; альтернатива — ASVS L2 пакет
+- Multi-language интерфейс                      ← без тега: граница scope, не backlog-bound
+```
+
 ---
 
 ## Контракт входа
@@ -70,6 +81,20 @@ Bot:   <финальное подтверждение>
 **Связи:** <если есть>
 **Examples:** <конкретные сценарии>
 
+<!-- Органическая конвенция `**Backlog:**`: под RESOLVED-развилкой, часть под-функций
+     которой отложена, перечисли отложенное буллетами под bold-лейблом `**Backlog:**`.
+     Это harvest-якорь (anchor 2) для backlog-sync at closure. Пример — fenced, чтобы
+     scan-валидация не ловила его как реальное отложенное: -->
+
+```markdown
+### F4.2. Фильтр в audit UI [decision: какой набор фильтров] [status: RESOLVED]
+
+**Resolution:** базовый фильтр по event_type. Категорийный фильтр отложен — ниже.
+
+**Backlog:**
+- Category filter (security/pipeline) — отложен: требует классификации event_types.
+```
+
 ---
 
 ## Cross-cutting policies
@@ -98,6 +123,14 @@ Bot:   <финальное подтверждение>
 
 1. **<жалоба>** — <как закрыто или где зафиксировано>
 2. ...
+
+<!-- Premortem-пункт может нести deferral-тег `→ backlog` (harvest-якорь 4), если жалоба
+     указывает на сознательно отложенную возможность. Пример — fenced: -->
+
+```markdown
+4. **<жалоба про отсутствующую возможность>** → backlog
+6. **<жалоба>** — absorbed в F1.6                ← без тега: ушло в развилку, не backlog-bound
+```
 
 ---
 

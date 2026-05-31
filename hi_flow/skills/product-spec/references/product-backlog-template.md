@@ -57,10 +57,16 @@ Level definitions:
 - `note` — 2-5 строк свободного текста с описанием идеи
 - `fragment` — 1 строка — keyword или вопрос
 
-Template entry:
+Template entry (named fields — это формат-авторитет для shared `backlog-integration` механизма; `**Originating analysis:**` — канонический ключ идемпотентности downstream-контрибуций, D22):
 
-### F-<feature-slug>-X. <Name> (level: <detailed|partial|note|fragment>)
-[full card как была на момент парковки + reason for parking + originating spec]
+### F-<feature-slug>-X[-<suffix>]. <Name> (level: <detailed|partial|note|fragment>)
+**Status:** parked
+**Originating analysis:** <spec-path> § <fork-id>
+**Reason for parking:** <причина>
+**Carry-over candidate for:** <target iteration / phase>
+**Описание:** <опционально — для note/partial: full card как была на момент парковки>
+
+ID: `-X` маркирует parked (не committed); `-<suffix>` — опциональный короткий kebab-тег для нескольких отложенных пунктов одной фичи (`F-audit-X-export`, `F-audit-X-category-filter`); опускается когда фича паркует один пункт (`F-objects-X`).
 -->
 
 ## Deferred strategic forks
