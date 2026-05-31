@@ -23,7 +23,7 @@ const RULES: BaselineRule[] = [
     severity: 'HIGH',
     explanation: 'Production code imports test files — inverted dependency direction.',
   },
-  // === Layer B — universal custom (6) ===
+  // === Layer B — universal custom (7) ===
   {
     id: 'baseline:god-object',
     name: 'god-object',

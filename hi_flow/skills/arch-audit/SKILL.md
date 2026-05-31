@@ -16,9 +16,12 @@ Two modes:
 
 Output is consumed downstream by `arch-redesign` (cluster-mode and triage-mode) and `arch-spec`.
 
+**Fitness function classification (Building Evolutionary Architectures vocabulary).** Every baseline finding arch-audit produces is a **static + automated** fitness function — a machine-checkable, source-derived guard on an architectural characteristic. **Dynamic** fitness functions (measured against a running system: latency, resilience under load) and **manual** ones (human-judged at a review gate) are out of scope for this runtime. This shared vocabulary aligns with `arch-spec`, which declares fitness functions citing the same canonical D9 principle ids that arch-audit findings reference via `reason.principle`.
+
 ## Out of scope
 
 - Semantic principle analysis (SSoT, OCP, LSP, silent-fallback-prohibition) — not statically detectable. Belongs to code review (human / AI agent).
+- Translation boundary / Anti-Corruption Layer between subsystems with different semantics — a semantic concern: a dependency graph cannot detect a «semantic mismatch» across the boundary. Belongs to code review / arch-spec territory.
 - Code-level checks (style, typing, lint rules) — eslint / prettier / tsc territory.
 - Dependency hygiene (unresolvable imports, deprecated packages) — standalone `depcruise --validate` + `npm audit`.
 - Security scans, performance profiling, integration testing.
@@ -427,7 +430,7 @@ Install via the marketplace entry in `.claude-plugin/marketplace.json` using the
 
 - `references/d8-schema.json` — JSON Schema for validators.
 - `references/d8-schema.md` — markdown spec for D8 (canonical source — `hi_flow/skills/arch-audit/references/`; `arch-redesign` and `arch-spec` read from here).
-- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 6 universal custom + 5 conditional structural = 14 rules), severity normalization, suppression precedence, override mechanism.
+- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 7 universal custom + 5 conditional structural = 15 rules, incl. `barrel-file`), severity normalization, suppression precedence, override mechanism.
 - `references/self-review-checklist.md` — seven-group checklist for the Self-Review subagent.
 - `references/audit-report-template.md` — markdown template for header + sections.
 - `hi_flow/references/architectural-principles.md` — D9 library (catalog of principles with typical fix alternatives; owned by this skill).

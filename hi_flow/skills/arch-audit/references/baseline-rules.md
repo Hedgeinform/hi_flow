@@ -1,7 +1,7 @@
 # arch-audit Baseline Rule Set — Draft v3
 
 **Date:** 2026-04-28
-**Context:** черновик baseline rules для скилла `hi_flow:arch-audit` (TS/Node + dependency-cruiser стек). Производно от 17 принципов D9 library (`hi_flow/references/architectural-principles.md`).
+**Context:** черновик baseline rules для скилла `hi_flow:arch-audit` (TS/Node + dependency-cruiser стек). Производно от 18 принципов D9 library (`hi_flow/references/architectural-principles.md`).
 **Status:** draft v3. После двух subagent validation pass'ов:
 - v1→v2: 1 CRITICAL + 5 HIGH + 3 MEDIUM applied (rule overlap fix, hub-like-dependency, layer list expansion, NCCD conditional, etc.).
 - v2→v3: severity scheme normalization (depcruise error/warn → HIGH/MEDIUM/LOW), schema_version + rule_id fields added.
@@ -10,10 +10,10 @@
 
 ## Структура baseline
 
-14 правил в трёх слоях:
+15 правил в трёх слоях:
 
 - **Слой A — depcruise built-ins** (3 правила): переиспользуем existing default rule set, навешиваем `principle:` ссылки.
-- **Слой B — universal custom** (6 правил): работают на любом проекте без operator-declared контекста, через метрики и граф.
+- **Слой B — universal custom** (7 правил): работают на любом проекте без operator-declared контекста, через метрики и граф.
 - **Слой C — conditional structural** (5 правил): применяются автоматически, если detected конкретные конвенциональные структуры (layered naming, feature folders).
 
 Метрики (Ca/Ce/I/A/D/LOC/NCCD) считаются всегда, идут в `audit-report.json → metrics` как сырые числа для контекста.
@@ -56,7 +56,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ---
 
-## Слой B — universal custom (6)
+## Слой B — universal custom (7)
 
 ### `god-object`
 - **Principle:** `god-object-prohibition`
@@ -94,6 +94,13 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 - **What:** информативный сигнал о cross-module dependency. Не ругает, напоминает оператору осознать.
 - **Severity:** LOW.
 - **Suppression:** **подавляется**, если на этом импорте сработало одно из более специфичных правил Слоя C (`layered-respect`, `port-adapter-direction`, `vertical-slice-respect`). Иначе оператор видит double/triple findings на одном импорте.
+
+### `barrel-file`
+- **Principle:** `barrel-discipline`
+- **Detection:** custom — `index.ts` как pure re-export aggregator (≥80% re-exports, нет value declarations), импортируемый sibling-модулями. Variant B (locked): barrels, импортируемые только внутри своего модуля, не флагируются. Threshold default 0.8. Реализация — `helpers/detect-barrels.ts` (content classification regex + depgraph cross-reference).
+- **What:** barrel-файлы искажают dep-граф для статического анализа и маскируют реальный coupling между модулями.
+- **Severity:** MEDIUM.
+- **Added:** 2026-04-29 (D12), post-draft-v3.
 
 ---
 
@@ -183,7 +190,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 - **CRITICAL:** 1 (architectural-layer-cycle, conditional).
 - **HIGH:** 6 (no-circular, not-to-test-from-prod, god-object, dependency-hub, inappropriate-intimacy, nccd-breach).
-- **MEDIUM:** 6 (no-orphans, high-fanout, layered-respect, domain-no-channel-sdk, port-adapter-direction, vertical-slice-respect).
+- **MEDIUM:** 7 (no-orphans, high-fanout, layered-respect, domain-no-channel-sdk, port-adapter-direction, vertical-slice-respect, barrel-file).
 - **LOW:** 1 (cross-module-import-info).
 
 Все severity ∈ {CRITICAL, HIGH, MEDIUM, LOW} — D8 schema valid.
@@ -240,3 +247,4 @@ Project rules могут:
 - **2026-04-28 — Subagent validation v2 pass (Opus, изолированный контекст) для Self-Review checklist.** Surface'нула severity scheme mismatch между D8 schema и Слой A baseline rules (depcruise error/warn vs schema CRITICAL/HIGH/MEDIUM/LOW). **Fixed in v3 (this draft):** adapter normalize'ит depcruise severities в D8 scheme; обновлены severity assignments всех Слой A правил; обновлена severity distribution.
 - Также **fixed in v3:** D8 schema добавляет `metadata.schema_version` field + `finding.rule_id` field (cross-reference к baseline rule или project rule). Эти изменения требуют синхронизации с D8 schema document в arch-redesign references — будет cascade'нуто после approval этого draft'а.
 - Полные отчёты subagent'ов — в conversation log этой design сессии.
+- **2026-04-29 — barrel-discipline добавлен как 15-е baseline-правило (D12), post-draft-v3.** `helpers/detect-barrels.ts` + `baseline:barrel-file` rule (MEDIUM, principle `barrel-discipline`) + 18-й принцип в D9. Variant B locked (per-module-internal barrels не флагируются). Этот draft синхронизирован под факт: счётчики 14→15 правил и 17→18 принципов, добавлена секция `barrel-file` в Слой B, обновлено severity distribution (MEDIUM 6→7). Детали — `ARCHITECTURE.md` D12 + `docs/superpowers/plans/2026-04-28-arch-audit-barrel-detection.md`.
