@@ -431,6 +431,14 @@ D10 amendment (2026-04-29) расширяет hi_flow до design phases (0-2) +
 
 feature-spec и arch-spec дописывают в backlog снизу-вверх через shared механизм (D22). Открыто: нужна ли product-spec'у активная реконсиляция этих записей при новой итерации (Approach C) и что делать при дивергенции формата записи между скиллами. К решению при первом расхождении или росте числа контрибуций.
 
+### OQ11. Packaging arch-audit (code-скилл) для public release — tests shipping + code-onboarding.
+
+arch-audit — единственный code-скилл семейства (TS/Node runtime: `core/` + `adapters/` + `helpers/` + `package.json`/`tsconfig`/`vitest`; остальные 4 скилла — только `SKILL.md` + `references/`). При git-based distribution маркетплейс клонирует **всю** директорию скилла в кэш каждого юзера. Два вопроса к моменту public release:
+1. **`tests/` (82 файла) едут каждому юзеру** — dev-артефакт, потребителю не нужен. Стандартного exclude (как `.npmignore`) у git-маркетплейса нет. Варианты: смириться (bloat, функционально безвредно) / вынести тесты из директории скилла (нетривиальный рефактор путей + потеря self-containedness).
+2. **Code-onboarding** — рантайм требует `npm install` в директории скилла + бинарь `dependency-cruiser`; не plug-and-play как markdown-скиллы. Надо документировать в release.
+
+`node_modules` корректно заигнорен (не едет). **Связано:** D10 (L3 hygiene), OQ6 (market-ready decoupling), OQ7-parked (tooling onboarding hook). **К решению:** при подготовке первого public-релиза hi_flow.
+
 ---
 
 ## History of Architectural Decisions
