@@ -16,17 +16,17 @@
 - `hi_flow:arch-redesign` (v0.1.0) — Phase 2 corrective.
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical.
 - `hi_flow:arch-spec` (BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). **Первый боевой прогон выполнен 2026-05-31** (REH ERP audit, green field) — цепочка дала работающий софт (Slice 1: 14/14 tests, typecheck+dep-audit clean). Выявил amendment B+C+D + chain-находку A → `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`, долг в active-issues.
+- `hi_flow:bootstrap` (BUILT v0.7.0) — Phase 2 project-level foundation. Реализован 2026-06-01 (находка A закрыта). Прошёл spec-compliance + behavioral валидацию; боевой прогон на проекте ещё не выполнялся (возможен на операторской среде сейчас, см. Module Map § bootstrap).
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
-- `hi_flow:bootstrap` (working name) — project init wizard. Функция 1 порта operator-personal `architecture`. **Приоритет подтверждён боевым прогоном** (находка A: нет владельца app-stack fixation → greenfield implementation блокируется рекуррентно, backend+frontend). Требования наполнены в roadmap-handoff 2026-06-01.
 - `hi_flow:living-architecture` (working name) — Функция 2 порта operator-personal `architecture` (living document maintenance).
 - L3 hygiene layer — hooks, baselines relocation (Функция 3), arch-audit blocking mode, distribution mechanics.
 
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** первый боевой прогон arch-spec выполнен (REH ERP, работающий софт) — фидбек разнесён в roadmap-handoff 2026-06-01 (находки A-G). Следующее — arch-spec amendment (B+C+D, active-issues), затем **bootstrap** (приоритет подтверждён находкой A) → living-architecture → L3 hygiene.
+**Текущий фокус:** bootstrap реализован 2026-06-01 (находка A закрыта). Следующее — боевой прогон bootstrap (covered-axis init на операторской среде возможен сейчас) + arch-spec amendment (B+C+D, active-issues) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap).
 
 ---
 
@@ -146,10 +146,10 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Боевой прогон:** выполнен 2026-05-31 (REH ERP, green field) — работающий софт; выявил amendment B+C+D (active-issues) + chain-находку A (→ bootstrap), roadmap-handoff 2026-06-01. closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
 - **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
 
-#### `hi_flow/skills/bootstrap/` (DESIGN-READY)
-- **Status:** DESIGN-READY (design-спека 2026-06-01) — impl deferred (pre-condition: Ф3a relocation). Phase 2 project-level foundation, закрывает находку A.
-- **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1. См. P7, P8, KD2, D20.
-- **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`.
+#### `hi_flow/skills/bootstrap/` (BUILT v0.7.0)
+- **Status:** BUILT — SKILL.md (~190 lines) + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. Прогон на операторской среде возможен сейчас (baselines/stack-files читаются с operator-personal путей, помеченных pending-Ф3a). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
+- **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1, закрывает находку A. См. P7, P8, KD2, D20.
+- **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Report:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design-report.md`.
 
 #### `hi_flow/references/` (BUILT, shared)
 - **Status:** BUILT — `architectural-principles.md` создан 2026-04-28 в сессии arch-audit design (**18 принципов**, 4 группы, scope = static-only). +1 `barrel-discipline` добавлен 2026-04-29.

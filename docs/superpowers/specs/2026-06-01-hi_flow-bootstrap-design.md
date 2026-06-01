@@ -83,6 +83,12 @@ bootstrap владеет:
 
 **Частично покрытая ось** (не полный набор `{stack-file, baseline, audit-adapter, scaffold-template, probe-class}`) трактуется как **НЕ полностью покрытая** → подпадает под coverage-honesty: громкий сигнал «ось X покрыта частично — есть Y, нет Z; фиксирую покрытую часть, остальное unmanaged». silent-baseline (§6) молча фиксирует toolchain-компонент только при его **полном** покрытии; частичный/отсутствующий baseline → громкий сигнал, не молчание. Текущие `Postgres (частично)` и `UI (пусто/частично)` попадают именно сюда — grounding-кейс REH ERP frontend вскроет это поведение живьём.
 
+**forced-now ∩ uncovered — разрешение (backport из impl 2026-06-01, поймано behavioral validation).** Ось, форсированная продуктом, может быть непокрыта (напр. фронтенд в grounding-кейсе): продукт её требует, плагин turnkey не довезёт. Чтобы «forced-now → запусти атом» и «uncovered → громкий сигнал» не противоречили:
+1. Атом запускается только для **покрытой под-части** оси (если есть); для пустой оси scaffold/wire пропускаются (нечего раскладывать).
+2. Ось помечается **`unmanaged`** + громкий coverage-honesty сигнал — этот сигнал **и есть deliverable** для оси (не молчаливый выбор технологии).
+3. `unmanaged`-ось **исключена из done-gates** (у неё нет gates — см. §10). Прогон «done» с осью как `unmanaged`, не заблокирован.
+4. Если оператор настаивает на непокрытой технологии — proceed с `unmanaged` degrade, всё ещё без hygiene/audit/gates, всё ещё громко.
+
 ## 6. Probing-дисциплина
 
 **α — дифференцированно по типу оси** (P1/P6: оператор — продуктолог, не инженер). Класс probe — свойство оси в манифесте (`probe-class`):
@@ -113,7 +119,7 @@ bootstrap владеет:
 2. **Классификация осей** по таксономии: forced-now / delegated / not-touched. Явно по каждой.
 3. **Для каждой forced-now оси → атом** (probe → scaffold → wire).
 4. **Create flow ARCHITECTURE.md** (порт Ф1): создать документ, спроецировать `## Stack` из конфигов, Topic Index init, Module Map skeleton (минимальный — заголовки секций, наполняется arch-spec'ами фич; фичи ≠ code-модули, D19).
-5. **Green skeleton + один convention-референс-паттерн.** Конкретно: один модуль вида `src/<example>/` (index + один unit-тест), демонстрирующий project-convention — layout, именование, co-location теста, форму импорта/экспорта. **Без доменной логики.** Критерий «convention, не feature»: паттерн показывает *как устроен любой модуль*, и его можно удалить без потери смысла проекта. Анти-пример: НЕ создавать доменный модуль (`src/users/`, `src/audit/`) — это «КАКИЕ модули», территория arch-spec.
+5. **Green skeleton + один convention-референс-паттерн.** Конкретно: один модуль вида `src/<example>/` (index + один unit-тест), демонстрирующий project-convention — layout, именование, расположение теста (`tests/` mirror зеркалит `src/` — по stack-файлу `typescript.md`, а не буквально co-located в той же директории), форму импорта/экспорта. **Без доменной логики.** Критерий «convention, не feature»: паттерн показывает *как устроен любой модуль*, и его можно удалить без потери смысла проекта. Анти-пример: НЕ создавать доменный модуль (`src/users/`, `src/audit/`) — это «КАКИЕ модули», территория arch-spec.
 6. **CI / gates setup.**
 7. **Done** (§10).
 
@@ -127,7 +133,7 @@ bootstrap владеет:
 
 1. **Триггер:** оператор явно («зафиксируй фронтенд-стек») ИЛИ upstream-сигнал (feature-spec/arch-spec: «фича форсирует ось X, не зафиксирована»). **Обнаружение ≠ решение, и ≠ автозапуск:** upstream-скилл лишь *сигналит*; **bootstrap запускает оператор** (обнаружение детерминированно, решение фиксировать ось — продуктовое, за оператором, P6).
 2. **Одна недостающая ось** (обычно одна).
-3. **Атом для оси** (probe coverage-gated → scaffold → wire). Здесь вскрывается реальный coverage-gap (REH ERP frontend → ось «интерфейс/фронтенд»).
+3. **Атом для оси** (probe coverage-gated → scaffold → wire). Здесь вскрывается реальный coverage-gap (REH ERP frontend → ось «интерфейс/фронтенд»). Если ось uncovered/partial — применить **forced-now ∩ uncovered resolution** (§5): громкий сигнал + `unmanaged`, ветка «оператор настаивает» решает, продолжать ли unmanaged degrade или остановиться на сигнале.
 4. **Дописать `## Stack`** (проекция) + Module Map при необходимости.
 5. **Done:** репо по-прежнему компилится + gates зелёные с новой осью + CI обновлён.
 
@@ -178,7 +184,7 @@ bootstrap владеет:
 - `references/scaffold-templates/` — каркасы per технология.
 
 **Зависимости (принцип 10 — sequential, для impl-планирования):**
-- **Функция 3a (relocation baselines + CI + `stacks/` внутрь плагина, OQ6):** должны жить внутри плагина, чтобы bootstrap их wired. Сейчас в operator-personal области. → relocation **предшествует** bootstrap impl (или совместно). **Лёгкое** (перемещение файлов + overlay-механизм). **Функция 3b (хуки enforcement) — НЕ зависимость bootstrap:** выведена в research-trigger (решение 2026-06-01), bootstrap её не требует — он wires CI+baselines, а не хуки.
+- **Функция 3a (relocation baselines + CI + `stacks/` внутрь плагина, OQ6):** должны жить внутри плагина для **distributable** прогона (market-ready юзер без operator-personal baselines). **Уточнено impl 2026-06-01:** написание SKILL.md Ф3a НЕ требует; **операторский прогон тоже возможен сейчас** — у оператора baselines в `~/.claude/architecture/...`, coverage-manifest ссылается на них (пометки `pending-Ф3a`). То есть Ф3a = pre-condition **distributable** self-containedness, НЕ operator-apply (grounding-кейс REH ERP frontend можно прогнать без Ф3a). **Лёгкое** (перемещение + overlay). **Функция 3b (хуки enforcement) — НЕ зависимость bootstrap:** research-trigger (2026-06-01).
 - **arch-audit packaging (OQ11):** bootstrap wired arch-audit-config; arch-audit (code-скилл) должен быть доступен.
 - **coverage-manifest** наполняется тем, что плагин реально покрывает (сейчас TS) — зависит от наличия stack-file + baseline + adapter + scaffold-template по оси.
 
@@ -191,9 +197,11 @@ bootstrap владеет:
 
 - **[delegated-to-impl] #2 coverage-manifest сериализация** — **структура задана** §5 (`ось → технология → {stack-file, baseline, audit-adapter, scaffold-template, probe-class}`); делегируется только форма сериализации (lean `.md` — consistency + LLM-читаемость). Схема зафиксирована, не дизайн-блокер.
 - **[delegated-to-impl] #3 scaffold-templates представление** — **что входит** в scaffold задано критерием §4/§7.5 (convention-паттерн); делегируется только форма хранения (файлы-шаблоны vs генерация инструкцией). Lean гибрид.
-- **[dependency] #4 Функция 3a relocation — pre-condition impl bootstrap** (baselines + CI + `stacks/` внутрь плагина). **Лёгкое** (перемещение + overlay). Sequential per принцип 10. NB: Функция 3b (хуки) выведена в research-trigger (2026-06-01) — НЕ блокер bootstrap. Flag границы Ф1/Ф3 разрешён: bootstrap wires обвязку Ф3a, владение шаблонами — у Ф3a.
+- **[dependency] #4 Функция 3a relocation — pre-condition DISTRIBUTABLE прогона** (НЕ impl скилла, НЕ operator-apply — уточнено impl 2026-06-01; см. §14). **Лёгкое** (перемещение + overlay). Sequential per принцип 10. NB: Функция 3b (хуки) — research-trigger, НЕ блокер. Flag границы Ф1/Ф3 разрешён: bootstrap wires обвязку Ф3a, владение шаблонами — у Ф3a.
 - **[resolved-minor] #5 Module Map skeleton** — init создаёт минимальный skeleton (заголовки секций), наполняется arch-spec'ами фич (фичи ≠ code-модули, D19). (§7)
 - **[resolved] #1 naming** — `bootstrap` (рабочее имя принято финальным).
+- **[resolved-by-impl] forced-now ∩ uncovered** — пробел спеки, пойман behavioral validation 2026-06-01, разрешён inline + backport в §5/§8 (covered под-часть + `unmanaged` + исключение из done-gates).
+- **[resolved-by-impl] §7.5 расположение теста** — «co-located» уточнено: `tests/` mirror по stack-файлу `typescript.md` (authoritative convention). Backport в §7.5.
 
 ## 17. Что НЕ трогать (подтверждено боевым прогоном, §2 handoff'а)
 
