@@ -6,6 +6,8 @@
 
 **Назначение документа:** дать достаточный контекст следующей сессии, чтобы она стартовала с осмысленного места без перечитывания всей предыдущей сессии.
 
+> **UPDATE 2026-06-01 — scope L3 расщеплён, хуки отложены.** Решением 2026-06-01 (D10 amendment, bootstrap design) L3 разделён на **Ф3a** (relocation baselines + CI + `stacks/` внутрь плагина — лёгкое, pre-condition bootstrap) и **Ф3b** (хуки enforcement: PreToolUse git push + `--no-verify` block + arch-audit blocking — §3-§5 этого handoff'а). **Ф3b выведена в research-trigger**: качественно настроенного CI достаточно; к дизайну хуков вернуться, только если CI окажется недостаточен. Поэтому §3-§5 ниже (дизайн хуков) — **НЕ стартовать без явного сигнала «CI не хватает»**. Актуальная активная задача L3 = Ф3a relocation. См. `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` §14 + D10 в ARCHITECTURE.md.
+
 ---
 
 ## 1. Что произошло в source-сессии

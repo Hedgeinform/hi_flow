@@ -6,7 +6,7 @@
 
 ---
 
-## Current Status — 2026-05-31
+## Current Status — 2026-06-01
 
 Проект `hi_flow` — семейство Claude Code скиллов, реализующих методологию Three-Phase Flow для solo+AI разработки. Опубликован на GitHub как Claude Code marketplace + плагин.
 
@@ -15,18 +15,18 @@
 - `hi_flow:feature-spec` (v0.1.0) — Phase 1 продуктовая спека. Боевой прогон выполнен (REH ERP audit-фича 2026-05-28).
 - `hi_flow:arch-redesign` (v0.1.0) — Phase 2 corrective.
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical.
-- `hi_flow:arch-spec` (design + SKILL.md + references, BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). Pending: боевой прогон (graph-core построен 2026-05-31, блокер блока C снят).
+- `hi_flow:arch-spec` (BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). **Первый боевой прогон выполнен 2026-05-31** (REH ERP audit, green field) — цепочка дала работающий софт (Slice 1: 14/14 tests, typecheck+dep-audit clean). Выявил amendment B+C+D + chain-находку A → `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`, долг в active-issues.
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
-- `hi_flow:bootstrap` (working name) — project init wizard. Функция 1 порта operator-personal `architecture`.
+- `hi_flow:bootstrap` (working name) — project init wizard. Функция 1 порта operator-personal `architecture`. **Приоритет подтверждён боевым прогоном** (находка A: нет владельца app-stack fixation → greenfield implementation блокируется рекуррентно, backend+frontend). Требования наполнены в roadmap-handoff 2026-06-01.
 - `hi_flow:living-architecture` (working name) — Функция 2 порта operator-personal `architecture` (living document maintenance).
 - L3 hygiene layer — hooks, baselines relocation (Функция 3), arch-audit blocking mode, distribution mechanics.
 
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** arch-spec спроектирован и реализован (D21), shared graph-core построен (блокер блока C снят). Следующее — боевой прогон arch-spec (block C теперь исполним) на ERP-фиче, далее bootstrap → living-architecture → L3 hygiene.
+**Текущий фокус:** первый боевой прогон arch-spec выполнен (REH ERP, работающий софт) — фидбек разнесён в roadmap-handoff 2026-06-01 (находки A-G). Следующее — arch-spec amendment (B+C+D, active-issues), затем **bootstrap** (приоритет подтверждён находкой A) → living-architecture → L3 hygiene.
 
 ---
 
@@ -99,6 +99,14 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 
 Применяется ко всем скиллам семейства hi_flow.
 
+### P7. Coverage-honesty — предлагать только полностью покрытое плагином.
+
+Скиллы, ведущие оператора через выбор технологий/компонентов (напр. bootstrap probing стека), предлагают только компоненты, **полностью покрытые плагином** (stack-file + baseline + audit-adapter + scaffold-template). SSoT покрытия — явный coverage-manifest. Непокрытое — не молчаливое предложение, а громкий сигнал + degrade «unmanaged» (global принцип 5). Запрет обещать turnkey-hygiene там, где плагин её не довезёт. Coverage читается динамически (не хардкод), растёт вместе с плагином. Триггер фиксации — bootstrap design 2026-06-01.
+
+### P8. Разграничение высот: project-level foundation vs feature-level structure.
+
+Скилл не залезает на чужую высоту. bootstrap (project-level) задаёт «КАК устроен модуль в проекте» (toolchain, conventions, scaffold-convention); arch-spec (feature-level) решает «КАКИЕ модули у фичи». project-foundation не предугадывает feature-структуру; feature-design не фиксирует project-стек. Системное разрешение границы находок A↔C. Обобщается на уровни семейства (product / feature / project-foundation / impl). Триггер фиксации — bootstrap design 2026-06-01.
+
 ---
 
 ## Module Map
@@ -135,8 +143,13 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Spec:** `docs/superpowers/specs/2026-04-28-hi_flow-arch-audit-design.md`. **Report:** `docs/superpowers/plans/2026-04-28-arch-audit-impl-report.md`.
 
 #### `hi_flow/skills/arch-spec/` (BUILT — design + SKILL.md + references)
-- **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Pending:** боевой прогон блока C (graph-core построен 2026-05-31 — блокер снят); closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
+- **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Боевой прогон:** выполнен 2026-05-31 (REH ERP, green field) — работающий софт; выявил amendment B+C+D (active-issues) + chain-находку A (→ bootstrap), roadmap-handoff 2026-06-01. closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
 - **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
+
+#### `hi_flow/skills/bootstrap/` (DESIGN-READY)
+- **Status:** DESIGN-READY (design-спека 2026-06-01) — impl deferred (pre-condition: Ф3a relocation). Phase 2 project-level foundation, закрывает находку A.
+- **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1. См. P7, P8, KD2, D20.
+- **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`.
 
 #### `hi_flow/references/` (BUILT, shared)
 - **Status:** BUILT — `architectural-principles.md` создан 2026-04-28 в сессии arch-audit design (**18 принципов**, 4 группы, scope = static-only). +1 `barrel-discipline` добавлен 2026-04-29.
@@ -218,6 +231,8 @@ arch-spec (per-feature, prophylactic) не покрывает накопленн
 ### D10. Семейство hi_flow покрывает design phases (0-2) + deterministic hygiene enforcement layer для phase 3.
 
 Phase 3 implementation methodology (TDD, plan execution, code review, verification, debugging) делегирована superpowers ecosystem — hi_flow её не дублирует. Phase 3 hygiene enforcement (deterministic quality gates, hooks с блокировкой `--no-verify`, blocking-режим arch-audit, distributable baseline configs для tooling) — **в scope hi_flow**, поскольку superpowers явно полагается на оператора с инженерным background'ом и эту обвязку non-engineer оператор сам не построит. `hi_flow:impl-plan` остаётся parked как «не делаем» (методология импла — superpowers). Boundary семейства = L2 design doc + L3 hygiene gates, но не L3 methodology.
+
+**Уточнение scope L3 (2026-06-01).** Активный L3 = distributable baseline configs + CI/gates (Ф3a — relocation baselines внутрь плагина) + опц. blocking-режим arch-audit. **Хуки с блокировкой `--no-verify` (Ф3b) выведены в research-trigger**: качественно настроенного CI достаточно; вернуться к хукам только если CI окажется недостаточен (хуки ускорили бы локализацию vs разматывание цепочки постфактум, но сейчас несоразмерно). Развязывает зависимость bootstrap — Ф3a лёгкая (перемещение файлов + overlay), Ф3b не блокер. См. bootstrap design `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` §14.
 
 **Reviewability clause:** граница с superpowers — текущее состояние, не вечное. Если в дальнейшем выяснится, что superpowers не покрывает наши потребности в L3 в полном объёме (методология не подходит non-engineer аудитории, разрывы между L2 и L3 не закрываемы текущей split-схемой, или иные ограничения surface'нутся), hi_flow гипотетически может поглотить L3 целиком, включая методологию. На текущий момент такой потребности не ощущается; формулировка эксплицитна, чтобы будущие сессии не воспринимали границу как sacred.
 
@@ -359,6 +374,10 @@ Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+i
 
 Опечатка в названии локального workspace директории (отсутствует «t» после «s»). На GitHub репо назван корректно (`hi_flow`). Не блокирует работу. Переименование локально потребует обновления git remote и пересоздания связи. **Trigger для re-review:** при первом удобном случае (например, при чистке workspace или переезде на новую машину).
 
+### KD2. ARCHITECTURE.md: bootstrap создаёт, living-architecture ведёт — осознанный разрыв single-ownership документа.
+
+By-design следствие порт-модели D20 (Ф1 Create flow → bootstrap; Ф2 maintenance → living-architecture): один документ — два владельца на разных фазах жизни. Принято осознанно, обусловлено декомпозицией порта operator-personal `architecture`. Смягчение: стек = truth в конфигах (`package.json`/`tsconfig`/lockfile), `## Stack` — проекция → global «code is truth» не нарушается; разрыв только по владению документом-проекцией. Материализуется при impl bootstrap + living-architecture (оба TO DESIGN). **Trigger re-review:** пересмотр порт-модели D20 либо реальный конфликт двух писателей на практике.
+
 ---
 
 ## Open Questions
@@ -366,6 +385,8 @@ Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+i
 ### OQ1. Will the methodology deliver an ERP feature end-to-end?
 
 Боевой тест запланирован на сессию 4 после готовности product-spec и arch-spec. Критерий успеха: можно ли пройти от ERP-микрофичи через все три скилла + impl до работающего кода без существенных доработок методологии по ходу. Если не может — сигнал к ревизии.
+
+**Status update 2026-05-31 (частично закрыт):** backend Slice 1 (REH ERP audit) прошёл end-to-end — работающий софт (14/14 tests, typecheck+dep-audit clean). Методология на backend-слайсе подтверждена; находки доработки (B-G) — не «существенные доработки по ходу», а post-hoc refinement. Frontend-слайс (`audit-ui`) заблокирован отсутствием владельца app-stack fixation (находка A → bootstrap). Полное закрытие OQ1 — после frontend-слайса. См. roadmap-handoff 2026-06-01.
 
 ### OQ6. Decoupling hi_flow семейства от скилла `architecture` для market-ready версии. **[CRITICAL PATH per D10 amendment 2026-04-29]**
 
@@ -438,6 +459,10 @@ arch-audit — единственный code-скилл семейства (TS/N
 2. **Code-onboarding** — рантайм требует `npm install` в директории скилла + бинарь `dependency-cruiser`; не plug-and-play как markdown-скиллы. Надо документировать в release.
 
 `node_modules` корректно заигнорен (не едет). **Связано:** D10 (L3 hygiene), OQ6 (market-ready decoupling), OQ7-parked (tooling onboarding hook). **К решению:** при подготовке первого public-релиза hi_flow.
+
+### OQ12. Security-инварианты и trust-chain review в цепочке (находка E боевого прогона).
+
+Боевой прогон (REH ERP, 2026-05-31) показал: для §8 security-инвариантов arch-spec «matches the spec» недостаточно. Adversarial trust-chain ревью (за границей диффа: emitter → redactSecrets) поймал реальный баг — secret-filter не рекурсил в массивы → секреты текли в `payload_json`/offload-blob. Баг внесён на шаге `writing-plans` (референс-код плана), **arch-spec был корректен** (инвариант верен). Открыто: нужна ли (а) обязательная пометка security-critical инвариантов в §8 arch-spec тегом «trust-chain review required, не дифф-локальный»; и/или (б) D14 boundary-clause, что security review methodology = superpowers (вне hi_flow). Развилка — roadmap-handoff 2026-06-01 §7. **К решению:** в сессии arch-spec amendment.
 
 ---
 
@@ -626,3 +651,9 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Что:** Создан `hi_flow/skills/arch-audit/core/graph-core.ts` — SSoT чистых граф-функций над декларативным графом: Ca/Ce (`computeCoupling`), I (`instability`), NCCD, `reachableFrom` + новый Tarjan-traversal циклов (`findCycles`). arch-audit runtime (parse-depcruise, report-builder) переведён на него; поведение сохранено (129/129 unit/component green, typecheck чист). arch-spec SKILL.md Block C + References → конкретный путь к модулю.
 **Почему:** upstream-зависимость боевой работы блока C arch-spec (D21, принцип 10). Cycle-детекцию нельзя импортировать из depcruise (он сканирует реальные файлы; у гипотетического графа фичи кода ещё нет) → новый алгоритм обхода. Формулы Ca/Ce/I вынесены из fused-цикла парсера / inline-выражения в единый источник (принцип 4).
 **Report:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-graph-core-report.md`.
+
+### 2026-06-01 — bootstrap design (находка A) + L3 scope refinement (Ф3b → research-trigger)
+
+**Что:** Спроектирован `hi_flow:bootstrap` (design-ready, impl deferred) — project-level владелец технического фундамента, закрывает находку A первого боевого прогона arch-spec (REH ERP). Модель: атом-ось (probe→scaffold→wire) + два враппера (init/incremental); таксономия инфра-осей (находка C) = рабочий словарь bootstrap; coverage-gated probing (coverage-manifest SSoT, coverage-honesty); Create flow ARCHITECTURE.md (Вариант 1 — разрыв single-ownership принят как KD2, code-is-truth цел). D10 amendment: хуки `--no-verify` (Ф3b) выведены в research-trigger; bootstrap зависит только от Ф3a (relocation baselines+CI, лёгкое).
+**Почему:** Находка A (нет владельца app-stack fixation) блокирует greenfield implementation рекуррентно (backend+frontend); bootstrap наполняет D20 Функцию 1 требованиями. Ф3b dropped по ROI — CI решает гигиену однократной настройкой; хуки несоразмерны (вернуться при недостаточности CI).
+**Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Roadmap фидбека:** `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.
