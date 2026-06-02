@@ -13,20 +13,22 @@
 
 ## HIGH
 
-### arch-spec amendment (B+C+D) — находки первого боевого прогона REH ERP
+### arch-spec amendment (B + C + D + E) — находки первого боевого прогона REH ERP
 
 **Локация:** `hi_flow/skills/arch-spec/SKILL.md` + `references/rules-patch-template.yaml`.
 
-**Источник:** первый боевой прогон arch-spec (REH ERP audit, green field, 2026-05-31). Фидбек: `docs/feedback/hi_flow-arch-spec-feedback.md` + `docs/feedback/hi_flow-session-retro-2026-05-31.md`. Полный roadmap: `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.
+**Источник:** первый боевой прогон arch-spec (REH ERP audit, green field, 2026-05-31). Фидбек: `docs/feedback/hi_flow-arch-spec-feedback.md` + `docs/feedback/hi_flow-session-retro-2026-05-31.md`. Roadmap: `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.
 
-**План (три правки, design-сессия = одна, P4):**
-- **B (High)** — §10 «Delegated to implementation» развести на (а) code-sight forks → writing-plans; (б) infra/deployment-bound bindings → отдельный канал (рекомендованный дефолт + констрейнт + «разблокируется при фиксации deployment-модели»). Тест: «разрешается ли решение разглядыванием кода?».
-- **C (High, мостовой)** — green-field-ветка Pre-conditions: первый arch-spec фиксирует минимально-необходимое подмножество стека (feature-forced), помечая project-level + сигнал оператору; + таксономия инфра-осей (persistence/blob/scheduler/messaging/cache/search/runtime/presentation → forced-now/delegated/not-touched). Мост сознательно временный — упростится после bootstrap (см. находку A).
-- **D (Low-Med)** — rules-patch type-1 правила «только X→Y» пред-закладывают composition-root exemption (`src/main.ts`/`src/bootstrap/`/`src/composition/`) в `from.pathNot`. Уже примирён руками в REH_ERP (depcruise .yaml+.cjs) — есть готовый паттерн для образца.
+**Scope finalized 2026-06-02** (после impl bootstrap — C переоценён, B/D scope уточнён):
 
-**Trigger:** ближайшая доработка семейства hi_flow (сессия 1 в roadmap-handoff §4). B и D зрелы и независимы; C — в мостовом варианте. Implementation amendment'а — отдельная сессия (P2/P5) при необходимости.
+- **B (High)** — §10 «Delegated to implementation» развести: (а) code-sight forks → writing-plans; (б) **deployment-bound bindings → отдельный канал** (рекомендованный дефолт + констрейнт + «разблокируется при фиксации deployment-модели»). **Граница после bootstrap:** §10-(б) = deployment-bound привязки ВНУТРИ зафиксированной оси (конкретный scheduler, blob-backend AWS-S3/MinIO), НЕ фиксация самой оси (та теперь в bootstrap). Тест: «разрешается ли разглядыванием кода?». Независим, зрелый, главный.
+- **C (Low — схлопнулся после bootstrap)** — bootstrap забрал app-stack fixation + таксономию инфра-осей (живёт в `hi_flow/skills/bootstrap/references/axis-taxonomy.md`). arch-spec C сводится к **чистому сигналу**: «фича форсирует инфра-ось, не зафиксирована → запусти bootstrap». НЕ фиксирует стек, НЕ дублирует таксономию. Мостовое бремя снято. Из High-мостовой → Low-сигнал.
+- **D (Low-Med, scope уточнён)** — composition-root exemption логичнее в **baseline depcruise-config** (project-level — bootstrap-wired / typescript-baseline), + arch-spec rules-patch gen aware (не генерит «только X→Y», ломающие composition-root `src/main.ts`/`src/bootstrap/`). REH решил на baseline-уровне (.yaml+.cjs) — образец есть.
+- **E (Medium, OQ12) — развилка** — пометка security-critical инвариантов §8 «trust-chain review required» vs D14 boundary-clause (review methodology = superpowers). Не зависит от bootstrap.
 
-**Связи:** D11 (rules-patch контракт), D14 (boundary с superpowers — для E), D20/OQ6 (находка A → bootstrap, определяет границу C), D21 (arch-spec). Находка E (security trust-chain review) — развилка §7 handoff'а, частично вне scope hi_flow.
+**Trigger:** отдельная arch-spec amendment сессия (P4). Объём меньше изначального — C схлопнулся (тривиальный сигнал), B главный, D частично baseline-territory. Implementation — отдельная сессия (P2/P5).
+
+**Связи:** D11 (rules-patch контракт), D14 (boundary с superpowers — для E), D20 (bootstrap забрал C-территорию), D21 (arch-spec), OQ12 (E).
 
 ---
 
