@@ -93,6 +93,16 @@ Implementation deferred до **trigger event = «следующая реальн
 
 ## LOW
 
+### bootstrap: scope-narrowing doc-discipline (фидбек первого боевого прогона)
+
+**Локация:** `hi_flow/skills/bootstrap/SKILL.md` (init/incremental flow + Create flow / wire).
+
+**Источник:** первый боевой прогон bootstrap incremental (REH ERP frontend, 2026-06-02). Оператор выбрал суженный scope (web-first; portal + shared-types + ui отложены) — bootstrap **корректно эскалировал** scope-выбор (P6 ✓). Но записал **forward-ссылки на отложенные сущности**: `biome.json` override на несуществующий `apps/portal/**`; D16/Stack-формулировки не различали scaffolded (web) vs planned (portal). → doc-ahead-of-code drift (нарушает code-is-truth, который сам bootstrap обязан соблюдать — `## Stack` = проекция реального репо).
+
+**План:** в SKILL.md flow зафиксировать: при суженном scope писать в ARCHITECTURE/конфиги **только заскаффолженное**; отложенное помечать `planned`, не как существующее; избегать forward-провижна конфигов на несуществующие пути (или явно `planned`). Stack-проекция = только реальный код.
+
+**Связи:** KD2 (code-is-truth), P8 (высоты), coverage-honesty. Прогон в остальном успешен — coverage-honesty → Known Drift в REH сработал как спроектировано.
+
 ### Integration-тесты arch-audit мутируют трекаемые фикстуры
 
 **Локация:** `hi_flow/skills/arch-audit/tests/integration/*` → пишут `audit-report.*` в `tests/fixtures/*/audit-report/`.

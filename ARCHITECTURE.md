@@ -16,7 +16,7 @@
 - `hi_flow:arch-redesign` (v0.1.0) — Phase 2 corrective.
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical.
 - `hi_flow:arch-spec` (BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). **Первый боевой прогон выполнен 2026-05-31** (REH ERP audit, green field) — цепочка дала работающий софт (Slice 1: 14/14 tests, typecheck+dep-audit clean). Выявил amendment B+C+D + chain-находку A → `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`, долг в active-issues.
-- `hi_flow:bootstrap` (BUILT v0.7.0) — Phase 2 project-level foundation. Реализован 2026-06-01 (находка A закрыта). Прошёл spec-compliance + behavioral валидацию; боевой прогон на проекте ещё не выполнялся (возможен на операторской среде сейчас, см. Module Map § bootstrap).
+- `hi_flow:bootstrap` (BUILT v0.7.1) — Phase 2 project-level foundation. Реализован 2026-06-01 (находка A закрыта). **Первый боевой прогон (incremental, REH ERP frontend) выполнен 2026-06-02** — React Vite SPA заскаффолжен, managed-гейты зелёные, coverage-honesty → Known Drift в REH. См. Module Map § bootstrap.
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
@@ -26,7 +26,7 @@
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** bootstrap реализован 2026-06-01 (находка A закрыта). Следующее — боевой прогон bootstrap (covered-axis init на операторской среде возможен сейчас) + arch-spec amendment (B+C+D, active-issues) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap).
+**Текущий фокус:** bootstrap реализован + первый боевой прогон (incremental, REH frontend) выполнен 2026-06-02 (managed-гейты зелёные, coverage-honesty подтверждён). Следующее — arch-spec amendment (B+C+D, active-issues; C упростилась — bootstrap забрал app-stack fixation) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Backlog скилла: bootstrap scope-narrowing doc-discipline (active-issues LOW); frontend covered-хвосты (scaffold-template react/ + depcruise boundary-rules).
 
 ---
 
@@ -146,8 +146,8 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Боевой прогон:** выполнен 2026-05-31 (REH ERP, green field) — работающий софт; выявил amendment B+C+D (active-issues) + chain-находку A (→ bootstrap), roadmap-handoff 2026-06-01. closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
 - **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
 
-#### `hi_flow/skills/bootstrap/` (BUILT v0.7.0)
-- **Status:** BUILT — SKILL.md (~190 lines) + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. Прогон на операторской среде возможен сейчас (baselines/stack-files читаются с operator-personal путей, помеченных pending-Ф3a). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
+#### `hi_flow/skills/bootstrap/` (BUILT v0.7.1)
+- **Status:** BUILT — SKILL.md + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. **Первый боевой прогон (incremental, REH ERP frontend, 2026-06-02): успешен** — заскаффолдил React Vite SPA (apps/web), managed-гейты зелёные (typecheck/lint:fe/test), coverage-honesty сработал (frontend partial → записал Known Drift в REH «frontend вне arch-audit governance»). Фидбек: scope-narrowing doc-discipline (active-issues LOW). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
 - **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1, закрывает находку A. См. P7, P8, KD2, D20.
 - **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Report:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design-report.md`.
 
@@ -386,7 +386,7 @@ By-design следствие порт-модели D20 (Ф1 Create flow → boot
 
 Боевой тест запланирован на сессию 4 после готовности product-spec и arch-spec. Критерий успеха: можно ли пройти от ERP-микрофичи через все три скилла + impl до работающего кода без существенных доработок методологии по ходу. Если не может — сигнал к ревизии.
 
-**Status update 2026-05-31 (частично закрыт):** backend Slice 1 (REH ERP audit) прошёл end-to-end — работающий софт (14/14 tests, typecheck+dep-audit clean). Методология на backend-слайсе подтверждена; находки доработки (B-G) — не «существенные доработки по ходу», а post-hoc refinement. Frontend-слайс (`audit-ui`) заблокирован отсутствием владельца app-stack fixation (находка A → bootstrap). Полное закрытие OQ1 — после frontend-слайса. См. roadmap-handoff 2026-06-01.
+**Status update 2026-05-31 (частично закрыт):** backend Slice 1 (REH ERP audit) прошёл end-to-end — работающий софт (14/14 tests, typecheck+dep-audit clean). Методология на backend-слайсе подтверждена; находки доработки (B-G) — не «существенные доработки по ходу», а post-hoc refinement. Frontend-слайс (`audit-ui`) был заблокирован отсутствием владельца app-stack fixation (находка A → bootstrap). **Status update 2026-06-02:** bootstrap (incremental) разблокировал frontend — заскаффолдил React Vite SPA на REH, managed-гейты зелёные. Цепочка теперь покрывает и project-foundation шаг (bootstrap), не только feature-design. Полное закрытие OQ1 — после прохождения frontend-фичи (audit-ui) через arch-spec → writing-plans → impl поверх готового фундамента.
 
 ### OQ6. Decoupling hi_flow семейства от скилла `architecture` для market-ready версии. **[CRITICAL PATH per D10 amendment 2026-04-29]**
 
