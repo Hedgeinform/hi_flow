@@ -26,7 +26,7 @@
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** bootstrap реализован + первый боевой прогон (incremental, REH frontend) выполнен 2026-06-02 (managed-гейты зелёные, coverage-honesty подтверждён). Следующее — arch-spec amendment (B+C+D, active-issues; C упростилась — bootstrap забрал app-stack fixation) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Backlog скилла: bootstrap scope-narrowing doc-discipline (active-issues LOW); frontend covered-хвосты (scaffold-template react/ + depcruise boundary-rules).
+**Текущий фокус:** bootstrap реализован + первый боевой прогон (incremental, REH frontend) выполнен 2026-06-02 (managed-гейты зелёные, coverage-honesty подтверждён). Следующее — arch-spec amendment (B+C+D, active-issues; C упростилась — bootstrap забрал app-stack fixation) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Backlog скилла bootstrap: frontend covered-хвосты (scaffold-template react/ + frontend depcruise boundary-rules); Ф3a relocation.
 
 ---
 
@@ -147,7 +147,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
 
 #### `hi_flow/skills/bootstrap/` (BUILT v0.7.1)
-- **Status:** BUILT — SKILL.md + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. **Первый боевой прогон (incremental, REH ERP frontend, 2026-06-02): успешен** — заскаффолдил React Vite SPA (apps/web), managed-гейты зелёные (typecheck/lint:fe/test), coverage-honesty сработал (frontend partial → записал Known Drift в REH «frontend вне arch-audit governance»). Фидбек: scope-narrowing doc-discipline (active-issues LOW). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
+- **Status:** BUILT — SKILL.md + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. **Первый боевой прогон (incremental, REH ERP frontend, 2026-06-02): успешен** — заскаффолдил React Vite SPA (apps/web), managed-гейты зелёные (typecheck/lint:fe/test), coverage-honesty сработал (frontend partial → записал Known Drift в REH «frontend вне arch-audit governance»). Прогон чистый — записи bootstrap (forward-safe biome override, durable D16, Stack как scope) корректны (подтверждено независимым review имплементатора). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
 - **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1, закрывает находку A. См. P7, P8, KD2, D20.
 - **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Report:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design-report.md`.
 
