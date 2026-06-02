@@ -9,7 +9,7 @@
     {
       "name": "hi_flow",
       "description": "Three-Phase Flow methodology for solo+AI development — design phases 0-2 plus deterministic hygiene gates for phase 3. Six skills: product-spec (product decomposition + per-product backlog), feature-spec (feature-level product spec via 8-category probing taxonomy + HAZOP guidewords + premortem), the Phase-2 trio arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (per-feature architectural design, bridge to implementation), and bootstrap (project-level technical foundation: stack fixation, scaffolding, hygiene/CI wiring). Phase-3 implementation methodology is delegated to the superpowers ecosystem; hi_flow adds the architecture and hygiene layer. Roadmap: living-architecture (architecture-document management) + L3 hygiene enforcement.",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "source": "./hi_flow",
       "author": {
         "name": "viessedo",
