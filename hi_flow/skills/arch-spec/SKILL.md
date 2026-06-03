@@ -41,7 +41,7 @@ Per D14 (complementary layers): arch-spec does **not** duplicate implementation 
 
 | Artifact | Required | Role |
 |---|---|---|
-| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale |
+| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
 | `audit-report.json` (D8) | Conditional — see three situations | Snapshot of current architecture, needed for block C (integration) |
 | `ARCHITECTURE.md` Module Map | If present | Map of existing modules, boundaries, known problems |
 | `hi_flow/references/architectural-principles.md` (D9) | Yes (read-only) | Principle catalog for delta-checking + invariant references |
@@ -130,6 +130,7 @@ The order of feature-spec ↔ arch-audit between themselves does not matter (ind
 - `RESOLVED-direction` (direction fixed, implementation deferred — e.g. F9 GDPR redact) → **extract the direction** (→ §10.1 delegated if it needs code-sight, or §3 if no code-sight needed); the implementation goes to backlog. Do not re-probe a fixed direction.
 - `DEFERRED` / `OPEN` → **backlog** via closure backlog-sync, unless marked blocker-for-arch-spec (then close it here).
 - An extracted **ceiling** decision (e.g. indexes F10.1, secret-filtering CC2) still lands as a fact in the matching §5.x sub-section — not skipped, not re-probed.
+- For a **user-facing** feature, the feature-spec's **«Поверхности (UX)»** section (UX layers 1-2: surfaces, their purpose, navigation, *functional* composition, key states) is **extracted as a fact** — exactly like a RESOLVED fork (extract-before-probing) — **not re-opened**. arch-spec designs **layer 3** (UI architecture — §5.11) *on top* of it; it does **not** redefine the UX structure or the product behaviour. The boundary is the two-designers test (D25): if two designers could draw visually different screens that both satisfy the consumed structure, the structure stays at the UX height and arch-spec owns only layer 3.
 
    **Operational test (extract vs probe):** a feature-spec item is **extracted** (not re-probed) if it is RESOLVED *with concrete mechanism* (schema fields, named emission points, a stated policy). It is a **gap to probe** if it is a RESOLVED *direction without mechanism*, an open item, or a floor category no fork covers. Items the feature-spec explicitly marks "blocker for arch-spec" (e.g. in its Open items table) **must** be closed in this spec — not delegated, not deferred.
 
@@ -150,11 +151,12 @@ Floor + ceiling structure (arc42 "pick only what matters", ATAM "importance × r
 8. **Translation boundary (Anti-Corruption Layer)** — trigger: semantic mismatch with a foreign/legacy subsystem. Anti-trigger: no meaningful semantic difference. *Distinct from "integration points": points = WHERE we attach; translation boundary = WHETHER an adapter is needed so foreign semantics don't leak into the feature's model (DDD/Azure ACL).*
 9. **Consistency and idempotency** — trigger: write to multiple stores / repeatable operations / concurrent writes.
 10. **Contract/schema evolution** — trigger: the feature changes a shared contract/schema that someone consumes.
+11. **Presentation / UI architecture** — trigger: a user-facing surface. arch-spec designs the **layer-3 architecture** of the surfaces it consumed from the feature-spec's «Поверхности (UX)» section: component/module breakdown of each surface, state-management structure, and the surfaces → modules mapping — derived from the consumed UX-structure (layers 1-2), not invented. This is UI *architecture* (components/state), **NOT** visual design (pixels/style — a designer's job downstream). It does not redefine the UX (two-designers boundary, D25).
 
 ### Cross-cutting checks (per decision)
 
 - **Delta impact on the graph** — bind to a concrete module/edge (Risk Storming: localize risk to an element).
-- **Derivability from the product** — gate "is this architecture or product?": non-domain design consideration **and** affects structure **and** critical for success (three-criteria filter, Richards & Ford). Cuts off re-opening product decisions the feature-spec already made.
+- **Derivability from the product** — gate "is this architecture or product?": non-domain design consideration **and** affects structure **and** critical for success (three-criteria filter, Richards & Ford). Cuts off re-opening product decisions the feature-spec already made. **UX/UI boundary instance (D25):** the UX-structure (layers 1-2) is itself a *product* input — it arrives from the feature-spec's «Поверхности (UX)» section and is consumed, not re-derived; **layer 3** (UI architecture — §5.11) is what arch-spec *adds* on top. This symmetrically closes the boundary: feature-spec emits the UX, arch-spec designs the UI architecture, neither re-opens the other's layer.
 - **Contradictions** — as in feature-spec.
 - **Inherited cross-cutting policies** — which system policies (logging/observability, error-handling, auth, secret-mgmt) the feature instantiates (arc42 §8). **observability** lives here — via global principle 5 (silent fallback forbidden → visible logging) it applies always, but as an inherited policy, not a separate structural floor category.
 

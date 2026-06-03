@@ -13,6 +13,7 @@ Systematically surface hierarchical product forks — concrete behavioral decisi
 
 - Product-level decomposition (separate skill `hi_flow:product-spec`).
 - Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
+- Visual layout / components / style (UI layer 3) → `hi_flow:arch-spec` (see "UX/UI boundary principle").
 - Auto-invoking the next phase — operator initiates.
 
 ## Output
@@ -198,6 +199,7 @@ Move to Closure only when all hold:
 
 - All Mandatory categories yielded forks or an explicit N/A.
 - All Conditional categories whose preconditions hold yielded forks or an explicit N/A.
+- Structural probe (Surfaces & UX-structure) ran if the feature is user-facing (or an explicit N/A).
 - Premortem closing probe ran.
 - Contradiction detection has no open conflicts.
 
@@ -209,7 +211,7 @@ When ambiguity arises that cannot be resolved from available data, escalate to t
 
 ## Probing Taxonomy
 
-Floor checklist for the brainstorm path: **8 probe categories + 1 cross-cutting probe + 1 cross-cutting check + 1 closing probe + 1 closure criterion**.
+Floor checklist for the brainstorm path: **8 probe categories + 1 structural probe (conditional) + 1 cross-cutting probe + 1 cross-cutting check + 1 closing probe + 1 closure criterion**.
 
 ### Universal rule
 
@@ -224,6 +226,8 @@ Each category has an explicit Procedure (input → algorithm → output). Adapti
 - Per field: «откуда берётся (user input / context / system)? обязательно? есть default?»
 - Iterate until no new fields surface.
 - For user-input fields: «какие формы пользовательского ввода (raw forms — числа, даты, неточные ссылки, дельты, проценты)?»
+
+**Note:** channels (Telegram, email, web-push) may appear here as input / context fields — do **not** conflate them with surfaces (see surface ≠ channel in the Structural probe).
 
 **Output:** field list with metadata.
 
@@ -323,6 +327,25 @@ Each → probe «как бот реагирует?».
 
 **Output:** integration forks.
 
+### Structural probe — Surfaces & UX-structure [Conditional: feature has a user-facing surface]
+
+A **structural** probe, **not** a 9th fork-category. Surfaces are structure, not decisions — its output goes to the **"Поверхности (UX)"** section, **not** the forks-tree. (Precedent: Hard policies route their output to the Cross-cutting section, not the main tree — a probe is free to write to a non-forks home.)
+
+**Procedure** (UX layers 1-2 only — see "UX/UI boundary principle"):
+
+- Elicit the **surfaces**: «с каких поверхностей человек работает с фичей?» (веб-inbox, Telegram-бот, мобильное приложение, ...).
+- Per surface: **назначение** (what user job it serves), **функциональный состав** (which capabilities / data / actions live here — *functional*, not visual), **ключевые состояния** (empty / loading / error / populated, etc.).
+- **Навигация:** how the person moves between surfaces.
+- Apply the **two-designers test** as altitude calibration — if it starts dictating visuals (layer 3), stop and leave that to arch-spec.
+
+**Output:** the "Поверхности (UX)" section — **not** forks.
+
+**Rule — surface ≠ channel:**
+
+- **Surface** — where the person works (web inbox, Telegram bot, mobile app).
+- **Channel** — the transport of a message (Telegram, email, web-push).
+- One surface shows many channels; one channel reaches many surfaces. **Error:** listing a channel (email) as a separate surface. **Correct:** email surfaces *inside* the web inbox as a conversation tagged by channel.
+
 ### Cross-cutting probe — Make implicit criteria explicit [Always active]
 
 When a vague phrasing appears, classify its flavor:
@@ -364,6 +387,22 @@ The spec is self-sufficient for feature context. The next phase (arch-spec) read
 
 Engineer-only jargon (extract-all, payload, throughput, idempotency, fallback, etc.) — translate or unpack in product language.
 
+### UX/UI boundary principle
+
+For a feature with a user-facing surface, the frontend splits across three layers. The boundary runs **inside** a screen, not between "has a screen / has none":
+
+| Layer | What | Owner |
+|---|---|---|
+| **1. UX behavior / logic** | what is possible, what happens, rules, states, flows | **feature-spec** |
+| **2. UX structure / IA** | which surfaces/screens exist, why each, navigation, *functional* composition of a screen, key states | **feature-spec** |
+| **3. UI / visual** | layout, components, control types, visual hierarchy, style | **arch-spec** (architecture of layer 3) / designer (pixels) |
+
+**Stop-line:** feature-spec owns layers 1-2 (the "Поверхности (UX)" section). It does **not** describe layer 3 — visual layout / components / style go to `hi_flow:arch-spec`. The default mistake is letting layer 2 drift into arch-spec alongside layer 3; layer 2 is product (feature-spec).
+
+**Two-designers test (altitude calibration):** «can two designers produce visually very different screens, both satisfying the spec?» Yes → the spec is at UX altitude (layers 1-2, describes *what*, not *how it looks*) — correct. No → it dictates visuals → it has reached into layer 3 → that belongs to arch-spec.
+
+Cross-ref: P8 (altitude), D14 (complementary layers), D25 (this boundary decision).
+
 ### Top-level structure
 
 ```markdown
@@ -395,6 +434,12 @@ Engineer-only jargon (extract-all, payload, throughput, idempotency, fallback, e
 - Возврат пользователю: ...
 - Side effects: ...
 
+## Поверхности (UX)
+[conditional — only if the feature has a user-facing surface; covers UX layers 1-2, NOT layer 3]
+- перечень поверхностей
+- per surface: назначение / функциональный состав (что на ней функционально, НЕ визуал) / ключевые состояния
+- навигация между поверхностями
+
 ## Развилки
 [hierarchical decision tree]
 
@@ -420,6 +465,20 @@ Three concrete user paths in dialogue form:
 - **Refused path** — bot refused. If a refuse scenario does not apply, replace with **Edge path**.
 
 Anchor for the operator and for the next phase.
+
+### Поверхности (UX) section
+
+**Conditional** — include only if the feature has a user-facing surface. Covers UX **layers 1-2** (structure / IA), **not** layer 3 (visual layout / components / style → arch-spec). See "UX/UI boundary principle".
+
+Per surface:
+
+- **Назначение** — what the surface is for (the user job it serves).
+- **Функциональный состав** — what is functionally on the surface (which capabilities / data / actions live here), **not** how it looks.
+- **Ключевые состояния** — the surface's key states (empty / loading / error / populated, etc., at the functional level).
+
+Plus **навигация** — how the person moves between surfaces.
+
+**Altitude calibration (two-designers test):** if two designers could produce visually very different screens both satisfying this section, the altitude is correct (it describes *what*, not *how it looks*). If it dictates visuals, it has slipped into layer 3 → arch-spec.
 
 ### Cell format
 

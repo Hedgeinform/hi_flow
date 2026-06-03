@@ -58,6 +58,9 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 ### 5.8 Translation boundary (ACL)     <!-- trigger: semantic mismatch with foreign/legacy subsystem -->
 ### 5.9 Consistency & idempotency       <!-- trigger: multiple stores / repeatable ops / concurrency -->
 ### 5.10 Contract/schema evolution      <!-- trigger: changes a shared consumed contract -->
+### 5.11 Presentation / UI architecture    <!-- trigger: user-facing surface -->
+<!-- Component/state architecture of the surfaces, derived from the feature-spec «Поверхности (UX)» section (UX layers 1-2): component/module breakdown per surface, state-management structure, surfaces → modules mapping.
+Boundary: this does NOT redefine the UX (layers 1-2 are consumed as a given — two-designers test, D25); visual style (pixels/components-look) is the designer's job downstream, NOT fixed here. -->
 
 ## 6. Impact on architecture
 
