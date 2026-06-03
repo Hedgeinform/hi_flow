@@ -58,6 +58,8 @@ Determine the mode from the Module Map + git history first:
 | **Brown field + fresh audit** | Full mode. Block C works |
 | **Brown field + no audit / stale** | **Loud signal, not silent degradation** (principle 5). Tell the operator: «Code exists, no audit snapshot. Block C — the main value — runs blind without it. Options: (a) run `arch-audit` [recommended]; (b) proceed without integration analysis deliberately — block C is marked "skipped, no snapshot", reason logged.» |
 
+**Green field + app-stack / infra-axis not yet fixed: bootstrap's territory, not arch-spec's.** If the feature forces an infra-axis the project has not fixed, that is project-foundation work, not feature-design. Loud signal (principle 5): «The feature forces an infra-axis (DB / blob / scheduler / ...) that the project has not fixed. Run `hi_flow:bootstrap` first — it owns app-stack fixation + the infra-axis taxonomy (`bootstrap/references/axis-taxonomy.md`). arch-spec does NOT fix the stack and does NOT duplicate the taxonomy (P8 — altitude: project-foundation ≠ feature-design).» Cross-ref D20, P8.
+
 ### Freshness check (when a snapshot exists)
 
 Identical to arch-redesign — family consistency. Compare `audit_sha` from snapshot metadata with `git rev-parse HEAD`:
@@ -90,6 +92,7 @@ Show the operator the proposal with reasoning and factors, in feature-spec forma
 | "feature-spec already lists the modules, I'll go direct" | feature-spec lists product capabilities, not module breakdown, contracts, or data ownership. Those are architectural decisions block B must make. |
 | "Code exists but no fresh audit — I know the structure" | Without a D8 snapshot, block C's delta-graph reasoning is hallucinatory. Either run arch-audit, or skip block C *loudly* with a logged reason. Never silently. |
 | "The feature is small, I'll skip integration check" | "Small" is a feeling, not a check. Run the integration-risk triage; if it touches nothing, that's a recorded result, not a skipped step. |
+| "Green field, no stack — I'll just fix it in the spec" | Stack fixation is project-level (bootstrap, D20/P8). arch-spec signals, does not fix. |
 
 ## Flow (not linear)
 
@@ -124,7 +127,7 @@ The order of feature-spec ↔ arch-audit between themselves does not matter (ind
 
 **Reading feature-spec statuses (extract vs probe vs backlog):**
 - `RESOLVED` with a mechanism → **extract** as a fact into the matching section.
-- `RESOLVED-direction` (direction fixed, implementation deferred — e.g. F9 GDPR redact) → **extract the direction** (→ §10 delegated, or §3 if no code-sight needed); the implementation goes to backlog. Do not re-probe a fixed direction.
+- `RESOLVED-direction` (direction fixed, implementation deferred — e.g. F9 GDPR redact) → **extract the direction** (→ §10.1 delegated if it needs code-sight, or §3 if no code-sight needed); the implementation goes to backlog. Do not re-probe a fixed direction.
 - `DEFERRED` / `OPEN` → **backlog** via closure backlog-sync, unless marked blocker-for-arch-spec (then close it here).
 - An extracted **ceiling** decision (e.g. indexes F10.1, secret-filtering CC2) still lands as a fact in the matching §5.x sub-section — not skipped, not re-probed.
 
@@ -265,7 +268,13 @@ The spec body must be **cleaner than feature-spec** (which the operator reads): 
 7. **Operability limits** — limits inventory (limit-assumptions; triggers + next steps → backlog).
 8. **Fitness invariants** — list classified by mechanism. The graph part additionally exported as a rules-patch file alongside.
 9. **Dependency graph** — Mermaid ego-graph of the feature's neighbourhood with delta highlighting.
-10. **Delegated to implementation** — explicit forks for writing-plans (with the instruction "choose having seen the code, mind the constraint").
+10. **Delegated to implementation** — two sub-channels with opposed consumers:
+    - **§10.1 Code-sight forks** → `writing-plans`. Explicit forks resolvable by reading the code (with the instruction "choose having seen the code, mind the constraint"). An open choice the implementer makes having seen the code.
+    - **§10.2 Deployment-bound bindings** → a separate channel: a recommended default + the constraint + an explicit note "unblocks when the deployment model is fixed". NOT an open choice for `writing-plans` — it is bound to the deployment model, not to the code.
+
+    **Separation test:** *Resolvable by reading the code? No → §10.2 (deployment-bound), not §10.1.*
+
+    **Post-bootstrap boundary note:** §10.2 = bindings *inside an already-fixed axis* (a concrete scheduler, a concrete blob-backend); fixing the axis itself is bootstrap's job (D20, P8). Do not conflate "binding inside an axis" with "fixing an axis".
 
 **No "open questions" section.** An open question is either resolved in-session (→ a fact in the spec) or deferred (→ product-backlog). No third place — otherwise deferred items smear across N files (feature-spec feedback lesson).
 
@@ -306,9 +315,13 @@ Whether something is graph-formalizable is the LLM's call when formulating (abou
 
 **D9 reference scope.** A `principle` reference is **mandatory only for type-1 (graph)** invariants — they go to the rules-patch, where the D8 reason-field contract requires it. For **type-2 (code/schema) and type-3 (dynamic)** a D9 reference is **optional**: D9 is a static/structural library (cycles, boundaries, direction) and has no canonical id for things like table immutability or secret-filtering. Do NOT cargo-cult an ill-fitting principle (principle 6) — leave it blank (`—`) when D9 does not cover the invariant.
 
+**Security-critical tag.** A security-critical invariant (secrets / PII / trust boundary — §5.7 triggers) carries the inline marker `[trust-chain review required — not diff-local]` on its §8 statement. This is a downstream signal to `writing-plans` / the reviewer: "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. arch-spec only **TAGS** — the review methodology is superpowers (D14), not hi_flow. (Motivating case: a secret-filter that does not recurse into arrays passes a diff-local check yet leaks secrets — caught only by tracing the trust-chain past the diff.)
+
 ### rules-patch format = same as arch-redesign (D11)
 
 One consumer (`arch-audit apply-patch`), shared D11 contract. arch-spec **does not invent** its own format: YAML dependency rules, each with `name` / `severity` / `from`/`to` (or `required` invariant) / a mandatory `principle` reference to a D9 canonical id. Apply is an **explicit operator action**, not automatic. Reuse `references/rules-patch-template.yaml` (same as arch-redesign) — do not create a new format.
+
+**Composition-root exemption (generation rule).** When generating type-1 "only X→Y" rules (the `from.path` allowlist via negative-lookahead), include composition-root paths in a **separate** `from.pathNot` so the wiring layer is legal. The composition-root path set (`src/main.ts` / `src/bootstrap/` / `src/composition/`) is a project-level baseline constant — reference the baseline definition if present, else use the default list; do not invent it per-feature (P8). `from.pathNot` is orthogonal to the `from.path` allowlist (AND-combined by depcruise), NOT folded into the lookahead. Without the exemption depcruise flags the composition-root — which by nature imports many modules — as a violator.
 
 ### Source
 
@@ -318,7 +331,7 @@ CC (cross-cutting policies) and P- (reusable sub-policies) from the feature-spec
 
 Escalation discipline — "when to bother the operator" — lives **in the session**, not in the output spec.
 
-- **Foreseen** (forks visible by closure): the decision is either made (→ a fact in the spec) or delegated to implementation (→ section 10, with an instruction). Inherits severity marking from feature-spec Open items.
+- **Foreseen** (forks visible by closure): the decision is either made (→ a fact in the spec) or delegated to implementation (→ section 10, with an instruction — §10.1 code-sight or §10.2 deployment-bound per the separation test). Inherits severity marking from feature-spec Open items.
 - **Unforeseen** (surfaces during implementation): the general objective-impact criterion (UX / security / cost / maintenance → escalate with rationale; otherwise → implementer decides). arch-spec does not reinvent this criterion — it is in P6 and superpowers. Not written into each spec.
 
 **Goal — minimize escalations through spec completeness.** An escalation during implementation is a signal that the spec failed to close something. Aim for zero (a quality metric of the spec).
@@ -354,7 +367,7 @@ For each item supply the harvest contract (`local_ref`, `classification`, `name`
 The feature-spec "Open items at closure" table mixes severities. Sort each row deterministically — do not decide ad-hoc:
 
 - **blocker (for arch-spec)** → must be CLOSED in this spec (§5-8), never deferred.
-- **желательно / RESOLVED-direction** → §10 (delegated to implementation) if it needs code-sight, else §3 (deferred-pointer).
+- **желательно / RESOLVED-direction** → split by the separation test: code-sight fork → §10.1; deployment-bound binding → §10.2; else → §3 (deferred-pointer).
 - **nice-to-have / operational / discipline** → product-backlog.
 
 ## Operational rules — what the skill enforces

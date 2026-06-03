@@ -26,6 +26,11 @@
 # Only TYPE-1 (graph-formalizable) invariants belong here. Type-2 (code-content/schema)
 # and type-3 (dynamic) invariants stay in arch-spec.md with their named check mechanism
 # (test / lint / migration check / monitoring) — they are NOT depcruise rules.
+#
+# Composition-root exemption (baseline constant): every type-1 "only X→Y" rule must carry
+# `from.pathNot: ^src/(main\.ts|bootstrap/|composition/)` so the central wiring layer is not
+# flagged. This path set is a project-level BASELINE convention (project-wide, not per-feature)
+# — see the `no-feature-code-to-audit-emitter` example below.
 
 # ---
 
@@ -56,10 +61,18 @@ forbidden:
   # - name: no-feature-code-to-audit-emitter
   #   severity: HIGH
   #   from:
-  #     path: ^src/(?!auth-middleware|pipeline-engine|admin-crud)/
+  #     path: ^src/(?!auth-middleware|pipeline-engine|admin-crud)/    # feature-allowlist (per-feature)
+  #     pathNot: ^src/(main\.ts|bootstrap/|composition/)              # composition-root exemption (baseline)
   #   to:
   #     path: ^src/audit-emitter/
   #   principle: port-adapter-separation
+  #   # `from.pathNot` is the composition-root exemption. The path set
+  #   # (`src/main.ts` / `src/bootstrap/` / `src/composition/`) is a project-level
+  #   # BASELINE convention — project-wide, defined once, NOT invented per-feature.
+  #   # It is orthogonal to `from.path`: depcruise AND-combines the two sub-fields,
+  #   # so the rule fires only when BOTH match. Without it, depcruise would flag the
+  #   # central wiring layer (composition-root), which by nature imports many modules,
+  #   # as a violator of every type-1 "only X→Y" rule.
 
 # ---
 

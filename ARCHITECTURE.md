@@ -22,6 +22,7 @@
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
 - `hi_flow:living-architecture` (working name) — Функция 2 порта operator-personal `architecture` (living document maintenance).
 - L3 hygiene layer — hooks, baselines relocation (Функция 3), arch-audit blocking mode, distribution mechanics.
+- `hi_flow:ops` (working name, D23) — доставка/операционализация: хост, упаковка+CD, секреты, сеть, наблюдаемость; резолвит bootstrap'овские `delegated`-оси. Отдельная design-сессия (P4).
 
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
@@ -144,7 +145,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 
 #### `hi_flow/skills/arch-spec/` (BUILT — design + SKILL.md + references)
 - **Status:** BUILT — design-спека (18 секций) + SKILL.md (~400 lines) + 3 references (template 10 секций + Mermaid ego-skeleton, self-review-checklist, rules-patch-template переиспользован D11). Прошёл spec self-review + spec compliance review + behavioral validation (9 findings, существенные закрыты). **Боевой прогон:** выполнен 2026-05-31 (REH ERP, green field) — работающий софт; выявил amendment B+C+D (active-issues) + chain-находку A (→ bootstrap), roadmap-handoff 2026-06-01. closure backlog-sync wired на shared backlog-integration механизм (D22, в main). **Purpose:** Per-feature Phase 2, мост feature-spec → writing-plans. См. D21, D7.
-- **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`.
+- **Spec:** `docs/superpowers/specs/2026-05-31-hi_flow-arch-spec-design.md`. **Plan:** `docs/superpowers/plans/2026-05-31-hi_flow-arch-spec.md`. **Amendment (B+C+D+E):** `docs/superpowers/specs/2026-06-03-hi_flow-arch-spec-amendment-design.md` (implemented 2026-06-03, isolated review PASS). См. D24.
 
 #### `hi_flow/skills/bootstrap/` (BUILT v0.7.1)
 - **Status:** BUILT — SKILL.md + references (axis-taxonomy, coverage-manifest SSoT, scaffold-templates TS convention pattern). Прошёл spec-compliance (COMPLIANT) + behavioral (3 сценария) валидацию. **Первый боевой прогон (incremental, REH ERP frontend, 2026-06-02): успешен** — заскаффолдил React Vite SPA (apps/web), managed-гейты зелёные (typecheck/lint:fe/test), coverage-honesty сработал (frontend partial → записал Known Drift в REH «frontend вне arch-audit governance»). Прогон чистый — записи bootstrap (forward-safe biome override, durable D16, Stack как scope) корректны (подтверждено независимым review имплементатора). Ф3a relocation — pre-condition **distributable** прогона (self-containedness), не операторского.
@@ -259,6 +260,9 @@ Barrel detection: `index.ts` как pure re-export aggregator (≥80% re-exports
 ### D14. hi_flow и superpowers — комплементарные слои, не overlap.
 
 superpowers = methodology of implementation (как именно делать TDD, как писать план, как ревьюить, как верифицировать готовность, как дебажить). hi_flow = architectural and hygiene infrastructure (что считать архитектурным решением, как фиксировать, какие quality-инструменты обязательны, как их детерминированно gate'ить, что считать архитектурным долгом). При любом сомнении про scope: «это методология того, как делать?» → superpowers. «Это инфраструктура и нормативные правила того, что делать?» → hi_flow. Пересечения не должно быть; если возникнет — фиксируется как Known Drift и устраняется. Принцип work'ает в текущей split-схеме (см. D10 reviewability clause); при пересмотре границы D14 ревизуется одновременно с D10.
+
+**Boundary clause — security review (2026-06-03, closes OQ12):** adversarial trust-chain review of security invariants (трассировка data-flow за границу диффа) = superpowers methodology, не hi_flow. arch-spec только ТЕГАЕТ security-critical инварианты §8 маркером `[trust-chain review required — not diff-local]` (downstream-сигнал); сам ревью не выполняет и не определяет. Тег — сигнал, не присвоение security-review в scope hi_flow. См. D24.
+
 **Триггер фиксации:** decision на расширение D10 в L3 hygiene layer surface'нул необходимость явного principle, по которому будущие развилки между «это в hi_flow или в superpowers?» решаются без re-litigation базовых вопросов.
 
 ### D15. product-spec v0.5.0 feedback iteration — visibility, jargon, module-level Mermaid.
@@ -366,6 +370,16 @@ Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+i
 **Триггер:** feature-spec фидбэк (REH ERP audit 2026-05-28); resync 2026-05-31 → arch-spec второй потребитель → Approach B.
 **Status:** BUILT (2026-05-31). **Report:** `docs/superpowers/specs/2026-05-29-hi_flow-feature-spec-backlog-integration-design-report.md`.
 
+### D23. `ops` — отдельный скилл доставки/операционализации, отделён от bootstrap (стройка vs доставка).
+
+ops владеет пятью столбами доставки: хост/рантайм, упаковка + CD-доставка, секрет-стор, сетевая доступность, наблюдаемость+восстановление. Резолвит bootstrap'овские `delegated`-оси (конкретный deployment-binding: где Postgres, MinIO vs AWS-S3, pg_cron). Граница: bootstrap = ось + код-абстракция + CI(гейты); ops = конкретная привязка + CD(доставка). bootstrap'овский `delegated` («until a deployment model is fixed», axis-taxonomy) — заранее вырезанное гнездо, ops и есть его «infra/deployment-bound consumer». Режимы как init/incremental: personal (известный фиксированный VPS → wire рано, set-and-forget) / distributable (probe таргета, P7-gated). По D14: решения о deploy-субстрате = hi_flow; написание конкретного Dockerfile/CD = superpowers (execution). Уточняет D20 — новый function-cluster сверх трёх портов operator-personal `architecture`.
+**Внутренний дизайн:** отдельная сессия (P4), TO DESIGN.
+
+### D24. arch-spec amendment — §10 split / green-field stack-signal / composition-root-aware rules-patch / security-tag + D14 boundary.
+
+§10 разведён: §10.1 code-sight forks (→ writing-plans) · §10.2 deployment-bound bindings (рекоменд. дефолт + констрейнт, НЕ writing-plans; привязка внутри зафиксированной оси, не фиксация оси). Green-field: arch-spec сигналит «инфра-ось не зафиксирована → bootstrap», стек не фиксирует, таксономию не дублирует (C схлопнут в сигнал, P8/D20). rules-patch type-1 несёт composition-root exemption в `from.pathNot` (baseline-константа, ортогональна feature-allowlist). Security-critical инварианты §8 тегаются `[trust-chain review required — not diff-local]` (downstream-сигнал; ревью = superpowers, D14/E).
+**Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-arch-spec-amendment-design.md` (+ `-report.md`). **Status:** implemented 2026-06-03 (B+C+D+E в SKILL.md + 3 references; isolated review PASS). Осознанный P4-override (impl в design-сессии; rationale: overhead передачи > выигрыш изоляции). Release (version bump + commit, D16) — pending.
+
 ---
 
 ## Known Drift
@@ -459,10 +473,6 @@ arch-audit — единственный code-скилл семейства (TS/N
 2. **Code-onboarding** — рантайм требует `npm install` в директории скилла + бинарь `dependency-cruiser`; не plug-and-play как markdown-скиллы. Надо документировать в release.
 
 `node_modules` корректно заигнорен (не едет). **Связано:** D10 (L3 hygiene), OQ6 (market-ready decoupling), OQ7-parked (tooling onboarding hook). **К решению:** при подготовке первого public-релиза hi_flow.
-
-### OQ12. Security-инварианты и trust-chain review в цепочке (находка E боевого прогона).
-
-Боевой прогон (REH ERP, 2026-05-31) показал: для §8 security-инвариантов arch-spec «matches the spec» недостаточно. Adversarial trust-chain ревью (за границей диффа: emitter → redactSecrets) поймал реальный баг — secret-filter не рекурсил в массивы → секреты текли в `payload_json`/offload-blob. Баг внесён на шаге `writing-plans` (референс-код плана), **arch-spec был корректен** (инвариант верен). Открыто: нужна ли (а) обязательная пометка security-critical инвариантов в §8 arch-spec тегом «trust-chain review required, не дифф-локальный»; и/или (б) D14 boundary-clause, что security review methodology = superpowers (вне hi_flow). Развилка — roadmap-handoff 2026-06-01 §7. **К решению:** в сессии arch-spec amendment.
 
 ---
 
@@ -657,3 +667,15 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Что:** Спроектирован `hi_flow:bootstrap` (design-ready, impl deferred) — project-level владелец технического фундамента, закрывает находку A первого боевого прогона arch-spec (REH ERP). Модель: атом-ось (probe→scaffold→wire) + два враппера (init/incremental); таксономия инфра-осей (находка C) = рабочий словарь bootstrap; coverage-gated probing (coverage-manifest SSoT, coverage-honesty); Create flow ARCHITECTURE.md (Вариант 1 — разрыв single-ownership принят как KD2, code-is-truth цел). D10 amendment: хуки `--no-verify` (Ф3b) выведены в research-trigger; bootstrap зависит только от Ф3a (relocation baselines+CI, лёгкое).
 **Почему:** Находка A (нет владельца app-stack fixation) блокирует greenfield implementation рекуррентно (backend+frontend); bootstrap наполняет D20 Функцию 1 требованиями. Ф3b dropped по ROI — CI решает гигиену однократной настройкой; хуки несоразмерны (вернуться при недостаточности CI).
 **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Roadmap фидбека:** `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.
+
+### 2026-06-02 — D23: `ops` — отдельный скилл доставки/операционализации (отделён от bootstrap)
+
+**Что:** Развилка «кто владеет deployment-моделью» закрыта — выделен отдельный скилл `ops` (доставка/операционализация: хост, упаковка+CD, секрет-стор, сеть, наблюдаемость+восстановление), резолвящий bootstrap'овские `delegated`-оси (конкретные deployment-привязки). Граница: bootstrap = ось + код-абстракция + CI; ops = привязка + CD. Внутренний дизайн отложен в отдельную сессию (P4).
+**Почему:** «Deployment» оказался не одной сущностью, а тремя на разных высотах: stack-оси (bootstrap), операционализация (дыра → ops), реализация адаптеров (обычная impl-цепочка). bootstrap не залезает на ops — его классификация `delegated` («until a deployment model is fixed») — заранее вырезанное гнездо под этого consumer'а. CI у bootstrap, CD у ops; разрез чистый.
+**Spec:** TO DESIGN (отдельная сессия per P4).
+
+### 2026-06-03 — D24: arch-spec amendment (B+C+D+E) design signed
+
+**Что:** §10 разведён на code-sight (§10.1 → writing-plans) / deployment-bound (§10.2); green-field C схлопнут в сигнал «ось не зафиксирована → bootstrap» (P8/D20); rules-patch type-1 → composition-root exemption в `from.pathNot`; security-инварианты §8 тегаются `[trust-chain review required — not diff-local]` + D14 boundary-clause (closes OQ12).
+**Почему:** первый боевой прогон arch-spec (REH ERP, 2026-05-31) выявил находки B/C/D/E; scope финализирован после постройки bootstrap.
+**Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-arch-spec-amendment-design.md`. Impl — эта сессия (осознанный P4-override).

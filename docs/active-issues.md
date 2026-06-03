@@ -15,6 +15,8 @@
 
 ### arch-spec amendment (B + C + D + E) — находки первого боевого прогона REH ERP
 
+**Status:** implemented 2026-06-03 (B+C+D+E в SKILL.md + 3 references; isolated review PASS; report `...-amendment-design-report.md`). Остался release (version bump + commit, D16). Запись удаляется после release.
+
 **Локация:** `hi_flow/skills/arch-spec/SKILL.md` + `references/rules-patch-template.yaml`.
 
 **Источник:** первый боевой прогон arch-spec (REH ERP audit, green field, 2026-05-31). Фидбек: `docs/feedback/hi_flow-arch-spec-feedback.md` + `docs/feedback/hi_flow-session-retro-2026-05-31.md`. Roadmap: `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.

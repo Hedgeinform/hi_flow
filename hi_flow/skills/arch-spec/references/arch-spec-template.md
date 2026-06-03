@@ -81,9 +81,11 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 | 1 | <statement> | graph (→ rules-patch) | <principle-id> (mandatory) |
 | 2 | <statement> | code/schema (test / lint / migration check) | <principle-id or —> |
 | 3 | <statement> | dynamic (monitoring, no enforcement) | — |
+| 4 | <security-critical statement> `[trust-chain review required — not diff-local]` | code/schema (test / lint) | <principle-id or —> |
 
 > Graph-formalizable invariants (mechanism = graph) are additionally exported to `<feature-slug>-rules-patch.yaml`.
 > **D9 reference is mandatory only for type-1 (graph).** D9 is a static/structural library; type-2 (code/schema, e.g. table immutability, secret-filtering) and type-3 leave it `—` unless a principle genuinely fits. Do not cargo-cult an ill-fitting id.
+> **Security-critical tag.** Append the inline literal `[trust-chain review required — not diff-local]` to the invariant statement (inside the `Invariant` cell — the table stays 4 columns, do NOT add a column) when the invariant is security-critical: secrets / PII / trust boundary (§5.7 triggers). It is a downstream signal to writing-plans / reviewer — "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. The tag is a SIGNAL only, not a review implementation: the review methodology lives in superpowers (D14), not hi_flow.
 
 ## 9. Dependency graph
 
@@ -110,7 +112,13 @@ graph TD
 
 ## 10. Delegated to implementation
 
-<Explicit forks left for writing-plans. For each: "Choose <X> having seen the code; mind <constraint Y>." Instructions to the implementer, not unresolved gaps.>
+### 10.1 Code-sight forks
+
+<Explicit forks left for writing-plans. For each: "Choose <X> having seen the code; mind <constraint Y>." Instructions to the implementer, not unresolved gaps. These are resolvable by reading the code.>
+
+### 10.2 Deployment-bound bindings
+
+<Bindings inside an already-fixed infra axis (concrete scheduler, concrete blob-backend) that depend on the deployment model, NOT on reading the code. For each: recommended default + constraint + "unblocks when the deployment model is fixed." NOT an open choice for writing-plans — a recommendation with an explicit unblock condition, not a fork.>
 
 <!-- OPTIONAL, only for a non-trivial multi-module flow — append after §10, no separate number: -->
 ## Key-flow trace (optional)
@@ -125,3 +133,4 @@ graph TD
 - **No "open questions" section** in the output. An open question is either resolved in-session (→ a fact above) or deferred (→ product-backlog via closure backlog-sync).
 - **rules-patch is a separate file** (`<feature-slug>-rules-patch.yaml`), not embedded. §8 lists all invariants; the patch carries only the graph-formalizable subset.
 - **Ego-graph, not the whole product graph.** Past ~30 nodes Mermaid degrades; show only the neighbourhood. The full graph is arch-audit's concern.
+- **§10 split — separation test.** Routing a delegated item to §10.1 vs §10.2: "Resolvable by reading the code? No → §10.2 (deployment-bound), not §10.1." Code-sight forks (choose having seen the code) → §10.1. Deployment-bound bindings (resolved by knowing the deployment model) → §10.2. **Post-bootstrap boundary:** §10.2 covers bindings *inside an already-fixed axis* (concrete scheduler, concrete blob-backend) — NOT fixing the axis itself. Fixing an infra axis is bootstrap's job (D20, P8); do not confuse "binding within an axis" with "fixing an axis."
