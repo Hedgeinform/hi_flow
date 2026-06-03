@@ -1,0 +1,77 @@
+# Static form — deploy-web-staging.yml
+# Source of truth: .github/workflows/deploy-web-staging.yml (Hedgeinform/zhenka),
+# parameterized. Backbone: one job `build-deploy` (staging GH Environment) →
+# npm ci → write .env.staging from <ENV_KEYS> (VITE_* names from GH secrets) →
+# tsc -b → vite build --mode staging → verify dist/index.html → setup SSH →
+# rsync --delete dist/ to <STATIC_ROOT>.
+#
+# Render tokens:
+#   <PROJECT>      project slug — the frontend package dir (working-directory
+#                  + node cache-dependency-path)
+#   <ENV_KEYS>     the project's build-time env var NAMES (typically VITE_*),
+#                  each sourced from a same-named GH secret. Names only — the
+#                  block below is a placeholder set; the render step writes one
+#                  `KEY=${{ secrets.KEY }}` line per real key. NO values here.
+#   <STATIC_ROOT>  rsync destination on the server, e.g.
+#                  /home/<user>/<PROJECT>-site-staging/ (trailing slash matters)
+#
+# Static form has NO ci.yml reuse and NO GHCR: it builds the SPA in-runner and
+# ships the built dist/ over rsync. There is no container image and no registry.
+#
+# staging vs prod differ ONLY in: environment (staging → no gate), build --mode
+# (staging) and the .env.<env> filename, and the rsync <STATIC_ROOT> target.
+# Everything else is identical to deploy-web-prod.yml.
+
+name: Deploy Web (Staging)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    defaults:
+      run:
+        working-directory: <PROJECT>
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: <PROJECT>/package-lock.json
+
+      - run: npm ci
+
+      - name: Write staging env
+        # One `KEY=${{ secrets.KEY }}` line per name in <ENV_KEYS>. Values come
+        # from GH secrets; they are interpolated into the file on the runner and
+        # never echoed to the log. Replace the placeholder keys below with the
+        # project's real VITE_* names.
+        run: |
+          cat > .env.staging <<EOF
+          VITE_API_URL=${{ secrets.VITE_API_URL_STAGING }}
+          VITE_PUBLIC_KEY=${{ secrets.VITE_PUBLIC_KEY_STAGING }}
+          EOF
+
+      - run: npx tsc -b
+
+      - run: npm run build -- --mode staging
+
+      - name: Verify build output
+        run: test -f dist/index.html
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:<STATIC_ROOT>

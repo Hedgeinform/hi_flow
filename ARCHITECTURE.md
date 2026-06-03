@@ -6,7 +6,7 @@
 
 ---
 
-## Current Status — 2026-06-01
+## Current Status — 2026-06-03
 
 Проект `hi_flow` — семейство Claude Code скиллов, реализующих методологию Three-Phase Flow для solo+AI разработки. Опубликован на GitHub как Claude Code marketplace + плагин.
 
@@ -17,17 +17,17 @@
 - `hi_flow:arch-audit` (v0.2.6) — Phase 2 analytical.
 - `hi_flow:arch-spec` (BUILT) — Phase 2 prophylactic, мост feature-spec → writing-plans (D21). **Первый боевой прогон выполнен 2026-05-31** (REH ERP audit, green field) — цепочка дала работающий софт (Slice 1: 14/14 tests, typecheck+dep-audit clean). Выявил amendment B+C+D + chain-находку A → `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`, долг в active-issues.
 - `hi_flow:bootstrap` (BUILT v0.7.1) — Phase 2 project-level foundation. Реализован 2026-06-01 (находка A закрыта). **Первый боевой прогон (incremental, REH ERP frontend) выполнен 2026-06-02** — React Vite SPA заскаффолжен, managed-гейты зелёные, coverage-honesty → Known Drift в REH. См. Module Map § bootstrap.
+- `hi_flow:ops` (BUILT v0.8.0) — последняя миля доставки (форма «профиль+рендер», personal-first): fix-profile + onboard (container/static), CD = GH Actions→GHCR→SSH, co-tenant-safe. **Боевой прогон (onboarding реального проекта на VPS) НЕ выполнялся** → OQ13. См. Module Map § ops, D23.
 - Marketplace metadata + plugin manifest + GitHub публикация.
 
 **TO DESIGN (roadmap per D20 + L3 hygiene handoff):**
 - `hi_flow:living-architecture` (working name) — Функция 2 порта operator-personal `architecture` (living document maintenance).
 - L3 hygiene layer — hooks, baselines relocation (Функция 3), arch-audit blocking mode, distribution mechanics.
-- `hi_flow:ops` (working name, D23) — доставка/операционализация: хост, упаковка+CD, секреты, сеть, наблюдаемость; резолвит bootstrap'овские `delegated`-оси. Отдельная design-сессия (P4).
 
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** bootstrap реализован + первый боевой прогон (incremental, REH frontend) выполнен 2026-06-02 (managed-гейты зелёные, coverage-honesty подтверждён). Следующее — arch-spec amendment (B+C+D, active-issues; C упростилась — bootstrap забрал app-stack fixation) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Backlog скилла bootstrap: frontend covered-хвосты (scaffold-template react/ + frontend depcruise boundary-rules); Ф3a relocation.
+**Текущий фокус:** ops реализован (BUILT v0.8.0, 2026-06-03) — последний недостающий скилл доставки; релиз 0.8.0. arch-spec amendment (D24) и bootstrap — в main. Следующее — **боевой прогон ops** (первый реальный onboarding на VPS, OQ13) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Открыто: должен ли bootstrap класть CD-stub под ops (OQ14). Backlog bootstrap: frontend covered-хвосты (scaffold-template react/ + frontend depcruise boundary-rules); Ф3a relocation.
 
 ---
 
@@ -152,6 +152,12 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Purpose:** Владелец технического фундамента проекта — Create flow ARCHITECTURE.md + app-stack probing + scaffolding + CI/baseline wiring. Атом-ось (probe→scaffold→wire) + режимы init/incremental; coverage-gated probing (coverage-manifest SSoT). Реализует D20 Функцию 1, закрывает находку A. См. P7, P8, KD2, D20.
 - **Spec:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md`. **Report:** `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design-report.md`.
 
+#### `hi_flow/skills/ops/` (BUILT v0.8.0)
+- **Status:** BUILT 2026-06-03 — SKILL.md (13 секций) + references (profile-schema, template-manifest) + scaffold-templates (container/static/shared, параметризованы из боевой `Hedgeinform/zhenka`). Прошёл structural + behavioral (6 сценариев, субагент-симуляция) + spec-compliance (COMPLIANT) валидацию. **Боевой прогон (onboarding реального проекта на VPS) НЕ выполнялся** → OQ13.
+- **Path:** `hi_flow/skills/ops/`
+- **Purpose:** Владелец последней мили — доставка построенного проекта на удалённый сервер. Форма «профиль+рендер»: fix-profile (снять субстрат в operator-personal профиль) + onboard (рендер шаблонов под проект×профиль, CD = GH Actions→GHCR→SSH). Покрытие двухуровневое (covered/best-effort) + per-component; co-tenant-safe; decoupled от ARCHITECTURE.md (R5). Personal-first; distributable — расширение (профиль = шов). См. D23, D14, P6/P7/P8.
+- **Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-ops-design.md`. **Plan:** `docs/superpowers/plans/2026-06-03-hi_flow-ops.md`. **Report:** `docs/superpowers/specs/2026-06-03-hi_flow-ops-design-report.md`.
+
 #### `hi_flow/references/` (BUILT, shared)
 - **Status:** BUILT — `architectural-principles.md` создан 2026-04-28 в сессии arch-audit design (**18 принципов**, 4 группы, scope = static-only). +1 `barrel-discipline` добавлен 2026-04-29.
 - **Path:** `hi_flow/references/architectural-principles.md` (+ planned `architectural-principles-index.json`, auto-generated).
@@ -263,6 +269,8 @@ superpowers = methodology of implementation (как именно делать TD
 
 **Boundary clause — security review (2026-06-03, closes OQ12):** adversarial trust-chain review of security invariants (трассировка data-flow за границу диффа) = superpowers methodology, не hi_flow. arch-spec только ТЕГАЕТ security-critical инварианты §8 маркером `[trust-chain review required — not diff-local]` (downstream-сигнал); сам ревью не выполняет и не определяет. Тег — сигнал, не присвоение security-review в scope hi_flow. См. D24.
 
+**Deploy/CD boundary clause (2026-06-03, R6, ops design):** для покрытой формы Dockerfile/CD = инстанцирование шаблона, которым владеет ops, не free-hand superpowers-execution. ops владеет deploy/CD-шаблонами + wiring; superpowers = методология импла нового кода проекта. Снимает формулировку D23 «Dockerfile/CD = superpowers». Совместимо с security-clause выше — разные швы (security review = superpowers; deploy-шаблоны = ops). См. D23, ops-spec §8.
+
 **Триггер фиксации:** decision на расширение D10 в L3 hygiene layer surface'нул необходимость явного principle, по которому будущие развилки между «это в hi_flow или в superpowers?» решаются без re-litigation базовых вопросов.
 
 ### D15. product-spec v0.5.0 feedback iteration — visibility, jargon, module-level Mermaid.
@@ -372,8 +380,8 @@ Generic-алгоритм (detect `*backlog*.md` → harvest-contract → dedup+i
 
 ### D23. `ops` — отдельный скилл доставки/операционализации, отделён от bootstrap (стройка vs доставка).
 
-ops владеет пятью столбами доставки: хост/рантайм, упаковка + CD-доставка, секрет-стор, сетевая доступность, наблюдаемость+восстановление. Резолвит bootstrap'овские `delegated`-оси (конкретный deployment-binding: где Postgres, MinIO vs AWS-S3, pg_cron). Граница: bootstrap = ось + код-абстракция + CI(гейты); ops = конкретная привязка + CD(доставка). bootstrap'овский `delegated` («until a deployment model is fixed», axis-taxonomy) — заранее вырезанное гнездо, ops и есть его «infra/deployment-bound consumer». Режимы как init/incremental: personal (известный фиксированный VPS → wire рано, set-and-forget) / distributable (probe таргета, P7-gated). По D14: решения о deploy-субстрате = hi_flow; написание конкретного Dockerfile/CD = superpowers (execution). Уточняет D20 — новый function-cluster сверх трёх портов operator-personal `architecture`.
-**Внутренний дизайн:** отдельная сессия (P4), TO DESIGN.
+ops владеет пятью столбами доставки: хост/рантайм, упаковка + CD-доставка, секрет-стор, сетевая доступность, наблюдаемость+восстановление. Резолвит bootstrap'овские `delegated`-оси (конкретный deployment-binding: где Postgres, MinIO vs AWS-S3, pg_cron). Граница: bootstrap = ось + код-абстракция + CI(гейты); ops = конкретная привязка + CD(доставка). bootstrap'овский `delegated` («until a deployment model is fixed», axis-taxonomy) — заранее вырезанное гнездо, ops и есть его «infra/deployment-bound consumer». Режимы как init/incremental: personal (известный фиксированный VPS → wire рано, set-and-forget) / distributable (probe таргета, P7-gated). По D14 (refined 2026-06-03, R6): решения о deploy-субстрате И deploy/CD-шаблоны+wiring = hi_flow (ops); covered Dockerfile/CD = инстанцирование шаблона ops, не free-hand superpowers; superpowers = методология нового кода проекта. Decoupled от ARCHITECTURE.md (R5, как D21/D24). Уточняет D20 — новый function-cluster сверх трёх портов operator-personal `architecture`.
+**Внутренний дизайн:** BUILT 2026-06-03 (форма «профиль+рендер», personal-first; covered формы — container/static; покрытие двухуровневое + per-component). Субстрат заземлён на реальном VPS (spec §2 — не гипотеза Postgres/MinIO/pg_cron из исходной формулировки). **Боевой прогон (onboarding реального проекта на VPS) НЕ выполнялся** → OQ13. **Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-ops-design.md` (+ `-report.md`). **Plan:** `docs/superpowers/plans/2026-06-03-hi_flow-ops.md`. См. Module Map § ops.
 
 ### D24. arch-spec amendment — §10 split / green-field stack-signal / composition-root-aware rules-patch / security-tag + D14 boundary.
 
@@ -473,6 +481,14 @@ arch-audit — единственный code-скилл семейства (TS/N
 2. **Code-onboarding** — рантайм требует `npm install` в директории скилла + бинарь `dependency-cruiser`; не plug-and-play как markdown-скиллы. Надо документировать в release.
 
 `node_modules` корректно заигнорен (не едет). **Связано:** D10 (L3 hygiene), OQ6 (market-ready decoupling), OQ7-parked (tooling onboarding hook). **К решению:** при подготовке первого public-релиза hi_flow.
+
+### OQ13. ops без боевого прогона — risk при первом реальном onboarding'е.
+
+ops реализован (BUILT v0.8.0) + прошёл валидацию **симуляцией** (субагент, 6 сценариев), но реального onboarding'а проекта на VPS не было. Аналог OQ9 (feature-spec): markdown+шаблоны deterministic, риск вероятно низкий, но covered-путь на боевой co-tenant коробке вживую не проверён. **К решению:** при первой реальной доставке (кандидат — сервис/фронтенд на `zhenka-vps`).
+
+### OQ14. Должен ли bootstrap класть CD-stub под ops, или ops всегда создаёт CD сам.
+
+ops-spec §8: ops **создаёт** deploy/CD-воркфлоу сам (существующую заглушку достраивает). Хэндофф предполагал «усыновление bootstrap'овского orphan cd.yml», но bootstrap по текущей спеке CD-stub **не** кладёт. Открыто: оставить как есть (ops создаёт) или добавить bootstrap'у генерацию stub'а (тогда — амендмент bootstrap). **К решению:** при следующем касании bootstrap либо при первом ops-прогоне.
 
 ---
 
@@ -679,3 +695,9 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Что:** §10 разведён на code-sight (§10.1 → writing-plans) / deployment-bound (§10.2); green-field C схлопнут в сигнал «ось не зафиксирована → bootstrap» (P8/D20); rules-patch type-1 → composition-root exemption в `from.pathNot`; security-инварианты §8 тегаются `[trust-chain review required — not diff-local]` + D14 boundary-clause (closes OQ12).
 **Почему:** первый боевой прогон arch-spec (REH ERP, 2026-05-31) выявил находки B/C/D/E; scope финализирован после постройки bootstrap.
 **Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-arch-spec-amendment-design.md`. Impl — эта сессия (осознанный P4-override).
+
+### 2026-06-03 — ops BUILT (spec+plan+report) + D14/D23 amendment
+
+**Что:** Скилл `hi_flow:ops` спроектирован и реализован (форма «профиль+рендер», personal-first; covered формы container/static; покрытие двухуровневое + per-component; co-tenant-safe; decoupled от ARCHITECTURE.md). D23 переведён TO-DESIGN → BUILT. D14 получил deploy/CD boundary clause (R6): ops владеет deploy/CD-шаблонами+wiring, снимает формулировку D23 «Dockerfile/CD = superpowers». Версия плагина 0.7.2 → 0.8.0 (D16). Боевой прогон не выполнялся (OQ13).
+**Почему:** Закрытие дыры доставки (D23) — заземление на реальном VPS (`zhenka-vps`) показало субстрат compose+nginx+LE+GHCR, state external (не гипотеза хэндоффа). Execution-шов находки A закрыт для covered-пути (шаблоны), best-effort оставлен честно открытым (OQ-ops-7 в spec).
+**Spec:** `docs/superpowers/specs/2026-06-03-hi_flow-ops-design.md`. **Plan:** `docs/superpowers/plans/2026-06-03-hi_flow-ops.md`. **Report:** `docs/superpowers/specs/2026-06-03-hi_flow-ops-design-report.md`.

@@ -1,0 +1,53 @@
+# Container form — vector.yml (OPTIONAL observability)
+# Source of truth: zhenka-bot/config/vector.yml (Hedgeinform/zhenka),
+# parameterized. Optional log-collection: tail the project's container logs,
+# parse JSON lines, ship to Axiom when an API key is present, always echo to
+# stdout as a fallback so logs are never silently dropped.
+#
+# OPTIONAL: wire this only when the project needs centralized logs (spec §6,
+# project-level observability). It is NOT part of the base onboarding.
+#
+# Render tokens:
+#   <PROJECT>   project slug — the container name(s) to collect from. Add the
+#               -staging neighbour line only if staging runs on the same box.
+#
+# Sink config (Axiom) reads AXIOM_API_KEY / AXIOM_DATASET from the environment.
+# Set them as GH secrets / server env (see .env.example) — never inline them here.
+
+sources:
+  docker_logs:
+    type: docker_logs
+    include_containers:
+      - <PROJECT>
+      - <PROJECT>-staging   # drop this line for a single-environment box
+
+transforms:
+  parse_json:
+    type: remap
+    inputs: [docker_logs]
+    source: |
+      parsed, err = parse_json(.message)
+      if err == null {
+        . = merge(., parsed)
+      }
+
+  route_logs:
+    type: route
+    inputs: [parse_json]
+    route:
+      to_axiom: >-
+        api_key = get_env_var("AXIOM_API_KEY") ?? "";
+        length(api_key) > 0
+
+sinks:
+  axiom:
+    type: axiom
+    inputs: [route_logs.to_axiom]
+    token: "${AXIOM_API_KEY}"
+    dataset: "${AXIOM_DATASET}"
+
+  stdout_fallback:
+    type: console
+    inputs: [parse_json]
+    encoding:
+      codec: json

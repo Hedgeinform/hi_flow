@@ -1,0 +1,66 @@
+# Container form — docker-compose.yml (one service + optional staging neighbour)
+# Source of truth: zhenka-bot/docs/ops/docker-compose-template.yml, parameterized.
+#
+# Render tokens:
+#   <GHCR_OWNER>     lowercased registry owner (ghcr.io/<GHCR_OWNER>/<PROJECT>)
+#   <PROJECT>        project slug (also the service name)
+#   <PORT_PROD>      external host port for prod   (internal stays 3000)
+#   <PORT_STAGING>   external host port for staging (internal stays 3000)
+#   <HEALTH_PATH>    health endpoint, e.g. /health
+#   <DOCKER_NET>     external docker network name (optional — drop the networks:
+#                    blocks entirely if the reverse proxy reaches the container
+#                    over published host ports instead of a shared network)
+#
+# Kept as proven generic defaults (not project literals):
+#   restart: unless-stopped · healthcheck cadence (30s/5s/15s start, 3 retries)
+#   internal port 3000 · json-file log rotation. These carry the source's vetted
+#   recovery + log-hygiene behaviour; do not re-parameterize them.
+#
+# The staging neighbour is optional: include it when this profile runs
+# staging + prod side-by-side on one box (the proven zhenka layout). Drop it for
+# a single-environment target.
+
+services:
+  <PROJECT>:
+    image: ghcr.io/<GHCR_OWNER>/<PROJECT>:main
+    restart: unless-stopped
+    ports:
+      - "<PORT_PROD>:3000"
+    env_file: .env.prod
+    networks:
+      - <DOCKER_NET>
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000<HEALTH_PATH>"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  <PROJECT>-staging:
+    image: ghcr.io/<GHCR_OWNER>/<PROJECT>:staging
+    restart: unless-stopped
+    ports:
+      - "<PORT_STAGING>:3000"
+    env_file: .env.staging
+    networks:
+      - <DOCKER_NET>
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000<HEALTH_PATH>"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+networks:
+  <DOCKER_NET>:
+    external: true

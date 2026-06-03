@@ -1,0 +1,110 @@
+# Shared form (container + static) — configure-env.yml
+# Source of truth: .github/workflows/configure-bot-env.yml (Hedgeinform/zhenka),
+# GENERALIZED. The source was bot-specific (OpenAI/Whisper/validator-debug keys,
+# a hardcoded operator chat id, a bot-token-gated feature branch). All of that
+# project logic is STRIPPED. What remains is the reusable mechanism:
+#
+#   gh-secrets  →  ssh-upsert into the server .env  →  chmod 600  →  restart
+#                  service  →  healthcheck.
+#
+# SECURITY PROPERTY (preserved verbatim — global principle 3):
+#   - Secret VALUES are never printed. upsert_env writes them into the file; it
+#     never `echo`s a value. Logs show only key NAMES and ✓/✗ status.
+#   - Transport is SSH-encrypted (appleboy/ssh-action). Values travel as masked
+#     GH-secret-backed env vars passed through `env:` + `envs:`, never as plain
+#     literals in the script body.
+#   - The .env file ends up `chmod 600` (owner-only).
+#
+# Manually triggered (workflow_dispatch). Push/rotate env on the server, per
+# environment, then restart that environment's service and confirm health.
+# Re-runnable: upsert is idempotent (replace-or-append per key), so running it
+# twice is a no-op for unchanged keys.
+#
+# Render tokens:
+#   <ENV>          the target environment file suffix: `staging` or `prod`. Run
+#                  configure-env once per environment that has server-side
+#                  secrets — for the staging precondition, render with
+#                  ENV=staging; for prod, ENV=prod.
+#   <ENV_KEYS>      the project's runtime env var NAMES. For EACH name you add:
+#                     1. a `env:` line     KEY: ${{ secrets.KEY }}
+#                     2. that name in the `envs:` CSV (so ssh-action forwards it)
+#                     3. a `upsert_env KEY "$KEY"` line in the script
+#                   The two keys below (RUNTIME_KEY_A/B) are PLACEHOLDERS — swap
+#                   them for the project's real key names. Never inline a value.
+#   <SERVER_DIR>    server project dir, e.g. /srv/<PROJECT> (where .env.<ENV> lives)
+#   <SERVICE>       the environment's compose service to restart: `<PROJECT>` for
+#                   prod, `<PROJECT>-staging` for staging (matches the compose
+#                   template's service-naming convention).
+#   <HEALTH_PATH>   health endpoint path, e.g. /health
+#   <PORT>          internal port the health check probes for the targeted env
+#                   (<PORT_STAGING> for staging / <PORT_PROD> for prod; e.g. 3000)
+#
+# NOTE — restart line: the template assumes a Docker Compose service
+# (`docker compose up -d <SERVICE>`). For the static form there is usually NO
+# server-side service to restart (a built SPA is served by the reverse proxy
+# from <STATIC_ROOT>); in that case configure-env is rarely needed — build-time
+# VITE_* keys are baked in by deploy-web-*. Keep this template for the container
+# form and any static project that genuinely has a server-side runtime env.
+
+name: Configure Env
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    # GH environment: set `staging` (no gate) for the ENV=staging run, or
+    # `production` (1-reviewer approval) for the ENV=prod run. Do NOT pin this to
+    # production permanently — configure-env runs once per environment that has
+    # server-side secrets, and the staging run must not sit behind the prod gate.
+    environment: staging
+    steps:
+      - uses: appleboy/ssh-action@v1
+        env:
+          # One line per <ENV_KEYS> name. PLACEHOLDERS — replace with real names.
+          RUNTIME_KEY_A: ${{ secrets.RUNTIME_KEY_A }}
+          RUNTIME_KEY_B: ${{ secrets.RUNTIME_KEY_B }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # The CSV must list every name from the env: block above so the
+          # ssh-action forwards them into the remote shell.
+          envs: RUNTIME_KEY_A,RUNTIME_KEY_B
+          script: |
+            set -e
+            cd <SERVER_DIR>
+            if [ ! -f .env.<ENV> ]; then touch .env.<ENV>; fi
+
+            # upsert_env KEY VALUE — replace existing line or append. Never echoes
+            # the value; only the key name appears in any log line.
+            upsert_env() {
+              local key=$1
+              local val=$2
+              if grep -q "^${key}=" .env.<ENV>; then
+                # escape slashes/ampersands for the sed replacement
+                local safe_val
+                safe_val=$(printf '%s' "$val" | sed 's/[\/&]/\\&/g')
+                sed -i "s/^${key}=.*/${key}=${safe_val}/" .env.<ENV>
+                echo "✓ updated ${key}"
+              else
+                printf '%s=%s\n' "$key" "$val" >> .env.<ENV>
+                echo "✓ added ${key}"
+              fi
+            }
+
+            # One upsert_env per <ENV_KEYS> name. PLACEHOLDERS below.
+            upsert_env RUNTIME_KEY_A "$RUNTIME_KEY_A"
+            upsert_env RUNTIME_KEY_B "$RUNTIME_KEY_B"
+
+            chmod 600 .env.<ENV>
+
+            # Restart + healthcheck for the targeted environment's service.
+            # Container form: compose service (<PROJECT> for prod,
+            # <PROJECT>-staging for staging — the <SERVICE> token). Adapt the
+            # restart line to the project's runtime if it is not compose-based.
+            docker compose up -d <SERVICE>
+            sleep 10
+            wget -qO- http://localhost:<PORT><HEALTH_PATH> && echo "✓ health OK"
+            docker compose ps <SERVICE>

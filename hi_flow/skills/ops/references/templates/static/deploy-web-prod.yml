@@ -1,0 +1,79 @@
+# Static form — deploy-web-prod.yml
+# Source of truth: .github/workflows/deploy-web-prod.yml (Hedgeinform/zhenka),
+# normalized to share the staging skeleton (per the ops design spec §2/§9: prod
+# is gated by the `production` GH Environment's 1-reviewer approval, NOT by a
+# raw push trigger — the operator catches it via workflow_dispatch).
+#
+# Render tokens:
+#   <PROJECT>      project slug — the frontend package dir (working-directory
+#                  + node cache-dependency-path)
+#   <ENV_KEYS>     the project's build-time env var NAMES (typically VITE_*),
+#                  each sourced from a same-named GH secret. Names only — the
+#                  block below is a placeholder set; the render step writes one
+#                  `KEY=${{ secrets.KEY }}` line per real key. NO values here.
+#   <STATIC_ROOT>  rsync destination on the server, e.g.
+#                  /home/<user>/<PROJECT>-site/ (trailing slash matters)
+#
+# Static form has NO ci.yml reuse and NO GHCR: it builds the SPA in-runner and
+# ships the built dist/ over rsync. There is no container image and no registry.
+#
+# DELTA vs deploy-web-staging.yml (the ONLY differences):
+#   environment: production    (enables the 1-reviewer approval gate)
+#   build mode:  production     (default `npm run build`, was `-- --mode staging`)
+#   env file:    .env.production (was .env.staging)
+#   rsync target: <STATIC_ROOT> = the prod static-root (was the -staging root)
+# Everything else is identical to deploy-web-staging.yml.
+
+name: Deploy Web (Production)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: <PROJECT>
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: <PROJECT>/package-lock.json
+
+      - run: npm ci
+
+      - name: Write production env
+        # One `KEY=${{ secrets.KEY }}` line per name in <ENV_KEYS>. Values come
+        # from GH secrets; they are interpolated into the file on the runner and
+        # never echoed to the log. Replace the placeholder keys below with the
+        # project's real VITE_* names.
+        run: |
+          cat > .env.production <<EOF
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
+          VITE_PUBLIC_KEY=${{ secrets.VITE_PUBLIC_KEY }}
+          EOF
+
+      - run: npx tsc -b
+
+      - run: npm run build
+
+      - name: Verify build output
+        run: test -f dist/index.html
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:<STATIC_ROOT>
