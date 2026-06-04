@@ -28,6 +28,7 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 ## 3. Goal and boundaries
 
 - **Decided at the architectural level:** <one line each>
+- **Platform ports (cross-cutting capabilities owned here):** <port name — capability — consumers-per-roadmap (feature X, Y); contract designed one notch wider than single-consumer YAGNI. Include ONLY when a floor-2 port triggered the shared-capability lookahead (roadmap/backlog names other consumers / ARCHITECTURE infra-constant / orthogonal to domain); omit the bullet entirely otherwise. Awareness marker — no registry (D26).>
 - **Delegated to implementation:** <forks left for writing-plans — see §10>
 - **Deferred (→ product-backlog):** <pointer; full items synced to backlog at closure, not listed here>
 

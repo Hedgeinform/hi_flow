@@ -12,6 +12,7 @@ For an **isolated subagent** (Agent tool), no conversation history. The main age
 - [ ] Ceiling sub-sections present for **every triggered** condition — and absent for untouched ones (no padding). Each present one names its trigger.
 - [ ] If the feature is **user-facing**: §5.11 presentation architecture is **derived** from the feature-spec «Поверхности (UX)» section, does **not** override the UX (two-designers boundary, D25); visual style is **not** fixed (that is the designer's job).
 - [ ] If brown field + fresh snapshot: block C (Impact on architecture) is filled. If green field: block C explicitly marked "not applicable — green field". If brown field + no snapshot: block C marked "skipped, no snapshot" with a logged reason (never silently empty).
+- [ ] **Shared-capability lookahead** applied to every floor-2 port: any port that is cross-cutting (roadmap/backlog names other consumers / ARCHITECTURE infra-constant / orthogonal to domain) is recorded in §3 as a **platform port** with a wider-than-YAGNI contract — not silently defined as a module-of-this-feature (D26). Domain-only feature with no ports → N/A. (Awareness only — a registry would be variant B; do NOT flag its absence as a gap.)
 
 ## Derivation & cleanliness
 
