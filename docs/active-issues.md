@@ -93,6 +93,23 @@ Implementation deferred до **trigger event = «следующая реальн
 
 **Связи:** D17 (parallel scope расширение в v0.6.0), D15 (предыдущий iteration feedback v0.5.0 — часть retrospective findings уже закрыта в v0.5.0, design v0.7 reflectет actual delta), v0.6.0 decomposition design (некоторые пункты — 11, 14 — частично включены в v0.6 как технически необходимое для closure phase shape).
 
+### `vertical-slice-respect` — правило-призрак: объявлено в baseline, не эмитится ни на одном дереве
+
+**Локация:** `hi_flow/skills/arch-audit/core/baseline-rules.ts:115` (запись реестра) + `references/baseline-rules.md` §150-154 (док) vs `adapters/typescript-depcruise.ts → detectStructural()` (нет эмиссии) + `helpers/parse-depcruise-output.ts:32-43` (`fileToModule`).
+
+**Источник:** изолированный spec-review frontend-coverage 2026-06-05 (subagent), верифицировано вручную. Правило есть в реестре, доке и severity-counts, но **ни одна строка кода не эмитит `vertical-slice-respect` finding**. Это silent-failure объявленной возможности (нарушение global принципа 5 — no silent fallback): аудит-репорт декларирует покрытие vertical-slice-cohesion, фактически изоляция фич не проверяется нигде.
+
+**Корневая причина — granularity модели модулей.** `fileToModule` резолвит модуль как единственный top-level сегмент под `src/` (`parts[srcIdx+1]`). Значит `src/features/A/...` и `src/features/B/...` оба схлопываются в модуль `features`, кросс-импорт `A→B` выглядит как внутренний `features→features` — невидим. То же для backend `src/tools/<feature>/` (zhenka). Правило непредставимо при текущей плоской модели — нужна суб-модульная резолюция для feature-folder структур.
+
+**План:**
+1. Ввести finer module resolution для feature-folder контейнеров (`features/`, `tools/`, конфигурируемо): для путей `src/<container>/<feature>/...` модуль = `<container>/<feature>`, а не `<container>`.
+2. Реализовать эмиссию в `detectStructural` по `feature_folders_detected`: кросс-импорты между sub-feature модулями одного контейнера → finding, кроме импортов через `shared/`/`common/`.
+3. Проверить, что метрики (Ca/Ce/NCCD, dep_graph) не ломаются от изменения гранулярности — либо granularity локализована в detection, либо метрики осознанно мигрируют.
+4. Fixtures: feature-folder проект с чистым кейсом + кросс-feature нарушением + импортом через shared (разрешён).
+5. Behavior-change flag: после фикса существующие проекты с feature-folders (zhenka `src/tools/`) начнут получать ранее отсутствовавшие MEDIUM findings — это корректное поведение (правило наконец работает), но прогнать на реальном проекте перед релизом.
+
+**Связи:** baseline-rules.md §150-154 (контракт), D12 (последнее касание baseline rule set), frontend-coverage-completion spec 2026-06-05 (вскрыто там; frontend horizontal layered rule НЕ зависит от этого — изоляция фич отложена из scope осознанно), global принцип 5.
+
 ---
 
 ## LOW

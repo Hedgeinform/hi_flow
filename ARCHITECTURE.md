@@ -399,6 +399,11 @@ ops владеет пятью столбами доставки: хост/ран
 **Re-review trigger:** реальный поток 4+ потребителей одной способности на боевом проекте → переход к реестру с якорем в backlog-механизм (D22) + детектором в product-spec decomposition.
 **Источник:** `docs/feedback/hi_flow-platform-architecture-gap-brief.md`. **Spec:** `docs/superpowers/specs/2026-06-04-hi_flow-arch-spec-platform-port-probe-amendment-design.md` (+ `-report.md`). **Status:** implemented 2026-06-04 (P4-override, эта сессия; isolated review).
 
+### D27. Frontend coverage closed — React-ось `covered` (горизонтальное слоевое управление).
+
+`frontend-layered-respect` (MEDIUM) + `frontend-layer-cycle` (CRITICAL) — императивный frontend-блок в arch-audit адаптере (run-level frontend-профиль, backend layered-правила пропускаются — нет false positives на `api`/`app`/`services`); scan-глоб → `.tsx`; добавлен `scaffold-templates/react/`; manifest interface/frontend → covered. Изоляция фич (vertical-slice) отложена — нужна правка модели модулей → active-issues. Глоб binary-gated (verify с depcruise-бинарём).
+**Spec:** `docs/superpowers/specs/2026-06-05-hi_flow-frontend-coverage-completion-design.md`. **Status:** implemented 2026-06-05 (P4-override автономно; isolated re-review).
+
 ---
 
 ## Known Drift
@@ -410,6 +415,10 @@ ops владеет пятью столбами доставки: хост/ран
 ### KD2. ARCHITECTURE.md: bootstrap создаёт, living-architecture ведёт — осознанный разрыв single-ownership документа.
 
 By-design следствие порт-модели D20 (Ф1 Create flow → bootstrap; Ф2 maintenance → living-architecture): один документ — два владельца на разных фазах жизни. Принято осознанно, обусловлено декомпозицией порта operator-personal `architecture`. Смягчение: стек = truth в конфигах (`package.json`/`tsconfig`/lockfile), `## Stack` — проекция → global «code is truth» не нарушается; разрыв только по владению документом-проекцией. Материализуется при impl bootstrap + living-architecture (оба TO DESIGN). **Trigger re-review:** пересмотр порт-модели D20 либо реальный конфликт двух писателей на практике.
+
+### KD3. react.md § Cross-tool contracts устарел (global file) — frontend теперь в scope arch-audit.
+
+Пункт «frontend outside arch-audit scope» стал ложным (frontend import-граф управляется `frontend-layered-respect`/`frontend-layer-cycle`, D27); пункт «no component-graph adapter» **остаётся верным** (render/hooks-дерево без адаптера). `~/.claude/architecture/stacks/react.md` — `[pending-Ф3a]`, вне write-scope плагина. **Trigger re-review:** оператор правит react.md, либо складывается в Ф3a relocation.
 
 ---
 
