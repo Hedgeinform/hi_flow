@@ -6,7 +6,7 @@
 
 ---
 
-## Current Status — 2026-06-03
+## Current Status — 2026-06-06
 
 Проект `hi_flow` — семейство Claude Code скиллов, реализующих методологию Three-Phase Flow для solo+AI разработки. Опубликован на GitHub как Claude Code marketplace + плагин.
 
@@ -27,7 +27,7 @@
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** ops реализован (BUILT v0.8.0, 2026-06-03) — последний недостающий скилл доставки; релиз 0.8.0. arch-spec amendment (D24) и bootstrap — в main. Следующее — **боевой прогон ops** (первый реальный onboarding на VPS, OQ13) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Открыто: должен ли bootstrap класть CD-stub под ops (OQ14). Backlog bootstrap: frontend covered-хвосты (scaffold-template react/ + frontend depcruise boundary-rules); Ф3a relocation.
+**Текущий фокус:** frontend coverage закрыт (**релиз 0.8.3**, 2026-06-06 — D27): React-ось `covered`, arch-audit управляет фронтом горизонтальными слоевыми правилами (`frontend-layered-respect`/`frontend-layer-cycle`), scaffold react/ добавлен. ops (0.8.0) / arch-spec amendment (D24) / bootstrap — в main (0.8.2). Следующее — **боевой прогон ops** (первый реальный onboarding на VPS, OQ13) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Открыто: должен ли bootstrap класть CD-stub под ops (OQ14). Backlog bootstrap: Ф3a relocation (frontend covered-хвосты закрыты). Изоляция фич на фронте отложена → active-issues (vertical-slice-respect).
 
 ---
 
