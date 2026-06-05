@@ -81,6 +81,7 @@ export interface BaselineRule {
 
 export type ConditionalTrigger =
   | { kind: 'layered_detected'; layers_min: number }
+  | { kind: 'frontend_layered_detected'; layers_min: number }
   | { kind: 'feature_folders_detected' }
   | { kind: 'domain_detected' }
   | { kind: 'always' }

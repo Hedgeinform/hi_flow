@@ -78,7 +78,7 @@ const RULES: BaselineRule[] = [
     threshold_default: 0.8,
     explanation: 'Module {module} has a barrel index file ({barrel_file}) imported by sibling modules ({importing_modules}). Barrels obscure the real dependency graph; prefer explicit deep imports.',
   },
-  // === Layer C — conditional structural (5) ===
+  // === Layer C — conditional structural (7) ===
   {
     id: 'baseline:layered-respect',
     name: 'layered-respect',
@@ -118,6 +118,22 @@ const RULES: BaselineRule[] = [
     severity: 'MEDIUM',
     conditional: { kind: 'feature_folders_detected' },
     explanation: 'Cross-feature import ({source_feature} → {target_feature}) — features should be isolated.',
+  },
+  {
+    id: 'baseline:frontend-layered-respect',
+    name: 'frontend-layered-respect',
+    principle: 'layered-architecture-respect',
+    severity: 'MEDIUM',
+    conditional: { kind: 'frontend_layered_detected', layers_min: 2 },
+    explanation: 'Frontend import violates layer direction ({source_layer} → {target_layer}) — imports must go downward (pages → features → components → hooks → data-access → lib).',
+  },
+  {
+    id: 'baseline:frontend-layer-cycle',
+    name: 'frontend-layer-cycle',
+    principle: 'layered-architecture-respect',
+    severity: 'CRITICAL',
+    conditional: { kind: 'frontend_layered_detected', layers_min: 2 },
+    explanation: 'Cycle between frontend layers ({layers}) — fundamental layered violation.',
   },
 ]
 

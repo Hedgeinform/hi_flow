@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { getBaselineRules } from '../../core/baseline-rules.ts'
 
 describe('baseline-rules', () => {
-  it('returns 15 baseline rules', () => {
+  it('returns 17 baseline rules', () => {
     const rules = getBaselineRules()
-    expect(rules).toHaveLength(15)
+    expect(rules).toHaveLength(17)
   })
 
   it('every rule has namespaced id with baseline: prefix', () => {
