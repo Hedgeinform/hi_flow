@@ -154,3 +154,61 @@ describe('typescript-depcruise adapter — structural detection', () => {
     await rm(dir, { recursive: true })
   })
 })
+
+describe('typescript-depcruise adapter — frontend layered detection', () => {
+  const fe = (depGraph: Record<string, string[]>, names: string[]) => {
+    const perModuleRaw: Record<string, { ca: number; ce: number; loc: number }> = {}
+    for (const n of names) perModuleRaw[n] = { ca: 1, ce: 1, loc: 50 }
+    return createTypescriptDepcruiseAdapter().detectStructural({
+      projectPath: '/tmp/x', depGraph, perModuleRaw, projectRules: { forbidden: [], required: [] },
+    })
+  }
+
+  it('flags an upward import (component -> page) as frontend-layered-respect', async () => {
+    const findings = await fe(
+      { components: ['pages'], pages: [], hooks: [], lib: [] },
+      ['components', 'pages', 'hooks', 'lib'],
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect'
+      && f.source.module === 'components' && f.target?.module === 'pages')).toBe(true)
+    // backend layered rule must be skipped in a frontend profile
+    expect(findings.some(f => f.rule_id === 'layered-respect')).toBe(false)
+  })
+
+  it('passes a clean downward chain (pages -> components -> hooks -> lib)', async () => {
+    const findings = await fe(
+      { pages: ['components'], components: ['hooks'], hooks: ['lib'], lib: [] },
+      ['pages', 'components', 'hooks', 'lib'],
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
+  })
+
+  it('flags a frontend layer cycle (components <-> hooks) as frontend-layer-cycle', async () => {
+    const findings = await fe(
+      { components: ['hooks'], hooks: ['components'], pages: [], lib: [] },
+      ['components', 'hooks', 'pages', 'lib'],
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layer-cycle')).toBe(true)
+  })
+
+  it('does NOT emit a false app -> api violation in a frontend profile', async () => {
+    // app/ and api/ are in the BACKEND map (application / presentation); under the
+    // backend layered rule app->api would be order 2>1 = violation. In a frontend
+    // profile app=pages(1), api=data-access(5): 1>5 false -> no violation.
+    const findings = await fe(
+      { app: ['api'], api: [], components: [], hooks: [] },
+      ['app', 'api', 'components', 'hooks'],
+    )
+    expect(findings.some(f => f.rule_id === 'layered-respect')).toBe(false)
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
+  })
+
+  it('leaves a backend project on the backend layered rule (no frontend signal dirs)', async () => {
+    const findings = await fe(
+      { infrastructure: ['domain'], domain: [] },
+      ['infrastructure', 'domain'],
+    )
+    expect(findings.some(f => f.rule_id === 'layered-respect')).toBe(true)
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
+  })
+})

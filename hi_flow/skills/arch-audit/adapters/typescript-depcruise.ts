@@ -202,13 +202,20 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
         }
       }
 
-      // Layered detection
+      // Frontend vs backend profile (run-level — no subtree model; module = flat top-level dir).
+      // A run is frontend-profiled when >=2 React-distinctive dirs are present. In a frontend
+      // profile the backend layered rules are SKIPPED: the backend map classifies api/app/services
+      // and would emit false positives (e.g. app->api). See spec sect 4.5.
+      const FRONTEND_SIGNAL_DIRS = ['components', 'hooks', 'pages', 'features']
+      const isFrontendProfile = modules.filter(m => FRONTEND_SIGNAL_DIRS.includes(m)).length >= 2
+
+      // Layered detection (backend) — only when NOT frontend-profiled.
       const aliasMap = { ...layerNamingMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
       const detectedLayers = new Set<string>()
       for (const m of modules) {
         if (aliasMap[m]) detectedLayers.add(aliasMap[m])
       }
-      if (detectedLayers.size >= 2) {
+      if (!isFrontendProfile && detectedLayers.size >= 2) {
         const order: Record<string, number> = { presentation: 1, application: 2, domain: 3, infrastructure: 4 }
         for (const [src, tgts] of Object.entries(depGraph)) {
           const srcLayer = aliasMap[src]
@@ -246,20 +253,73 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
         }
       }
 
-      // port-adapter-direction: domain imports infrastructure directly
-      const aliasMap2 = { ...layerNamingMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
-      for (const [src, tgts] of Object.entries(depGraph)) {
-        if (aliasMap2[src] !== 'domain') continue
-        for (const tgt of tgts) {
-          if (aliasMap2[tgt] === 'infrastructure') {
+      // Frontend layered detection — horizontal direction
+      // (pages -> features -> components -> hooks -> data-access -> lib; imports allowed downward).
+      if (isFrontendProfile) {
+        const frontendLayerMap: Record<string, string> = {
+          pages: 'pages', routes: 'pages', app: 'pages',
+          features: 'features',
+          components: 'components',
+          hooks: 'hooks', store: 'hooks',
+          api: 'data-access', services: 'data-access',
+          lib: 'lib', shared: 'lib', utils: 'lib',
+        }
+        const frontendOrder: Record<string, number> = {
+          pages: 1, features: 2, components: 3, hooks: 4, 'data-access': 5, lib: 6,
+        }
+        const feAlias = { ...frontendLayerMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
+        for (const [src, tgts] of Object.entries(depGraph)) {
+          const srcLayer = feAlias[src]
+          if (!srcLayer) continue
+          for (const tgt of tgts) {
+            const tgtLayer = feAlias[tgt]
+            if (!tgtLayer) continue
+            if ((frontendOrder[srcLayer] ?? 99) > (frontendOrder[tgtLayer] ?? 99)) {
+              findings.push({
+                rule_id: 'frontend-layered-respect',
+                raw_severity: 'warn',
+                type: 'boundary',
+                source: { module: src, file: '' },
+                target: { module: tgt, file: '' },
+                extras: { source_layer: srcLayer, target_layer: tgtLayer },
+              })
+            }
+          }
+        }
+        // frontend-layer-cycle: inappropriate-intimacy across two different frontend layers
+        for (const f of findings.filter(f => f.rule_id === 'inappropriate-intimacy')) {
+          if (!f.target) continue
+          const sLayer = feAlias[f.source.module]
+          const tLayer = feAlias[f.target.module]
+          if (sLayer && tLayer && sLayer !== tLayer) {
             findings.push({
-              rule_id: 'port-adapter-direction',
-              raw_severity: 'warn',
-              type: 'boundary',
-              source: { module: src, file: '' },
-              target: { module: tgt, file: '' },
-              extras: {},
+              rule_id: 'frontend-layer-cycle',
+              raw_severity: 'error',
+              type: 'cycle',
+              source: f.source,
+              target: f.target,
+              extras: { layers: [sLayer, tLayer] },
             })
+          }
+        }
+      }
+
+      // port-adapter-direction: domain imports infrastructure directly — backend only.
+      const aliasMap2 = { ...layerNamingMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
+      if (!isFrontendProfile) {
+        for (const [src, tgts] of Object.entries(depGraph)) {
+          if (aliasMap2[src] !== 'domain') continue
+          for (const tgt of tgts) {
+            if (aliasMap2[tgt] === 'infrastructure') {
+              findings.push({
+                rule_id: 'port-adapter-direction',
+                raw_severity: 'warn',
+                type: 'boundary',
+                source: { module: src, file: '' },
+                target: { module: tgt, file: '' },
+                extras: {},
+              })
+            }
           }
         }
       }
