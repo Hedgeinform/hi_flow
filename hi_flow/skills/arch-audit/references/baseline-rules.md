@@ -10,11 +10,11 @@
 
 ## Структура baseline
 
-15 правил в трёх слоях:
+17 правил в трёх слоях:
 
 - **Слой A — depcruise built-ins** (3 правила): переиспользуем existing default rule set, навешиваем `principle:` ссылки.
 - **Слой B — universal custom** (7 правил): работают на любом проекте без operator-declared контекста, через метрики и граф.
-- **Слой C — conditional structural** (5 правил): применяются автоматически, если detected конкретные конвенциональные структуры (layered naming, feature folders).
+- **Слой C — conditional structural** (7 правил): применяются автоматически, если detected конкретные конвенциональные структуры (layered naming, feature folders, frontend layers).
 
 Метрики (Ca/Ce/I/A/D/LOC/NCCD) считаются всегда, идут в `audit-report.json → metrics` как сырые числа для контекста.
 
@@ -104,7 +104,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ---
 
-## Слой C — conditional structural (5)
+## Слой C — conditional structural (7)
 
 Правила применяются автоматически, если в проекте обнаружены соответствующие условия. Если нет — skipped silently.
 
@@ -153,6 +153,19 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 - **What:** features изолированы, общая логика только через shared subfolder.
 - **Severity:** MEDIUM.
 
+### `frontend-layered-respect`
+- **Principle:** `layered-architecture-respect`
+- **Detection:** custom (адаптер) — applies, когда прогон **frontend-profiled** (≥2 из `components/`, `hooks/`, `pages/`, `features/`). Frontend layer order (сверху вниз, импорт разрешён вниз): `pages → features → components → hooks → (api/services = data-access) → lib`. Алиасы: `routes→pages`, `app→pages` (только frontend-профиль), `store→hooks`, `shared`/`utils→lib`.
+- **Profile mutual-exclusion:** в frontend-профиле backend-овские layered-правила (`layered-respect`, `port-adapter-direction`, `architectural-layer-cycle`) **пропускаются** — backend-карта классифицировала бы `api`/`app`/`services` и выдала бы false positives.
+- **What:** импорт вверх или через слой во фронтовом дереве.
+- **Severity:** MEDIUM.
+
+### `frontend-layer-cycle`
+- **Principle:** `layered-architecture-respect` (escalation)
+- **Detection:** custom — frontend-profiled; выводится фильтрацией `inappropriate-intimacy` 2-циклов, чьи модули лежат в двух разных frontend-слоях (зеркало `architectural-layer-cycle`).
+- **What:** взаимная зависимость двух frontend-слоёв.
+- **Severity:** **CRITICAL**.
+
 ---
 
 ## Метрики в audit-report (computed always, не findings)
@@ -177,9 +190,9 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 Правила с более специфичной семантикой подавляют общие informational findings на том же импорте. Это предотвращает double/triple findings на одном нарушении.
 
 **Precedence chain (high → low):**
-1. CRITICAL: `architectural-layer-cycle`
+1. CRITICAL: `architectural-layer-cycle`, `frontend-layer-cycle`
 2. HIGH: `god-object`, `dependency-hub`, `inappropriate-intimacy`, `nccd-breach`
-3. MEDIUM: `layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`
+3. MEDIUM: `layered-respect`, `frontend-layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`
 4. LOW (suppressed by higher): `cross-module-import-info`
 
 **Suppression rule:** если на конкретном импорте срабатывает правило выше в chain, finding для `cross-module-import-info` на том же импорте подавляется.
@@ -188,9 +201,9 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ## Severity distribution (после normalization)
 
-- **CRITICAL:** 1 (architectural-layer-cycle, conditional).
+- **CRITICAL:** 2 (architectural-layer-cycle, frontend-layer-cycle; conditional).
 - **HIGH:** 6 (no-circular, not-to-test-from-prod, god-object, dependency-hub, inappropriate-intimacy, nccd-breach).
-- **MEDIUM:** 7 (no-orphans, high-fanout, layered-respect, domain-no-channel-sdk, port-adapter-direction, vertical-slice-respect, barrel-file).
+- **MEDIUM:** 8 (no-orphans, high-fanout, layered-respect, frontend-layered-respect, domain-no-channel-sdk, port-adapter-direction, vertical-slice-respect, barrel-file).
 - **LOW:** 1 (cross-module-import-info).
 
 Все severity ∈ {CRITICAL, HIGH, MEDIUM, LOW} — D8 schema valid.
