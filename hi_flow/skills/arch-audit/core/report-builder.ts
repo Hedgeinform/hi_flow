@@ -70,7 +70,10 @@ export async function buildReportData(
       return (e.stdout as string) || ''
     }
   })
-  const depcruiseOut = runner(configPath, 'src/**/*.ts')
+  // Glob includes .tsx so the frontend import-graph is scanned (depcruise globs the arg
+  // internally with brace support, so this is cross-platform). Without .tsx a React SPA
+  // (components are .tsx, entry main.tsx) is not scanned at all.
+  const depcruiseOut = runner(configPath, 'src/**/*.{ts,tsx}')
 
   const parsed = parseDepcruiseOutput(depcruiseOut)
 
