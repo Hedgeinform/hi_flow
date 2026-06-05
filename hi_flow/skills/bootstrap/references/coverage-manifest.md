@@ -55,18 +55,18 @@ Partial coverage falls under coverage-honesty: "axis covered partially — fixin
 
 ### interface / frontend (UI)
 
-**Status: PARTIAL → NOT covered** (loud signal; 2 **absent-pending** fields — audit boundary-rules + scaffold-template). React row added 2026-06-02. `covered` is reachable once both are built — neither is N/A.
+**Status: covered** (full set — frontend horizontal layered governance + scaffold-template, both built 2026-06-05). React row added 2026-06-02.
 
 | Field | Value |
 |---|---|
 | technology | React (Vite SPA, React 19 / TypeScript) |
 | stack-file | `~/.claude/architecture/stacks/react.md` **[pending-Ф3a]** |
 | baseline | `~/.claude/architecture/stacks/references/react-baseline.md` **[pending-Ф3a]** |
-| audit-adapter | **absent (pending)** — typescript-depcruise *applies* to the frontend import-graph (cycles / barrel / coupling / boundaries on `.tsx`); what is missing is frontend-specific boundary-rules (depcruise config for frontend layers). The render/hooks layer is out of module-graph scope and covered by `eslint-plugin-react-hooks` (react.md). Closeable, **not N/A**. |
-| scaffold-template | **absent (pending)** — `references/scaffold-templates/react/` not yet authored; use the Vite react-ts template (baseline §1) until then |
+| audit-adapter | **present** — typescript-depcruise (scan glob includes `.tsx`) + `frontend-layered-respect` (MEDIUM) / `frontend-layer-cycle` (CRITICAL) baseline conditional rules: horizontal layered governance (pages→features→components→hooks→data-access→lib), run-level frontend profile. Feature isolation (vertical-slice) deferred — see active-issues. Render/hooks layer out of module-graph scope, covered by `eslint-plugin-react-hooks` (react.md). |
+| scaffold-template | **present** — `references/scaffold-templates/react/` (components/hooks/lib green skeleton, co-located tests, downward imports) |
 | probe-class | buy-in |
 
-**Partial = "covered minus audit-rules + scaffold".** stack-file + baseline now exist (delta-on-top of `typescript.md`): bootstrap can wire lint/format/gates/CI and fix the React stack from the baseline. Two **absent-pending** fields: (1) **audit boundary-rules** — typescript-depcruise applies to the frontend import-graph (cycles / barrel / coupling on `.tsx`), but frontend-specific boundary-rules (which layers may not import which) are not written yet; the render/hooks layer is out of module-graph scope and handled by `eslint-plugin-react-hooks` (react.md); (2) **scaffold-template** — the green-skeleton template is not yet authored, so the atom's scaffold step has nothing to lay (use the Vite react-ts template per baseline §1 until it exists). Per coverage-honesty, emit the loud signal: "React frontend wired (lint/format/gates/CI from baseline); turnkey scaffold-template and frontend depcruise boundary-rules not available yet — fixing the covered part, the rest is `unmanaged`."
+**Covered (2026-06-05).** stack-file + baseline (delta-on-top of `typescript.md`) wire lint/format/gates/CI; the audit-adapter delivers horizontal layered governance via `frontend-layered-respect` / `frontend-layer-cycle` (run-level frontend profile; backend layered rules skipped to avoid `api`/`app`/`services` false positives); the scaffold-template lays a green components/hooks/lib skeleton. **Deferred, not blocking `covered`:** feature isolation (vertical-slice) needs a finer module-granularity change — logged in `docs/active-issues.md`; the render/hooks tree has no component-graph adapter (handled by `eslint-plugin-react-hooks`). Spec: `docs/superpowers/specs/2026-06-05-hi_flow-frontend-coverage-completion-design.md`.
 
 ### file storage (object storage / blob)
 
@@ -96,11 +96,11 @@ Partial coverage falls under coverage-honesty: "axis covered partially — fixin
 |---|---|
 | language & runtime | covered |
 | database | partial → not covered (loud signal) |
-| interface / frontend | partial (React) → 2 absent-pending: audit boundary-rules + scaffold (loud signal) |
+| interface / frontend | covered (React) |
 | file storage | not covered |
 | task scheduler | not covered |
 | message queues | not covered |
 | cache | not covered |
 | search | not covered |
 
-Only `language & runtime` (TypeScript/Node) is fully covered today. Everything else is honest empty or partial — the plugin promises turnkey hygiene only where it can deliver it.
+`language & runtime` (TypeScript/Node) and `interface / frontend` (React) are fully covered today. Everything else is honest empty or partial — the plugin promises turnkey hygiene only where it can deliver it.
