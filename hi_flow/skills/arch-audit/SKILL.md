@@ -148,10 +148,10 @@ Helper `compute-nccd.js` computes NCCD from dep_graph (depcruise does not emit i
 
 ### Apply structural detection (core, not adapter)
 
-Detection algorithms live in `core/` (stack-agnostic). The adapter supplies stack-specific constants: `channelSdkList`, `layerNamingMap`, `defaultModulePattern`.
+Detection algorithms live in `core/` (stack-agnostic). The adapter supplies stack-specific constants: `channelSdkList`, `layerNamingMap`, `defaultModulePattern`. (Note: the layered + frontend-layered detection currently lives in the adapter's `detectStructural`, not `core/` — a pre-existing core/adapter divergence, not resolved in this scope.)
 
 Checks:
-- **Layered detection** — closed list of layer names + adapter-provided alias map.
+- **Layered detection** — closed list of layer names + adapter-provided alias map. A second, **frontend** layer vocabulary (`pages → features → components → hooks → data-access → lib`) applies when the run is frontend-profiled (≥2 of `components/`, `hooks/`, `pages/`, `features/`); in that case the backend layered rules are skipped (mutual exclusion, avoids false positives on `api/`/`app/`/`services/`).
 - **Hub-like / god-object detection** — based on computed Ca/Ce/LOC.
 - **Vertical-slice detection** — when feature folders are detected.
 - **Channel SDK detection** — when a domain layer is detected; SDK list comes from the adapter.
@@ -160,9 +160,9 @@ Checks:
 
 Helper `core/suppression.ts`. Rules with more specific semantics suppress general informational findings on the same import edge:
 
-1. CRITICAL: `architectural-layer-cycle`.
+1. CRITICAL: `architectural-layer-cycle`, `frontend-layer-cycle`.
 2. HIGH: `god-object`, `dependency-hub`, `inappropriate-intimacy`, `nccd-breach`, `no-circular`, `not-to-test-from-prod`.
-3. MEDIUM: `layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`, `no-orphans`.
+3. MEDIUM: `layered-respect`, `frontend-layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`, `no-orphans`.
 4. LOW (suppressed by higher): `cross-module-import-info`.
 
 Algorithm: for each LOW finding (`cross-module-import-info`) — match by key `(source.module, target.module)`; if any finding with the same key has higher severity → suppress the LOW one.
@@ -430,7 +430,7 @@ Install via the marketplace entry in `.claude-plugin/marketplace.json` using the
 
 - `references/d8-schema.json` — JSON Schema for validators.
 - `references/d8-schema.md` — markdown spec for D8 (canonical source — `hi_flow/skills/arch-audit/references/`; `arch-redesign` and `arch-spec` read from here).
-- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 7 universal custom + 5 conditional structural = 15 rules, incl. `barrel-file`), severity normalization, suppression precedence, override mechanism.
+- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 7 universal custom + 7 conditional structural = 17 rules, incl. `barrel-file` and the frontend layered pair), severity normalization, suppression precedence, override mechanism.
 - `references/self-review-checklist.md` — seven-group checklist for the Self-Review subagent.
 - `references/audit-report-template.md` — markdown template for header + sections.
 - `hi_flow/references/architectural-principles.md` — D9 library (catalog of principles with typical fix alternatives; owned by this skill).
