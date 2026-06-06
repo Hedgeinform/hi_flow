@@ -27,7 +27,7 @@
 **BUILT с прошлого фокуса:**
 - **shared graph-core** (`hi_flow/skills/arch-audit/core/graph-core.ts`, 2026-05-31) — Ca/Ce/I/NCCD как SSoT + Tarjan-traversal циклов/достижимости на декларативном графе. Снял блокер боевой работы блока C arch-spec (D21, принцип 10).
 
-**Текущий фокус:** frontend coverage закрыт (**релиз 0.8.3**, 2026-06-06 — D27): React-ось `covered`, arch-audit управляет фронтом горизонтальными слоевыми правилами (`frontend-layered-respect`/`frontend-layer-cycle`), scaffold react/ добавлен. ops (0.8.0) / arch-spec amendment (D24) / bootstrap — в main (0.8.2). Следующее — **боевой прогон ops** (первый реальный onboarding на VPS, OQ13) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Открыто: должен ли bootstrap класть CD-stub под ops (OQ14). Backlog bootstrap: Ф3a relocation (frontend covered-хвосты закрыты). Изоляция фич на фронте отложена → active-issues (vertical-slice-respect).
+**Текущий фокус:** fullstack-aware arch-spec закрыт (**релиз 0.8.4**, 2026-06-06 — D28): arch-spec на fullstack-фиче аудитит каждое дерево, per-tree блок C (дизъюнктные графы) + per-tree output/rules-patch (инструкции, без кода). До этого — frontend coverage `covered` (0.8.3, D27). ops (0.8.0) / arch-spec amendment (D24) / bootstrap — в main. Следующее — **боевой прогон**: fullstack arch-spec на Reh_Erp (снимает исходную боль) + ops onboarding на VPS (OQ13) → living-architecture → L3 hygiene (Ф3a relocation для distributable bootstrap). Открыто: должен ли bootstrap класть CD-stub под ops (OQ14). Backlog: Ф3a relocation; fullstack отложенные хвосты (OQ15); изоляция фич на фронте (active-issues vertical-slice-respect).
 
 ---
 
