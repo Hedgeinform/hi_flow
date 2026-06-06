@@ -242,6 +242,8 @@ Honest cost of module level: boundaries are caught more weakly than a file-level
    - deliberately accepted → Known Drift (rare, on the record).
 4. **Signal up (if step 3 hits a wall)** — simplify the product / arch-redesign the environment / accept debt.
 
+**Fullstack feature — block C runs once per tree.** Graphs are disjoint (back/front communicate over HTTP, not TS imports), so there is nothing to merge. For each touched tree: overlay that tree's bare-named feature modules onto that tree's snapshot (step 1), run the future graph through the principles (step 2) using graph-core's `findCycles`/`computeNCCD`/`computeCoupling` over that tree's `dep_graph` + the feature's edges, classify (step 3). Synthesize one §6 with per-tree sub-results (see Output → Fullstack output). A tree with no snapshot (per the per-tree situation vector) → its block C is "skipped, no snapshot, reason logged" (principle 5); the covered tree still runs.
+
 ## Operability limits (two-level inventory)
 
 Replaces a premortem. Two-level — so as not to compute limits where there are none (an `actor_label` format won't "hit a wall"; a million requests/sec is unreachable for an ERP).
@@ -297,6 +299,16 @@ The spec body must be **cleaner than feature-spec** (which the operator reads): 
 
 **No "open questions" section.** An open question is either resolved in-session (→ a fact in the spec) or deferred (→ product-backlog). No third place — otherwise deferred items smear across N files (feature-spec feedback lesson).
 
+### Fullstack output (per-tree)
+
+For a fullstack feature the single-snapshot slots become per-tree (single-tree output unchanged):
+- **§1 Header** — the `Audit snapshot` line becomes **N lines**, one per touched tree (`tree · path · audit_sha · freshness`); the `Mode` field becomes **per-tree** (`web: green field · api: brown field`).
+- **§4 Starting state** — per-tree note (a green tree → "clean field for `<tree>`").
+- **§5.1 Module breakdown** — each module annotated with its **tree tag** (bare name + `tree: web|api`); §5.11 (Presentation/UI) modules carry `web`.
+- **§6 Impact** — **per-tree sub-sections** ("Integration — `api`" / "Integration — `web`"), each with its own Graph delta + Degradation check; the "Brown field only" gate is per-tree; `Signal up` stays one shared bullet.
+- **§8 Fitness invariants** — each graph-type (type-1) invariant carries its tree **inline in the Invariant cell** (`<statement> [tree: web]`), NOT a 5th column (same discipline as the security-tag); routes the invariant to its tree's rules-patch.
+- **§9 Dependency graph** — two ego-subgraphs in one Mermaid block (`FEATURE-web` + web neighbours, `FEATURE-api` + api neighbours); disjoint, so no cross-edges.
+
 ### Dependency graph — ego-graph of the feature
 
 Mermaid renders poorly past ~30 nodes (product-spec D15 precedent). So the visualization shows **not the whole graph but the feature's neighbourhood** — the feature itself + modules it directly borders (radius 1-2). Usually 5-10 nodes. Highlight the delta: new modules/links in colour, existing neighbours grey. The full product graph is arch-audit's concern; arch-spec does not duplicate it. If the neighbourhood is large (rare), degrade: group neighbours by layer in subgraphs / radius 1 / text + partial graph.
@@ -341,6 +353,8 @@ Whether something is graph-formalizable is the LLM's call when formulating (abou
 One consumer (`arch-audit apply-patch`), shared D11 contract. arch-spec **does not invent** its own format: YAML dependency rules, each with `name` / `severity` / `from`/`to` (or `required` invariant) / a mandatory `principle` reference to a D9 canonical id. Apply is an **explicit operator action**, not automatic. Reuse `references/rules-patch-template.yaml` (same as arch-redesign) — do not create a new format.
 
 **Composition-root exemption (generation rule).** When generating type-1 "only X→Y" rules (the `from.path` allowlist via negative-lookahead), include composition-root paths in a **separate** `from.pathNot` so the wiring layer is legal. The composition-root path set (`src/main.ts` / `src/bootstrap/` / `src/composition/`) is a project-level baseline constant — reference the baseline definition if present, else use the default list; do not invent it per-feature (P8). `from.pathNot` is orthogonal to the `from.path` allowlist (AND-combined by depcruise), NOT folded into the lookahead. Without the exemption depcruise flags the composition-root — which by nature imports many modules — as a violator.
+
+**Fullstack feature — one patch per touched tree.** The graph invariants split by tree (a `web` invariant constrains `apps/web/src/` modules, an `api` invariant `apps/api/src/`). Emit **one patch per touched tree** — `<feature-slug>-<tree>-rules-patch.yaml` — applied to that package's `<package-root>/.audit-rules.yaml` (the project-rules loader reads `<root>/.audit-rules.yaml`; run apply with `<package-root>` as project-root). Paths stay **bare** `^src/<module>/` (correct within each package); the composition-root exemption is the per-package baseline. Each patch's metadata block carries **its own** `Source audit: <that tree's audit-report dir>; audit_sha=<that tree's sha>`. (Single-tree feature → one patch as today.)
 
 ### Source
 
