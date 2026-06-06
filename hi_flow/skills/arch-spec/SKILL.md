@@ -42,7 +42,7 @@ Per D14 (complementary layers): arch-spec does **not** duplicate implementation 
 | Artifact | Required | Role |
 |---|---|---|
 | `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
-| `audit-report.json` (D8) | Conditional — see three situations | Snapshot of current architecture, needed for block C (integration) |
+| `audit-report.json` (D8) | Conditional — see three situations | Snapshot of current architecture, needed for block C (integration). **Fullstack feature → one snapshot per touched tree** (per-tree audit, see "Fullstack features"). |
 | `ARCHITECTURE.md` Module Map | If present | Map of existing modules, boundaries, known problems |
 | `hi_flow/references/architectural-principles.md` (D9) | Yes (read-only) | Principle catalog for delta-checking + invariant references |
 
@@ -59,6 +59,22 @@ Determine the mode from the Module Map + git history first:
 | **Brown field + no audit / stale** | **Loud signal, not silent degradation** (principle 5). Tell the operator: «Code exists, no audit snapshot. Block C — the main value — runs blind without it. Options: (a) run `arch-audit` [recommended]; (b) proceed without integration analysis deliberately — block C is marked "skipped, no snapshot", reason logged.» |
 
 **Green field + app-stack / infra-axis not yet fixed: bootstrap's territory, not arch-spec's.** If the feature forces an infra-axis the project has not fixed, that is project-foundation work, not feature-design. Loud signal (principle 5): «The feature forces an infra-axis (DB / blob / scheduler / ...) that the project has not fixed. Run `hi_flow:bootstrap` first — it owns app-stack fixation + the infra-axis taxonomy (`bootstrap/references/axis-taxonomy.md`). arch-spec does NOT fix the stack and does NOT duplicate the taxonomy (P8 — altitude: project-foundation ≠ feature-design).» Cross-ref D20, P8.
+
+### Fullstack features (≥2 trees) — per-tree audit
+
+**Detection.** A feature is **fullstack** when it touches ≥2 package-trees:
+- **frontend touched** — the feature-spec's «Поверхности (UX)» section is non-empty (D25; conditional — present only for user-facing features);
+- **backend touched** — block B (§5) declares backend modules.
+Single-tree features ignore everything below (output byte-identical to today).
+
+**Tree is a routing tag, names stay bare.** In a monorepo a module lives under `apps/<tree>/src/<module>/`. Declare each feature module with its **tree tag** (`web` / `api`) as metadata, but the **module name stays bare** (`<module>`) — it must match that tree's snapshot `per_module` keys (bare top-level dir names; see "Module level"). The tree only routes which snapshot/patch a module belongs to; there is NO name prefix anywhere in the computation.
+
+**Ensure a fresh snapshot per touched tree.** arch-spec **invokes** arch-audit per package (invoke, not duplicate — it does not reimplement audit logic):
+- Discover package roots from `pnpm-workspace.yaml` (or the repo layout / ARCHITECTURE.md § Stack).
+- Per-package precondition check **before** invoking: the package root must have `tsconfig.json` AND `src/` (without them the adapter hard-fails). Missing → loud signal per tree (principle 5): «`<tree>` has no `tsconfig.json` at `<root>` — cannot audit it; fix the package or skip block C for that tree with a logged reason.»
+- Invoke: `npx tsx hi_flow/skills/arch-audit/helpers/cli-run-audit.ts <package-root>` (the optional `d9-md-path` positional defaults to the bundled D9 — omit). Each writes `<package-root>/audit-report/audit-report.json` (separate dirs, no collision); read both there.
+
+**"Three situations" become a per-tree vector.** Evaluate green / brown+fresh / brown+no-or-stale **per touched tree** (e.g. `api` brown+fresh while `web` is green-field — the first frontend feature). The loud-signal + skip-with-logged-reason fire **per uncovered tree**; a covered tree's block C still runs. Freshness is unchanged (one repo → one HEAD; each snapshot's `audit_sha` vs HEAD). The self-assessment (direct/brainstorm) stays one feature-level decision reading this per-tree vector.
 
 ### Freshness check (when a snapshot exists)
 
@@ -190,7 +206,7 @@ The feature is not yet in the code. "Impact on architecture" cannot be measured 
 
 At the **file** level the task is nearly impossible (predicting non-existent imports). At the **module** level it is manageable: the current module graph is already in the snapshot (`per_module` metrics + `dep_graph`), the feature's module graph is block B's declaration, the merge is trivial (dozens of nodes, not hundreds).
 
-**Operational definition of "module":** the feature's modules are declared **at the same granularity as `per_module` in the D8 snapshot** (in arch-audit, a directory-module at the `src/<module>/` level). This is mandatory for the merge: a new feature module = a new directory-module at the same level; a "feature-module → existing-module" dependency = an edge between nodes at that granularity. The implementer does not guess unit correspondence. **On green field (no snapshot to anchor to), use the directory-module level directly** (`src/<module>/`) — there is no `per_module` to match, and block C is not run anyway.
+**Operational definition of "module":** the feature's modules are declared **at the same granularity as `per_module` in the D8 snapshot** (in arch-audit, a directory-module at the `src/<module>/` level). This is mandatory for the merge: a new feature module = a new directory-module at the same level; a "feature-module → existing-module" dependency = an edge between nodes at that granularity. The implementer does not guess unit correspondence. **On green field (no snapshot to anchor to), use the directory-module level directly** (`src/<module>/`) — there is no `per_module` to match, and block C is not run anyway. **Fullstack feature:** each module additionally carries a **tree tag** (`web`/`api`) routing it to its package-tree's snapshot; the module name itself stays bare at `src/<module>/` granularity (the tag is NOT part of the name — see "Fullstack features"). A `web` module overlays onto the `web` snapshot, an `api` module onto the `api` snapshot.
 
 ### Hybrid: code for structure, LLM for semantics (principle 2)
 
