@@ -65,16 +65,16 @@ Determine the mode from the Module Map + git history first:
 **Detection.** A feature is **fullstack** when it touches ≥2 package-trees:
 - **frontend touched** — the feature-spec's «Поверхности (UX)» section is non-empty (D25; conditional — present only for user-facing features);
 - **backend touched** — block B (§5) declares backend modules.
-Single-tree features ignore everything below (output byte-identical to today).
+Single-tree features ignore everything below (output byte-identical to today). Detection is **re-evaluated after block B is drafted** (backend modules are a block-B output) — if a second tree only becomes apparent then, run audit-ensure for it too.
 
 **Tree is a routing tag, names stay bare.** In a monorepo a module lives under `apps/<tree>/src/<module>/`. Declare each feature module with its **tree tag** (`web` / `api`) as metadata, but the **module name stays bare** (`<module>`) — it must match that tree's snapshot `per_module` keys (bare top-level dir names; see "Module level"). The tree only routes which snapshot/patch a module belongs to; there is NO name prefix anywhere in the computation.
 
-**Ensure a fresh snapshot per touched tree.** arch-spec **invokes** arch-audit per package (invoke, not duplicate — it does not reimplement audit logic):
+**Ensure a fresh snapshot per BROWN touched tree.** A **green-field** tree (first feature on that tree — scaffold only, no real modules / no prior snapshot) needs **no** audit: block C does not apply to it (clean field). Do NOT invoke an audit for a green-field tree — auditing a scaffold-only tree yields a meaningless empty snapshot. For each **brown-field** touched tree, arch-spec **invokes** arch-audit per package (invoke, not duplicate — it does not reimplement audit logic):
 - Discover package roots from `pnpm-workspace.yaml` (or the repo layout / ARCHITECTURE.md § Stack).
-- Per-package precondition check **before** invoking: the package root must have `tsconfig.json` AND `src/` (without them the adapter hard-fails). Missing → loud signal per tree (principle 5): «`<tree>` has no `tsconfig.json` at `<root>` — cannot audit it; fix the package or skip block C for that tree with a logged reason.»
+- Per-package precondition check **before** invoking: the package root must have `package.json` + `tsconfig.json` (the adapter's `detect()` needs both — without them the adapter is simply not selected) AND a `src/` with ≥1 subdirectory (`identifyModules` hard-fails without it). Not auditable → loud signal per tree (principle 5): «`<tree>` is not auditable at `<root>` (no `tsconfig.json` / no `src/`) — fix the package or skip block C for that tree with a logged reason.»
 - Invoke: `npx tsx hi_flow/skills/arch-audit/helpers/cli-run-audit.ts <package-root>` (the optional `d9-md-path` positional defaults to the bundled D9 — omit). Each writes `<package-root>/audit-report/audit-report.json` (separate dirs, no collision); read both there.
 
-**"Three situations" become a per-tree vector.** Evaluate green / brown+fresh / brown+no-or-stale **per touched tree** (e.g. `api` brown+fresh while `web` is green-field — the first frontend feature). The loud-signal + skip-with-logged-reason fire **per uncovered tree**; a covered tree's block C still runs. Freshness is unchanged (one repo → one HEAD; each snapshot's `audit_sha` vs HEAD). The self-assessment (direct/brainstorm) stays one feature-level decision reading this per-tree vector.
+**"Three situations" become a per-tree vector.** Evaluate green / brown+fresh / brown+no-or-stale **per touched tree** (e.g. `api` brown+fresh while `web` is green-field — the first frontend feature). Route by situation, NOT by a single global mode: a **green-field** tree → block C **not applicable** (clean field), **silent** — no audit, no logged reason; a **brown** tree lacking a fresh snapshot → loud signal + skip-with-logged-reason (principle 5); a **brown+fresh** tree → block C runs. ("Uncovered" = a brown tree without a fresh snapshot, NOT a green-field tree.) Freshness is unchanged (one repo → one HEAD; each snapshot's `audit_sha` vs HEAD). The self-assessment (direct/brainstorm) stays one feature-level decision reading this per-tree vector — a brown+fresh tree with problems nearby pulls toward brainstorm even if another tree is green.
 
 ### Freshness check (when a snapshot exists)
 
@@ -242,7 +242,7 @@ Honest cost of module level: boundaries are caught more weakly than a file-level
    - deliberately accepted → Known Drift (rare, on the record).
 4. **Signal up (if step 3 hits a wall)** — simplify the product / arch-redesign the environment / accept debt.
 
-**Fullstack feature — block C runs once per tree.** Graphs are disjoint (back/front communicate over HTTP, not TS imports), so there is nothing to merge. For each touched tree: overlay that tree's bare-named feature modules onto that tree's snapshot (step 1), run the future graph through the principles (step 2) using graph-core's `findCycles`/`computeNCCD`/`computeCoupling` over that tree's `dep_graph` + the feature's edges, classify (step 3). Synthesize one §6 with per-tree sub-results (see Output → Fullstack output). A tree with no snapshot (per the per-tree situation vector) → its block C is "skipped, no snapshot, reason logged" (principle 5); the covered tree still runs.
+**Fullstack feature — block C runs once per BROWN tree.** Graphs are disjoint (back/front communicate over HTTP, not TS imports), so there is nothing to merge. For each brown-field touched tree: overlay that tree's bare-named feature modules onto that tree's snapshot (step 1), run the future graph through the principles (step 2) using graph-core's `findCycles`/`computeNCCD`/`computeCoupling` over that tree's `dep_graph` + the feature's edges, classify (step 3). Synthesize one §6 with per-tree sub-results (see Output → Fullstack output). Per-tree §6 outcome by situation: **green-field tree** → "not applicable — clean field" (silent); **brown tree, no/stale snapshot** → "skipped, no snapshot, reason logged" (principle 5, loud); **brown+fresh** → the real integration sub-result. **Frontend granularity caveat:** a frontend surface often lands *below* `per_module` granularity (a file/subfolder inside an existing top-level dir like `components/`), so the overlay adds **no new module node** — record that explicitly as "no module-level delta on `<tree>`"; do NOT invent a sub-`per_module` node (e.g. `AuditTable`) that won't match any snapshot key.
 
 ## Operability limits (two-level inventory)
 
@@ -302,7 +302,7 @@ The spec body must be **cleaner than feature-spec** (which the operator reads): 
 ### Fullstack output (per-tree)
 
 For a fullstack feature the single-snapshot slots become per-tree (single-tree output unchanged):
-- **§1 Header** — the `Audit snapshot` line becomes **N lines**, one per touched tree (`tree · path · audit_sha · freshness`); the `Mode` field becomes **per-tree** (`web: green field · api: brown field`).
+- **§1 Header** — the `Audit snapshot` line becomes **N lines**, one per touched tree, each prefixed `(<tree>)` — `**Audit snapshot (api):** <path> · audit_sha=<...> · freshness: <...>` (matches the template); the `Mode` field becomes **per-tree** (`api: brown field · web: green field`).
 - **§4 Starting state** — per-tree note (a green tree → "clean field for `<tree>`").
 - **§5.1 Module breakdown** — each module annotated with its **tree tag** (bare name + `tree: web|api`); §5.11 (Presentation/UI) modules carry `web`.
 - **§6 Impact** — **per-tree sub-sections** ("Integration — `api`" / "Integration — `web`"), each with its own Graph delta + Degradation check; the "Brown field only" gate is per-tree; `Signal up` stays one shared bullet.
