@@ -404,6 +404,11 @@ ops владеет пятью столбами доставки: хост/ран
 `frontend-layered-respect` (MEDIUM) + `frontend-layer-cycle` (CRITICAL) — императивный frontend-блок в arch-audit адаптере (run-level frontend-профиль, backend layered-правила пропускаются — нет false positives на `api`/`app`/`services`); scan-глоб → `.tsx`; добавлен `scaffold-templates/react/`; manifest interface/frontend → covered. Изоляция фич (vertical-slice) отложена — нужна правка модели модулей → active-issues. Глоб binary-gated (verify с depcruise-бинарём).
 **Spec:** `docs/superpowers/specs/2026-06-05-hi_flow-frontend-coverage-completion-design.md`. **Status:** implemented 2026-06-05 (P4-override автономно; isolated re-review).
 
+### D28. Fullstack-aware arch-spec — per-tree аудит + per-tree output/rules-patch.
+
+arch-spec на fullstack-фиче (≥2 дерева, детект по «Поверхности (UX)» + бэк-модулях блока B) аудитит каждое **brown** дерево (invoke `cli-run-audit` per package; green-field дерево не аудитится), гоняет блок C по снапшоту (дизъюнктные графы → два прохода), выдаёт per-tree §1/§4/§5.1/§6/§8/§9 + один rules-patch на дерево. Имена модулей голые, дерево — routing-метка. bootstrap: soft guidance «раздельные пакеты». Без кода/схемы/merge. Прошла 4 изолированных дизайн-ревью + поведенческую валидацию (3 субагента, закрыты дыры green-field/granularity/precondition).
+**Spec:** `docs/superpowers/specs/2026-06-06-hi_flow-fullstack-audit-design.md` (+ `-report.md`). **Status:** implemented 2026-06-06 (автономно; behavioral validation). Боевого прогона нет.
+
 ---
 
 ## Known Drift
@@ -509,6 +514,10 @@ ops реализован (BUILT v0.8.0) + прошёл валидацию **си
 ### OQ14. Должен ли bootstrap класть CD-stub под ops, или ops всегда создаёт CD сам.
 
 ops-spec §8: ops **создаёт** deploy/CD-воркфлоу сам (существующую заглушку достраивает). Хэндофф предполагал «усыновление bootstrap'овского orphan cd.yml», но bootstrap по текущей спеке CD-stub **не** кладёт. Открыто: оставить как есть (ops создаёт) или добавить bootstrap'у генерацию stub'а (тогда — амендмент bootstrap). **К решению:** при следующем касании bootstrap либо при первом ops-прогоне.
+
+### OQ15. Fullstack audit — отложенные хвосты (от D28).
+
+(1) Mixed-`src/` (всё в одном дереве) требует настоящей subtree-осознанности (эпик, родственник vertical-slice) — смягчён bootstrap-guidance (D28) для управляемых проектов, неуправляемый legacy best-effort. (2) Shared-пакет (`packages/shared`, импортируемый обоими) ломает дизъюнктность блока C по деревьям — **триггер пересмотра D28:** первый реальный пакет под `packages/`. (3) «Аудит монорепо одной командой» (оркестрация-надстройка в arch-audit, требует расщепления `buildReportData`) — отложено. Связки: D27, D28, active-issues vertical-slice.
 
 ---
 
