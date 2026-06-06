@@ -17,9 +17,11 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 
 **Feature-spec:** <path to the signed feature-spec.md>
 **Audit snapshot:** <path to audit-report.json> · audit_sha=<...> · freshness: <fresh | N commits behind | none>
+<!-- Fullstack: one **Audit snapshot:** line PER touched tree, prefixed `(<tree>)` — e.g. `**Audit snapshot (api):** ...` and `**Audit snapshot (web):** ...` -->
 **Date:** YYYY-MM-DD
 **Status:** draft | signed
 **Mode:** green field | brown field
+<!-- Fullstack: per-tree — e.g. `**Mode:** api: brown field · web: green field` -->
 
 ## 2. Summary
 
@@ -37,11 +39,12 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 <What was read: feature-spec, audit snapshot, Module Map, D9. What matters for integration: neighbouring modules, boundaries, known problems nearby.>
 
 > Green field → "Clean field — no existing architecture to embed into; block C (§6) not applicable."
+<!-- Fullstack: note per tree — e.g. "web: clean field; api: brown — neighbours X, Y." -->
 
 ## 5. Target feature structure
 
 ### 5.1 Module breakdown
-<Modules the feature splits into, by responsibility. Granularity = `per_module` of the audit snapshot (directory-module, `src/<module>/`). Green field: no snapshot — use the `src/<module>/` directory-module level directly.>
+<Modules the feature splits into, by responsibility. Granularity = `per_module` of the audit snapshot (directory-module, `src/<module>/`). Green field: no snapshot — use the `src/<module>/` directory-module level directly. Fullstack: tag each module with its tree (bare name + `tree: web|api`).>
 
 ### 5.2 Contracts between modules
 <For each module: input / output / side effects / error handling.>
@@ -71,6 +74,8 @@ Boundary: this does NOT redefine the UX (layers 1-2 are consumed as a given — 
 - **Degradation check (against D9 principles):** <per predicted violation — new cycles? boundary blur? dependency direction? God object? duplication?>
 - **Signal up (if it does not sit cleanly):** <simplify product → feature-spec | refactor environment → arch-redesign | accept debt → Known Drift>
 
+<!-- Fullstack: split into per-tree sub-sections — `### Integration — api` and `### Integration — web`, each with its own Graph delta + Degradation check (the "Brown field only" gate is per-tree: a green tree → "Not applicable — clean field for <tree>"). `Signal up` stays ONE shared bullet for the whole feature. -->
+
 ## 7. Operability limits
 
 <Only decisions that passed the risk triage. For each:>
@@ -90,10 +95,13 @@ Boundary: this does NOT redefine the UX (layers 1-2 are consumed as a given — 
 > Graph-formalizable invariants (mechanism = graph) are additionally exported to `<feature-slug>-rules-patch.yaml`.
 > **D9 reference is mandatory only for type-1 (graph).** D9 is a static/structural library; type-2 (code/schema, e.g. table immutability, secret-filtering) and type-3 leave it `—` unless a principle genuinely fits. Do not cargo-cult an ill-fitting id.
 > **Security-critical tag.** Append the inline literal `[trust-chain review required — not diff-local]` to the invariant statement (inside the `Invariant` cell — the table stays 4 columns, do NOT add a column) when the invariant is security-critical: secrets / PII / trust boundary (§5.7 triggers). It is a downstream signal to writing-plans / reviewer — "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. The tag is a SIGNAL only, not a review implementation: the review methodology lives in superpowers (D14), not hi_flow.
+> **Tree tag (fullstack).** A graph-type (type-1) invariant carries its tree INLINE in the Invariant cell — e.g. `<statement> [tree: web]` — like the security tag. The table stays 4 columns; do NOT add a Tree column. The tag routes the invariant to its tree's rules-patch.
 
 ## 9. Dependency graph
 
 <Ego-graph: the feature + modules it directly borders (radius 1-2). New nodes/edges highlighted, existing greyed. Regenerate strictly from §5 text on any change.>
+
+<!-- Fullstack: two ego-subgraphs in ONE mermaid block — `subgraph FEATURE-web` and `subgraph FEATURE-api`, each with its tree's new + neighbour nodes. Disjoint, so no edges cross between them. Stay within the ~30-node ego budget per tree. -->
 
 ​```mermaid
 graph TD
