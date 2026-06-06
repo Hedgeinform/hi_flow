@@ -13,6 +13,11 @@
 #
 # Granularity: one patch per feature (one file per arch-spec session).
 #
+# Fullstack feature: one patch PER TOUCHED TREE — `<feature-slug>-<tree>-rules-patch.yaml`,
+# applied to that package's `<package-root>/.audit-rules.yaml` (apply with <package-root>
+# as project-root). Paths stay bare `^src/<module>/` (correct within each package);
+# composition-root exemption is the per-package baseline.
+#
 # Per-rule requirements (identical to arch-redesign):
 #   - `name` — unique within the project rules file.
 #       Traces 1:1 to a fitness invariant name in the arch-spec.md (Fitness invariants section).
@@ -39,7 +44,7 @@
 # Feature: <feature-name>
 # Generated: YYYY-MM-DD
 # From arch-spec: docs/specs/<date>-<feature-slug>-arch-spec.md
-# Source audit: <path to audit-report dir>; audit_sha=<...>   # the snapshot block C ran on
+# Source audit: <path to audit-report dir>; audit_sha=<...>   # the snapshot block C ran on (fullstack: THIS tree's snapshot)
 # Schema version: 1.0   # optional — D8 schema version this patch targets
 
 # ---
