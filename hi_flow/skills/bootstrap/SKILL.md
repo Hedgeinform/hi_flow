@@ -106,6 +106,8 @@ The `references/coverage-manifest.md` is the **SSoT of coverage** (principle 4).
 
 product-spec is **optional** (an enrichment, not a base): init can run before a product-spec exists. The minimal required input is the **project class** — backend-service / frontend / CLI / library / **fullstack**. For `fullstack`, the runtime splits into **multiple runtime axes** (front + back), each its own atom with its own scaffold; "one question → one runtime" applies to single-runtime classes.
 
+**Fullstack layout convention (soft — recommend + warn, never block; same posture as P7).** A fullstack project uses **separate packages**, each its own package + `src/` (e.g. `apps/web` + `apps/api`), **NOT one mixed `src/`** — the whole hygiene/audit toolchain is per-package; a mixed `src/` degrades arch-audit to best-effort and breaks the fullstack audit sub-flow (arch-spec audits per package). Recommend the separate-packages layout; if the operator insists on a mixed `src/`, proceed with a loud warning (unmanaged-style), not a block. Record the convention in the project's `ARCHITECTURE.md` (Create flow already owns that write, step 4) so future project agents keep the separation. This is guidance only — bootstrap does not build the multi-package layout here.
+
 7-step flow:
 
 1. **Macro-probing of the profile** (extract-before-probing — the family pattern): if a product-spec exists, extract hints about product-dependent axes and close gaps with questions. The project class is a **hard prerequisite** (one probing question, needed to pick runtime + scaffold form) — if it is unknown, ask the operator before any axis work; do not infer it from the repo.
