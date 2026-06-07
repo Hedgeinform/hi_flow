@@ -155,7 +155,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ### `frontend-layered-respect`
 - **Principle:** `layered-architecture-respect`
-- **Detection:** custom (адаптер) — applies, когда прогон **frontend-profiled** (≥2 из `components/`, `hooks/`, `pages/`, `features/`). Frontend layer order (сверху вниз, импорт разрешён вниз): `pages → features → components → hooks → (api/services = data-access) → lib`. Алиасы: `routes→pages`, `app→pages` (только frontend-профиль), `store→hooks`, `shared`/`utils→lib`.
+- **Detection:** custom (адаптер) — applies, когда прогон **frontend-profiled**. Активация: явная декларация `overrides.profile: frontend` в `.audit-rules.yaml` **или** (fallback) литеральная эвристика — ≥2 из `components/`, `hooks/`, `pages/`, `features/`. `overrides.profile: backend` принудительно отключает frontend-профиль даже при наличии этих папок (escape hatch). Для feature-sliced раскладок с кастомными именами слоёв декларация обязательна — без неё литералы не совпадут и слоевой governance не активируется (только универсалии). Frontend layer order (сверху вниз, импорт разрешён вниз): `pages → features → components → hooks → (api/services = data-access) → lib`. Кастомные имена слоёв задаются через `overrides.layer_aliases`. Встроенные алиасы: `routes→pages`, `app→pages` (только frontend-профиль), `store→hooks`, `shared`/`utils→lib`.
 - **Profile mutual-exclusion:** в frontend-профиле backend-овские layered-правила (`layered-respect`, `port-adapter-direction`, `architectural-layer-cycle`) **пропускаются** — backend-карта классифицировала бы `api`/`app`/`services` и выдала бы false positives.
 - **What:** импорт вверх или через слой во фронтовом дереве.
 - **Severity:** MEDIUM.
