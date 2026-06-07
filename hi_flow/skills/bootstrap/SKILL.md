@@ -36,7 +36,7 @@ The operator wants the project's technical foundation fixed before implementatio
 
 bootstrap owns:
 
-1. **Create flow for `ARCHITECTURE.md`** — a self-contained port of Function 1 of the operator-personal `architecture` skill: create the document from template, format-validate, init the Topic Index, lay a minimal Module Map skeleton, project `## Stack` from the configs.
+1. **Create flow for `ARCHITECTURE.md`** — a self-contained port of Function 1 of the operator-personal `architecture` skill: create the document from template, format-validate, init the Topic Index, lay a minimal Module Map skeleton, project `## Stack` from the configs, **create the `## Project-specific принципы` section and — for backend-service/fullstack — seed the feature-backbone principle** (forward carrier; see *Feature-backbone seeding*).
 2. **App-stack fixation** — probing + fixing technologies per infrastructure axis (the atom, below).
 3. **Scaffolding** — a green skeleton + one convention reference pattern (generic, non-domain).
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
@@ -113,10 +113,22 @@ product-spec is **optional** (an enrichment, not a base): init can run before a 
 1. **Macro-probing of the profile** (extract-before-probing — the family pattern): if a product-spec exists, extract hints about product-dependent axes and close gaps with questions. The project class is a **hard prerequisite** (one probing question, needed to pick runtime + scaffold form) — if it is unknown, ask the operator before any axis work; do not infer it from the repo.
 2. **Classify axes** by the taxonomy — `forced-now` / `delegated` / `not-touched`, explicitly per axis (no padding, no silence).
 3. **For each `forced-now` axis → the atom** (probe → scaffold → wire).
-4. **Create flow for ARCHITECTURE.md** (port of Function 1): create the document, project `## Stack` from the configs, init the Topic Index, lay a **minimal Module Map skeleton** (section headers only, filled later by feature arch-specs — features ≠ code-modules, D19).
+4. **Create flow for ARCHITECTURE.md** (port of Function 1): create the document, project `## Stack` from the configs, init the Topic Index, lay a **minimal Module Map skeleton** (section headers only, filled later by feature arch-specs — features ≠ code-modules, D19), and **create the `## Project-specific принципы` section** (then seed the feature-backbone principle for backend-service/fullstack — see *Feature-backbone seeding* below).
+   **Section ownership note (no silent dependency, principle 5).** The ARCHITECTURE.md template currently comes from the operator-personal `architecture` skill (pre-existing self-containedness gap — OQ6 / Function 3a relocation, not solved here). Until the template is relocated inside the plugin, the Create flow **guarantees the `## Project-specific принципы` section exists by building it explicitly** (alongside Stack / Topic Index / Module Map), not by silently relying on an external template.
 5. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
 6. **CI / gates wiring.**
 7. **Done** (see Output & done).
+
+### Feature-backbone seeding (backend-service / fullstack)
+
+For project class `backend-service` or `fullstack`, the Create flow seeds the project's `## Project-specific принципы` with the **feature-backbone convention** — the verbatim canonical principle from `hi_flow/references/feature-backbone-convention.md`. This is the **forward carrier**: a new project inherits the module-monolith convention by default, with no precedent in code yet (the first arch-spec instantiates it; arch-spec consumes the declared standard).
+
+- **Seed the layout-agnostic stance** + the default skeleton form labeled "typical instantiation, not a mandate" — **never a hardcoded narrow-entry regex** (the concrete enforcement form is per-feature, arch-spec's altitude, P8).
+- `store = SSoT` is a **structural slot** (the feature owns its persistence), independent of whether the `database` axis is fixed yet. A feature with no state simply has no store module.
+- **Number resolution:** write it as the next free principle number in the section (greenfield → `P1`; bootstrap owns this section now, so it reads existing numbers).
+- **Posture — informing confirmation in product terms** (P1/P6): "a `<class>` project gets the module-monolith convention by default — here is what it means; ok?" The operator may decline → the section stays without it (the project's structural governance is then `unmanaged` for the style it uses — no silent fallback, principle 5).
+- **Do NOT seed for `frontend` / `CLI` / `library`** (frontend feature-isolation is a separate track; CLI/library are not module-monolith shaped). For `fullstack`, the backbone applies to the **backend tree**; the frontend tree follows the separate frontend-slice track.
+- **Copy-on-seed:** the project's copy is independent thereafter; not re-synced if the reference later changes (self-containedness for the project's own SSoT).
 
 **Fallback without a product-spec:** init fixes only the **toolchain-foundation** (the runtime axis + its toolchain-wire). Product-dependent axes (database, file storage, interface, queues, cache, search) → explicitly **not-touched now**; they get pulled in via incremental when a feature forces them. **No guessing** (principle 5) — bootstrap never invents "probably needs a DB".
 
@@ -175,10 +187,14 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - **Auto-launching incremental.** An upstream signal is not a launch. The operator decides to fix an axis (P6).
 - **Writing the stack as source of truth.** `## Stack` is a projection of the configs; the configs are truth (KD2).
 - **"Fixing" neighbour mechanisms confirmed by the live run.** Do not invent problems in already-confirmed mechanisms: extract-before-probing, density-factor, ACL anti-trigger, sync-in-txn rationale, green-field block-C skip. The lesson of the false finding: do not manufacture a problem where the mechanism already exists.
+- **Seeding the backbone as a hardcoded enforcement form.** bootstrap seeds the layout-agnostic *stance* (default form = "typical, not a mandate"); the concrete narrow-entry regex is per-feature (arch-spec, P8). Never write a `^src/<feature>-` rule into the project's ARCHITECTURE.md.
+- **Seeding the backbone for frontend / CLI / library.** Only backend-service / fullstack get it (module-monolith canon). Frontend feature-isolation is a separate track; declining (an other style) is legitimate — degrade `unmanaged`, never silent.
 
 ## References
 
 - `references/axis-taxonomy.md` — the working vocabulary: the fixed set of 8 infrastructure axes, the slicing criterion, axes ≠ toolchain components, and the per-axis probe-class. Pointer, not duplicated here.
 - `references/coverage-manifest.md` — the SSoT of coverage (`axis → technology → { stack-file, baseline, audit-adapter, scaffold-template, probe-class }`). Read dynamically; coverage-gated probing reads it. Pointer, not duplicated here.
 - `references/scaffold-templates/` — the green-skeleton + convention reference patterns per technology (owned by other bootstrap tasks). The atom's scaffold step lays the template named for the chosen technology in the coverage-manifest.
+- `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
 - `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` — the design spec this skill implements (D20 Function 1, extended by finding A).
+- `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` — the backbone-propagation design (forward carrier = this skill's seeding step; consumer = arch-spec).

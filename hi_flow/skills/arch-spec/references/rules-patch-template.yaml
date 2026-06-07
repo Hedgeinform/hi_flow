@@ -79,6 +79,26 @@ forbidden:
   #   # central wiring layer (composition-root), which by nature imports many modules,
   #   # as a violator of every type-1 "only X→Y" rule.
 
+  # Example (feature-backbone — narrow public entry; emit ONLY when the project's
+  # ARCHITECTURE.md declares a feature-backbone / module-shape standard, see
+  # hi_flow/references/feature-backbone-convention.md). Generalizes store-encapsulation
+  # from the store to the whole feature: from OUTSIDE the feature, only its declared
+  # public surface is importable.
+  # - name: <feature>-narrow-public-entry
+  #   severity: HIGH
+  #   from:
+  #     path: ^src/                                # from outside the feature...
+  #     pathNot: ^src/<feature>-|^src/main\.ts$    # ...except the feature itself + composition-root
+  #   to:
+  #     path: ^src/<feature>-                      # the feature's modules...
+  #     pathNot: ^src/<feature>-(shared|<read-model>|api)/   # ...EXCEPT its public surface
+  #   principle: module-boundary-awareness
+  #   # <public-surface-allowlist> = {shared, read-model, api} default + platform ports the
+  #   # feature deliberately exposes (Shared-capability lookahead, D26). Layout-dependent:
+  #   # ^src/<feature>- is the flat-prefix form; for nested ^src/features/<feature>/ adapt it.
+  #   # The allowlist MUST list the feature's ACTUAL public-surface modules and equal the
+  #   # arch-spec §5 public-surface declaration; resolve the read-model token (drop if no projection).
+
 # ---
 
 # Required rules — required structural invariants.

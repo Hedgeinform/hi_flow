@@ -56,6 +56,8 @@
 - **fitness functions** [aliases: architectural fitness functions] — D11, D21, Module Map § arch-spec
 - **plain language principle** [aliases: plain language] — D4
 - **subagent-driven** [aliases: subagent dispatch] — D5
+- **feature-backbone** [aliases: backbone] — D29, Module Map § feature-backbone-convention
+- **narrow-public-entry** — D29
 
 ---
 
@@ -164,6 +166,7 @@ Strict «fresh subagent per task + 2-stage review» из superpowers даёт ~5
 - **Path:** `hi_flow/references/architectural-principles.md` (+ planned `architectural-principles-index.json`, auto-generated).
 - **Purpose:** Family-shared референсы. Library statically-detectable архитектурных принципов с типовыми fix alternatives. Owner — arch-audit (curates content); read-only для arch-redesign, arch-spec. См. D9.
 - **BUILT:** `backlog-integration.md` — shared механизм контрибуции в product-backlog (owner — product-spec; потребители feature-spec + arch-spec). D22, 2026-05-31.
+- **BUILT:** `feature-backbone-convention.md` — feature-backbone конвенция модульного монолита (owner — bootstrap, сеет в новые проекты; consumer — arch-spec, потребляет+эмитит narrow-public-entry). D29, 2026-06-08.
 
 #### Other skills (parked)
 - `hi_flow:impl-plan` — Phase 3 implementation plan. Сейчас покрывается Superpowers TDD.
@@ -409,6 +412,11 @@ ops владеет пятью столбами доставки: хост/ран
 
 arch-spec на fullstack-фиче (≥2 дерева, детект по «Поверхности (UX)» + бэк-модулях блока B) аудитит каждое **brown** дерево (invoke `cli-run-audit` per package; green-field дерево не аудитится), гоняет блок C по снапшоту (дизъюнктные графы → два прохода), выдаёт per-tree §1/§4/§5.1/§6/§8/§9 + один rules-patch на дерево. Имена модулей голые, дерево — routing-метка. bootstrap: soft guidance «раздельные пакеты». Без кода/схемы/merge. Прошла 4 изолированных дизайн-ревью + поведенческую валидацию (3 субагента, закрыты дыры green-field/granularity/precondition).
 **Spec:** `docs/superpowers/specs/2026-06-06-hi_flow-fullstack-audit-design.md` (+ `-report.md`). **Status:** implemented 2026-06-06 (автономно; behavioral validation). Боевого прогона нет.
+
+### D29. Backbone propagation — bootstrap засевает feature-backbone принцип, arch-spec условно потребляет + эмитит narrow-public-entry.
+
+bootstrap (forward carrier) сеет канонический backbone-принцип модульного монолита в `## Project-specific принципы` новых backend-service/fullstack проектов (informing confirmation, declinable). arch-spec **читает** декларацию (read — D21 не нарушен), выводит breakdown под стандарт + декларирует публичную поверхность + эмитит `<feature>-narrow-public-entry` (allowlist ≡ §5; цитирует `module-boundary-awareness`, новый D9-принцип не нужен). Текст конвенции — `hi_flow/references/feature-backbone-convention.md` (owner bootstrap). Graceful: нет декларации → инертно (backward-требование). Covered-стиль = модульный монолит (P7); intra-codebase, не cross-service. Связь P8/P7/D11/D21/D26.
+**Spec:** `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` (+ `-report.md`). **Status:** implemented 2026-06-08 (RED→GREEN→REFACTOR; P4-override inline). Pending release D16 (0.8.5 → 0.9.0).
 
 ---
 
@@ -743,3 +751,9 @@ Scope v0.6.2 — focused fix scope: bundle hint correction + feature-spec aggreg
 **Что:** Зазор «первая фича узко определяет сквозной порт» (платформенные shared capabilities) разрешён вариантом A+ — cross-cutting check «Shared-capability lookahead» в arch-spec (триггер floor-2 порт → контракт шире YAGNI + пометка §3 platform port). Реестр (B/C) отклонён сейчас, дверь открыта с trigger'ом (4+ потребителя → backlog-якорь D22 + детектор в product-spec). Правки: SKILL.md (cross-cutting check + Op-rule 10), template §3, self-review-checklist.
 **Почему:** REH ERP — object-storage переоткрыт дважды, comm-channels готов повторить третий раз предсказуемо. Профилактика на awareness дешевле arch-redesign-реконсиляции для предсказуемых случаев; полный реестр — золочение под нерепрезентативный ERP-кейс + конфликт с decoupling arch-spec ↔ ARCHITECTURE.md (вариант 2/OQ6, D21). Бриф `docs/feedback/hi_flow-platform-architecture-gap-brief.md`.
 **Spec:** `docs/superpowers/specs/2026-06-04-hi_flow-arch-spec-platform-port-probe-amendment-design.md` (+ `-report.md`). Impl — эта сессия (P4-override; isolated review).
+
+### 2026-06-08 — D29: backbone propagation (bootstrap seed → arch-spec consume+emit)
+
+**Что:** Конвенция модульного монолита распространяется тулчейном: bootstrap засевает feature-backbone принцип в новые backend-service/fullstack проекты (forward carrier), arch-spec условно потребляет декларацию + эмитит `<feature>-narrow-public-entry`. Новый shared reference `hi_flow/references/feature-backbone-convention.md`. Forward (новый проект наследует по умолчанию) + backward (mid-life без декларации инертно).
+**Почему:** конвенция связности (Reh_Erp P2) должна жить в hi_flow для наследования будущими проектами без проектного прецедента; критический инсайт — конвенцию должен нести тулчейн, не ждать декларации (P8: сеять может только bootstrap). Бриф `Reh_Erp/docs/specs/2026-06-07-hi_flow-backbone-propagation-brief.md`.
+**Spec:** `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` (+ `-report.md`). Impl — эта сессия (P4-override inline; RED→GREEN→REFACTOR via изолированные субагенты).
