@@ -203,9 +203,11 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       }
 
       // Frontend vs backend profile (run-level — no subtree model; module = flat top-level dir).
-      // A run is frontend-profiled when >=2 React-distinctive dirs are present. In a frontend
-      // profile the backend layered rules are SKIPPED: the backend map classifies api/app/services
-      // and would emit false positives (e.g. app->api). See spec sect 4.5.
+      // A run is frontend-profiled when `overrides.profile === 'frontend'` is declared, or (fallback)
+      // when >=2 React-distinctive dirs are present; `overrides.profile === 'backend'` opts out of the
+      // heuristic. In a frontend profile the backend layered rules are SKIPPED: the backend map
+      // classifies api/app/services and would emit false positives (e.g. app->api). See spec sect 4.5
+      // and docs/superpowers/specs/2026-06-06-hi_flow-frontend-slice-governance-amendment-design.md.
       const FRONTEND_SIGNAL_DIRS = ['components', 'hooks', 'pages', 'features']
       const declaredProfile = projectRules.overrides?.profile
       const literalFrontendSignal = modules.filter(m => FRONTEND_SIGNAL_DIRS.includes(m)).length >= 2
