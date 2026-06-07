@@ -153,7 +153,7 @@ Helper `compute-nccd.js` computes NCCD from dep_graph (depcruise does not emit i
 Detection algorithms live in `core/` (stack-agnostic). The adapter supplies stack-specific constants: `channelSdkList`, `layerNamingMap`, `defaultModulePattern`. (Note: the layered + frontend-layered detection currently lives in the adapter's `detectStructural`, not `core/` — a pre-existing core/adapter divergence, not resolved in this scope.)
 
 Checks:
-- **Layered detection** — closed list of layer names + adapter-provided alias map. A second, **frontend** layer vocabulary (`pages → features → components → hooks → data-access → lib`) applies when the run is frontend-profiled (≥2 of `components/`, `hooks/`, `pages/`, `features/`); in that case the backend layered rules are skipped (mutual exclusion, avoids false positives on `api/`/`app/`/`services/`).
+- **Layered detection** — closed list of layer names + adapter-provided alias map. A second, **frontend** layer vocabulary (`pages → features → components → hooks → data-access → lib`) applies when the run is frontend-profiled — declared `overrides.profile: frontend`, or (fallback) ≥2 of `components/`, `hooks/`, `pages/`, `features/`; `overrides.profile: backend` opts out. In that case the backend layered rules are skipped (mutual exclusion, avoids false positives on `api/`/`app/`/`services/`).
 - **Hub-like / god-object detection** — based on computed Ca/Ce/LOC.
 - **Vertical-slice detection** — when feature folders are detected.
 - **Channel SDK detection** — when a domain layer is detected; SDK list comes from the adapter.

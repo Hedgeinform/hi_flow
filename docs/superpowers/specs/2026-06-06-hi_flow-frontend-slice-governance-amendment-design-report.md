@@ -30,6 +30,7 @@
 - **Integration-тесты падают на отсутствии `dependency-cruiser`** — pre-existing LOW active-issue (не в devDeps). Не чинилось здесь (вне scope).
 - **Нет runtime-валидации значений `overrides`** — опечатка в `profile` молча уходит в эвристику (нарушение global принципа 5). Залогировано новым LOW active-issue. Касается всех overrides-полей, не только `profile` → holistic-фикс.
 - **Стейл-факт в Part-2 active-issue** (zhenka `src/tools/<feature>/`) — исправлен в фазе дизайна (сверено: тулы Женьки — плоские файлы).
+- **Финальный изолированный ревью поймал второе упоминание активации** в `SKILL.md:156` (bullet «Layered detection»), всё ещё «литералы-only» — пропущено Dispatch-2 и consistency-ревью (они проверили новый абзац :132, но не этот surface). Исправлено пост-ревью. После фикса claim «все 4 источника консистентны» становится верным. Урок: при doc-sync искать ВСЕ упоминания, не только основной раздел.
 
 ## Open items
 
