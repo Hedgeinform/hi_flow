@@ -95,6 +95,7 @@ export interface ProjectRules {
 
 export interface ProjectRulesOverrides {
   nccd_threshold?: number
+  profile?: 'frontend' | 'backend'
   layer_aliases?: Record<string, string>
   baseline_disables?: { rule_id: string; comment: string }[]
   severity_overrides?: { rule_id: string; severity: Severity }[]

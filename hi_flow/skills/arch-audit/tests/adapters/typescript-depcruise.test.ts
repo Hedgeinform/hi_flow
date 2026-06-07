@@ -212,3 +212,63 @@ describe('typescript-depcruise adapter — frontend layered detection', () => {
     expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
   })
 })
+
+describe('typescript-depcruise adapter — declarative frontend profile', () => {
+  const run = (
+    depGraph: Record<string, string[]>,
+    names: string[],
+    overrides?: Record<string, unknown>,
+  ) => {
+    const perModuleRaw: Record<string, { ca: number; ce: number; loc: number }> = {}
+    for (const n of names) perModuleRaw[n] = { ca: 1, ce: 1, loc: 50 }
+    return createTypescriptDepcruiseAdapter().detectStructural({
+      projectPath: '/tmp/x',
+      depGraph,
+      perModuleRaw,
+      projectRules: { forbidden: [], required: [], ...(overrides ? { overrides } : {}) },
+    })
+  }
+
+  it('activates on a feature-sliced layout when profile:frontend is declared', async () => {
+    // Custom feature names, zero literal signal dirs; layer_aliases map onto fe layers.
+    // comm=data-access(5) imports shell=pages(1): 5>1 -> upward -> frontend-layered-respect.
+    const findings = await run(
+      { comm: ['shell'], shell: [] },
+      ['comm', 'shell'],
+      { profile: 'frontend', layer_aliases: { comm: 'data-access', shell: 'pages' } },
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect'
+      && f.source.module === 'comm' && f.target?.module === 'shell')).toBe(true)
+    expect(findings.some(f => f.rule_id === 'layered-respect')).toBe(false)
+  })
+
+  it('does NOT activate on a feature-sliced layout without declaration (no auto-detect)', async () => {
+    const findings = await run(
+      { comm: ['shell'], shell: [] },
+      ['comm', 'shell'],
+      { layer_aliases: { comm: 'data-access', shell: 'pages' } }, // aliases but no profile
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
+  })
+
+  it('honors profile:backend as an escape hatch despite frontend-looking dirs', async () => {
+    // components+pages+hooks = 3 literal signal dirs -> heuristic alone would activate FE.
+    // profile:backend forces it off.
+    const findings = await run(
+      { components: ['pages'], pages: [], hooks: [] },
+      ['components', 'pages', 'hooks'],
+      { profile: 'backend' },
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect')).toBe(false)
+  })
+
+  it('regression: horizontal layout (zhenka-web shape) still activates via literals, no declaration', async () => {
+    // components+hooks+pages+features = 4 literal signal dirs, no profile -> FE active.
+    const findings = await run(
+      { components: ['pages'], pages: [], hooks: [], features: [], lib: [], contexts: [] },
+      ['components', 'pages', 'hooks', 'features', 'lib', 'contexts'],
+    )
+    expect(findings.some(f => f.rule_id === 'frontend-layered-respect'
+      && f.source.module === 'components' && f.target?.module === 'pages')).toBe(true)
+  })
+})

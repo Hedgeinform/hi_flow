@@ -207,7 +207,11 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       // profile the backend layered rules are SKIPPED: the backend map classifies api/app/services
       // and would emit false positives (e.g. app->api). See spec sect 4.5.
       const FRONTEND_SIGNAL_DIRS = ['components', 'hooks', 'pages', 'features']
-      const isFrontendProfile = modules.filter(m => FRONTEND_SIGNAL_DIRS.includes(m)).length >= 2
+      const declaredProfile = projectRules.overrides?.profile
+      const literalFrontendSignal = modules.filter(m => FRONTEND_SIGNAL_DIRS.includes(m)).length >= 2
+      const isFrontendProfile =
+        declaredProfile === 'frontend' ||
+        (declaredProfile !== 'backend' && literalFrontendSignal)
 
       // Layered detection (backend) — only when NOT frontend-profiled.
       const aliasMap = { ...layerNamingMap, ...(projectRules.overrides?.layer_aliases ?? {}) }
