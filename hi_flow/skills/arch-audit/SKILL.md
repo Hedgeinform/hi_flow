@@ -129,6 +129,8 @@ Helper `generate-depcruise-config.js`:
 - Converts the wrapping YAML format into native depcruise CJS config.
 - Output: temporary `.dependency-cruiser.cjs` in the working directory.
 
+**`overrides.profile` (frontend | backend) — optional.** Явно объявляет тип дерева для слоевого governance. `frontend` → активирует frontend layered-правила (`frontend-layered-respect` / `frontend-layer-cycle`), backend layered + port-adapter пропускаются. `backend` → принудительно backend-профиль даже при наличии папок `components`/`hooks` (escape hatch). Не указано → fallback на литеральную эвристику (≥2 из `components/hooks/pages/features`). Для feature-sliced раскладок с кастомными именами слоёв декларация обязательна (+ `overrides.layer_aliases` для маппинга имён на слои). Авто-детект раскладки сознательно не делается — «слой или слайс» статически неоднозначно. См. `docs/superpowers/specs/2026-06-06-hi_flow-frontend-slice-governance-amendment-design.md`.
+
 Run:
 ```
 npx --no-install dependency-cruiser --output-type json --config <temp-config> src/
