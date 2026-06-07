@@ -99,16 +99,30 @@ Implementation deferred до **trigger event = «следующая реальн
 
 **Источник:** изолированный spec-review frontend-coverage 2026-06-05 (subagent), верифицировано вручную. Правило есть в реестре, доке и severity-counts, но **ни одна строка кода не эмитит `vertical-slice-respect` finding**. Это silent-failure объявленной возможности (нарушение global принципа 5 — no silent fallback): аудит-репорт декларирует покрытие vertical-slice-cohesion, фактически изоляция фич не проверяется нигде.
 
-**Корневая причина — granularity модели модулей.** `fileToModule` резолвит модуль как единственный top-level сегмент под `src/` (`parts[srcIdx+1]`). Значит `src/features/A/...` и `src/features/B/...` оба схлопываются в модуль `features`, кросс-импорт `A→B` выглядит как внутренний `features→features` — невидим. То же для backend `src/tools/<feature>/` (zhenka). Правило непредставимо при текущей плоской модели — нужна суб-модульная резолюция для feature-folder структур.
+**Корневая причина — granularity модели модулей.** `fileToModule` резолвит модуль как единственный top-level сегмент под `src/` (`parts[srcIdx+1]`). Значит `src/features/A/...` и `src/features/B/...` оба схлопываются в модуль `features`, кросс-импорт `A→B` выглядит как внутренний `features→features` — невидим. (Backend-аналог был бы `src/tools/<feature>/`, но **сверено 2026-06-06**: в zhenka-bot тулы — плоские файлы `src/tools/*.ts`, не подпапки, дробить нечего; живой кейс пиров — `inbox/conversation/groups` в reh-erp apps/web, ещё не построен. См. бриф `docs/feedback/hi_flow-frontend-slice-governance-brief.md`.) Правило непредставимо при текущей плоской модели — нужна суб-модульная резолюция для feature-folder структур.
 
 **План:**
 1. Ввести finer module resolution для feature-folder контейнеров (`features/`, `tools/`, конфигурируемо): для путей `src/<container>/<feature>/...` модуль = `<container>/<feature>`, а не `<container>`.
 2. Реализовать эмиссию в `detectStructural` по `feature_folders_detected`: кросс-импорты между sub-feature модулями одного контейнера → finding, кроме импортов через `shared/`/`common/`.
 3. Проверить, что метрики (Ca/Ce/NCCD, dep_graph) не ломаются от изменения гранулярности — либо granularity локализована в detection, либо метрики осознанно мигрируют.
 4. Fixtures: feature-folder проект с чистым кейсом + кросс-feature нарушением + импортом через shared (разрешён).
-5. Behavior-change flag: после фикса существующие проекты с feature-folders (zhenka `src/tools/`) начнут получать ранее отсутствовавшие MEDIUM findings — это корректное поведение (правило наконец работает), но прогнать на реальном проекте перед релизом.
+5. Behavior-change flag: после фикса существующие проекты с **вложенными** feature-folders (`src/<container>/<feature>/`) получат ранее отсутствовавшие MEDIUM findings + пересчёт метрик (Ca/Ce/NCCD) на более дробном наборе модулей — корректное поведение, но прогнать на реальном проекте перед релизом. **Сверено 2026-06-06:** zhenka-bot `src/tools/` — плоские файлы (не триггерит); zhenka-web `src/features/` — одна фича `theme` (пиров нет); живого кейса пиров пока нет (ждёт reh-erp apps/web). Перед релизом Части 2 нужен реальный feature-sliced прогон.
 
-**Связи:** baseline-rules.md §150-154 (контракт), D12 (последнее касание baseline rule set), frontend-coverage-completion spec 2026-06-05 (вскрыто там; frontend horizontal layered rule НЕ зависит от этого — изоляция фич отложена из scope осознанно), global принцип 5.
+**Связи:** baseline-rules.md §150-154 (контракт), D12 (последнее касание baseline rule set), frontend-coverage-completion spec 2026-06-05 (вскрыто там; frontend horizontal layered rule НЕ зависит от этого — изоляция фич отложена из scope осознанно), global принцип 5. **Брифом 2026-06-06 (frontend-slice-governance) переоценён вверх:** реальный кейс пиров — reh-erp apps/web; Часть 1 (декларативный гейт активации фронт-профиля) делается отдельно и от этого НЕ зависит.
+
+---
+
+### arch-spec: авто-эмиссия frontend-профиля в rules-patch (follow-up Части 1 frontend-slice-governance)
+
+**Локация:** `hi_flow/skills/arch-spec/SKILL.md` + `references/rules-patch-template.yaml` (генерация frontend rules-patch).
+
+**Источник:** бриф `docs/feedback/hi_flow-frontend-slice-governance-brief.md` (2026-06-06). Часть 1 чинит arch-audit, чтобы фронт-профиль активировался по декларации (`overrides.profile` / `layer_aliases` в `.audit-rules.yaml`), но саму декларацию пока пишет оператор руками (как reh-erp в `comm-web-rules-patch.yaml`). Чтобы цепочка была turnkey, arch-spec при детекте не-горизонтального (feature-sliced) фронт-дерева должен эмитить декларацию в свой rules-patch.
+
+**Зависит от:** Часть 1 (формат декларации фиксируется её design-докой) — не стартовать до мёржа Части 1 (принцип 10). bootstrap сюда НЕ входит: он скаффолдит стандартную горизонтальную раскладку (`components/hooks/lib`), которой декларация не нужна (активируется по литералам).
+
+**План:** после Части 1 — отдельная arch-spec amendment-сессия (P4): rules-patch gen для frontend-дерева добавляет `overrides.profile: frontend` (+ обнаруженные `layer_aliases`), когда раскладка не горизонтальная.
+
+**Связи:** Часть 1 design-дока (frontend-slice-governance amendment), D11 (rules-patch контракт), D21 (arch-spec), бриф 2026-06-06.
 
 ---
 
@@ -137,3 +151,13 @@ Implementation deferred до **trigger event = «следующая реальн
 **Источник:** graph-core code review 2026-05-31. package.json bump'нулся до 0.3.0 (barrel detection), Module Map не синхронизирован.
 
 **План:** синхронизировать счётчик версии в ARCHITECTURE.md Module Map arch-audit (v0.2.6 → 0.3.0). Тривиально, при следующем касании ARCHITECTURE.md.
+
+### Нет runtime-валидации overrides в `.audit-rules.yaml` (silent fallback на опечатку)
+
+**Локация:** `hi_flow/skills/arch-audit/core/project-rules.ts:25-31` (`loadProjectRules` — `overrides: parsed.overrides` без проверки полей/значений).
+
+**Источник:** code-review амендмента frontend-slice-governance 2026-06-06 (item 1). Значение `overrides.profile`, отличное от `frontend`/`backend` (опечатка `Frontend`/`front`/`fe`), молча уходит в эвристический fallback без диагностики — нарушение global принципа 5 (no silent fallback). Касается не только нового `profile`, но и существующих полей (`nccd_threshold`, `layer_aliases`, …) — ни одно не валидируется.
+
+**План:** единый проход валидации overrides при загрузке (допустимые поля + enum-значения), warning в `metadata.warnings[]` при невалидном значении (тот же паттерн, что MEDIUM «tsconfig preflight»). НЕ точечная проверка только `profile` (была бы непоследовательна — отметил ревьюер).
+
+**Связи:** global принцип 5, MEDIUM «tsconfig preflight check» (паттерн warning в metadata), frontend-slice-governance amendment (ввёл первый enum-field `profile`), D8 schema (`metadata.warnings`).
