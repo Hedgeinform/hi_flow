@@ -77,4 +77,17 @@ describe('project-rules', () => {
     expect(rules.forbidden[0]!.name).toBe('project:already-prefixed')
     await rm(dir, { recursive: true })
   })
+
+  it('carries overrides.profile through load (frontend-slice-governance)', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      `forbidden: []\nrequired: []\noverrides:\n  profile: frontend\n  layer_aliases:\n    comm: data-access\n`,
+      'utf-8',
+    )
+    const rules = await loadProjectRules(dir)
+    expect(rules.overrides?.profile).toBe('frontend')
+    expect(rules.overrides?.layer_aliases?.['comm']).toBe('data-access')
+    await rm(dir, { recursive: true })
+  })
 })
