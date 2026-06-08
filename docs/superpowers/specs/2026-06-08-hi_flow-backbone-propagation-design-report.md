@@ -2,7 +2,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md`
 **Date:** 2026-06-08
-**Status:** completed (реализация + RED→GREEN→REFACTOR пройдены; остаётся release-шаг D16 + фиксация в ARCHITECTURE.md — оба operator-gated)
+**Status:** completed + released 0.9.0 (2026-06-08) — реализация + RED→GREEN→REFACTOR + фиксация в ARCHITECTURE.md (D29) + release D16 выполнены. Остаётся активация `/plugin update` у пользователя.
 
 ## What was done
 
@@ -37,7 +37,7 @@
 
 ## Open items
 
-- **Release (D16):** синхронный bump `hi_flow/.claude-plugin/plugin.json` + запись `hi_flow` в корневом `.claude-plugin/marketplace.json` (0.8.5 → minor) → commit → push → **manual fetch+ff** `~/.claude/plugins/marketplaces/hi_flow-marketplace/`. Без последнего Reh_Erp и будущие проекты обновления не увидят. **Operator-gated.**
+- **Release (D16): ВЫПОЛНЕН 2026-06-08.** Bump 0.8.5 → 0.9.0 (оба манифеста) → commit `8d2d42d` → push master → fetch+ff marketplace-кэша. Остаётся только активация версии у пользователя через `/plugin update` (установочный кэш `cache/.../hi_flow/` обновляет штатный механизм Claude Code, не агент).
 - **Фиксация в ARCHITECTURE.md:** новый D (backbone propagation: bootstrap сеет → arch-spec потребляет+эмитит) + Module Map (новый reference, ссылки в bootstrap/arch-spec) + Topic Index (концепты `feature-backbone` / `narrow-public-entry` / `public surface`). Через скилл `architecture`, operator-gated (D-entry = Active Decision, требует confirmation).
 - **README/дистрибуция-честность** про ориентацию на модульный монолит — deferred к market-ready треку (OQ9/OQ11).
 - **Боевой прогон** — первый реальный greenfield-проект через цепочку (валидация сверх симуляции), аналог OQ-style live-run.

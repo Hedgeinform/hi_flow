@@ -416,7 +416,7 @@ arch-spec на fullstack-фиче (≥2 дерева, детект по «Пов
 ### D29. Backbone propagation — bootstrap засевает feature-backbone принцип, arch-spec условно потребляет + эмитит narrow-public-entry.
 
 bootstrap (forward carrier) сеет канонический backbone-принцип модульного монолита в `## Project-specific принципы` новых backend-service/fullstack проектов (informing confirmation, declinable). arch-spec **читает** декларацию (read — D21 не нарушен), выводит breakdown под стандарт + декларирует публичную поверхность + эмитит `<feature>-narrow-public-entry` (allowlist ≡ §5; цитирует `module-boundary-awareness`, новый D9-принцип не нужен). Текст конвенции — `hi_flow/references/feature-backbone-convention.md` (owner bootstrap). Graceful: нет декларации → инертно (backward-требование). Covered-стиль = модульный монолит (P7); intra-codebase, не cross-service. Связь P8/P7/D11/D21/D26.
-**Spec:** `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` (+ `-report.md`). **Status:** implemented 2026-06-08 (RED→GREEN→REFACTOR; P4-override inline). Pending release D16 (0.8.5 → 0.9.0).
+**Spec:** `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` (+ `-report.md`). **Status:** implemented + released 2026-06-08 (RED→GREEN→REFACTOR; P4-override inline). Release 0.9.0 — commit `8d2d42d`, pushed to master, marketplace cache ff-updated (D16). Активация у пользователя — `/plugin update`.
 
 ---
 
