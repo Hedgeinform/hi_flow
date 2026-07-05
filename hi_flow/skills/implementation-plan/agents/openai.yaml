@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implementation Plan"
+  short_description: "Create Hi-Flow implementation plans"
+  default_prompt: "Create an implementation plan from signed Hi-Flow specs."

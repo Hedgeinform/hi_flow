@@ -140,7 +140,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
     }): Promise<RawFinding[]> {
       // NOTE: rule_id values here are bare names without baseline: prefix.
       // Namespacing happens in helpers/enrich-findings.ts during enrichment.
-      // See impl-spec section 2 pipeline note.
+      // Keep adapter output un-namespaced; enrichment owns rule_id namespacing.
       const { depGraph, perModuleRaw, projectRules } = args
       const findings: RawFinding[] = []
       const modules = Object.keys(perModuleRaw)

@@ -9,7 +9,7 @@ description: Use when operator says «давай сделаем редизайн
 
 Help the operator turn accumulated architectural debt into an actionable refactor plan. Two modes: triage (transforms all audit findings into a campaign roadmap with priorities and dependencies) and cluster-mode (for one cluster, produces a refactor plan with architectural choice, target state, fitness checkpoints, plus a rules-patch — candidate project rules to harden the architecture).
 
-Corrective design skill of the hi_flow family. Refactor plan is consumed downstream by `superpowers:writing-plans`. Rules-patch is consumed by `hi_flow:arch-audit` via explicit operator apply.
+Corrective design skill of the hi_flow family. Refactor plan is consumed downstream by the implementation handoff: feature-bound redesign goes through `hi_flow:implementation-plan`; standalone debt campaigns go directly to an execution workflow with characterization tests. Rules-patch is consumed by `hi_flow:arch-audit` via explicit operator apply.
 
 ## When to use
 
@@ -290,7 +290,7 @@ Show operator:
 > - План: `<plan-path>`
 > - Rules-patch: `<patch-path>` (не applied)
 >
-> Прочитай и дай знать, если хочешь правки до передачи в Phase 3.
+> Прочитай и дай знать, если хочешь правки до передачи в implementation handoff.
 
 Wait for response. If changes — apply + re-run Self-Review. Only after approval — closure.
 
@@ -300,11 +300,11 @@ Tell operator about patch apply timing + offer three options. Before showing the
 
 **If arch-audit is available:**
 
-> Patch применишь когда захочешь: `arch-audit apply-patch <patch-path>` — рекомендуется до Phase 3, чтобы прогресс был виден в audit'ах. Либо дождись следующего полного audit прогона — он сам спросит про un-applied patches.
+> Patch применишь когда захочешь: `arch-audit apply-patch <patch-path>` — рекомендуется до implementation handoff, чтобы прогресс был виден в audit'ах. Либо дождись следующего полного audit прогона — он сам спросит про un-applied patches.
 >
 > Что дальше:
 > 1. Перейти к следующему кластеру по roadmap (`<next-cluster-name>`).
-> 2. Передать план к имплементации (рекомендуем `superpowers:writing-plans`).
+> 2. Передать план к имплементации: feature-bound redesign → `hi_flow:implementation-plan`; standalone debt campaign → execution workflow with characterization tests.
 > 3. Остановиться.
 
 **If arch-audit is not available** (still planned / not installed):
@@ -313,16 +313,17 @@ Tell operator about patch apply timing + offer three options. Before showing the
 >
 > Что дальше:
 > 1. Перейти к следующему кластеру по roadmap (`<next-cluster-name>`).
-> 2. Передать план к имплементации (рекомендуем `superpowers:writing-plans`).
+> 2. Передать план к имплементации: feature-bound redesign → `hi_flow:implementation-plan`; standalone debt campaign → execution workflow with characterization tests.
 > 3. Остановиться.
 
 By choice:
 
 - **1** → invoke cluster-mode for the next cluster.
-- **2** → check whether `superpowers:writing-plans` is available in the loaded skill list:
-  - **Available** → invoke it with the refactor plan as input spec.
-  - **Unavailable** → notify operator:
-    > Refactor plan записан в `<path>`. `superpowers:writing-plans` не найден в текущем окружении. Передай план в свой impl-toolchain руками, или установи плагин superpowers для chain'а.
+- **2** → choose the implementation handoff:
+  - **Feature-bound redesign with signed feature/arch artifacts** → invoke `hi_flow:implementation-plan` with the refactor plan as an additional constraint input.
+  - **Standalone debt campaign** → use an execution workflow directly (`superpowers:executing-plans` / `superpowers:subagent-driven-development` if available, or an equivalent impl-toolchain) with characterization tests and fitness checkpoints. Do not send standalone refactor plans to generic feature planning as the primary hi_flow handoff.
+  - **Required workflow unavailable** → notify operator:
+    > Refactor plan записан в `<path>`. Подходящий implementation handoff не найден в текущем окружении. Для feature-bound redesign запусти `hi_flow:implementation-plan`; для standalone debt campaign передай план в execution workflow с characterization tests.
 
     Close session without invoke.
 - **3** → close session.

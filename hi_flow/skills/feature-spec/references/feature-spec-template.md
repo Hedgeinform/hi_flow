@@ -67,6 +67,19 @@ Bot:   <финальное подтверждение>
 
 ---
 
+## Behavior Contract
+
+<!-- Mandatory. Stable scenario-level behavior contract consumed by arch-spec / implementation-plan / behavior harness.
+     Hardness comes from scenario_id -> executable mapping -> one runner command -> CI gate, not from Cucumber specifically.
+     Default status for new feature behavior is `automated`; use `manual` / `blocked` / `obsolete` only with a reason. -->
+
+| Scenario ID | Status | Given | When | Then | Observability | Source |
+|-------------|--------|-------|------|------|---------------|--------|
+| BS-001      | automated | <initial externally visible state> | <user/system action> | <expected externally visible outcome> | <API response / DB state / emitted event / UI state / bot reply / eval criterion> | <F1, CC1, sample happy path> |
+| BS-002      | manual / blocked / obsolete: <reason> | <...> | <...> | <...> | <...> | <...> |
+
+---
+
 ## Поверхности (UX)
 
 <!-- Conditional: только если фича user-facing (есть поверхность, с которой работает человек).

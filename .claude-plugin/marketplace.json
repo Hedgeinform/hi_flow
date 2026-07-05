@@ -1,6 +1,6 @@
 {
   "name": "hi_flow-marketplace",
-  "description": "Marketplace for hi_flow Three-Phase Flow methodology skills (product spec, architecture spec, implementation plan, fitness functions, session handoff) for solo+AI development",
+  "description": "Marketplace for hi_flow feature-and-above solo+AI development skills",
   "owner": {
     "name": "viessedo",
     "email": "viessedo@proton.me"
@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "hi_flow",
-      "description": "Three-Phase Flow methodology for solo+AI development — design phases 0-2 plus deterministic hygiene gates for phase 3 and last-mile delivery. Seven skills: product-spec (product decomposition + per-product backlog), feature-spec (feature-level product spec via 8-category probing taxonomy + HAZOP guidewords + premortem), the Phase-2 trio arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (per-feature architectural design, bridge to implementation), bootstrap (project-level technical foundation: stack fixation, scaffolding, hygiene/CI wiring), and ops (last-mile delivery: profile + render of CD workflows, compose/Dockerfile, reverse-proxy wiring, first staging deploy onto a remote server). Phase-3 implementation methodology is delegated to the superpowers ecosystem; hi_flow adds the architecture, hygiene, and delivery layer. Roadmap: living-architecture (architecture-document management) + L3 hygiene enforcement.",
+      "description": "Feature-and-above solo+AI development methodology. Eight skills: product-spec (product decomposition + backlog), feature-spec (feature-level product spec + Behavior Contract), arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (architecture gate or full per-feature design), implementation-plan (behavior-first Superpowers-compatible plan), bootstrap (project foundation: stack, scaffold, audit, CI/gates, optional behavior-gate rails), and ops (last-mile delivery: profile, CD workflow, compose/Dockerfile or static deploy, reverse-proxy wiring, first staging deploy). hi_flow owns the product/architecture/behavior/planning rails; Superpowers is recommended as the execution layer, not as a replacement for signed hi_flow specs.",
       "version": "0.9.0",
       "source": "./hi_flow",
       "author": {
