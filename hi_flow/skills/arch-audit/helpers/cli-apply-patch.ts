@@ -52,13 +52,13 @@ export async function applyPatch(
   return { success: true, rules_added: result.rules_added, archive_path: result.archive_path }
 }
 
-// CLI entry: invoked via `npx tsx helpers/cli-apply-patch.ts <patch-path> [project-root] [d9-md-path]`
+// CLI entry: invoked via `npm run apply-patch -- <patch-path> [project-root] [d9-md-path]`
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const patchArg = process.argv[2]
   const projectArg = process.argv[3] ?? process.cwd()
   const d9Arg = process.argv[4]
   if (!patchArg) {
-    console.error('Usage: npx tsx helpers/cli-apply-patch.ts <patch-path> [project-root] [d9-md-path]')
+    console.error('Usage: npm run apply-patch -- <patch-path> [project-root] [d9-md-path]')
     process.exit(1)
   }
   applyPatch(resolve(patchArg), resolve(projectArg), d9Arg ? resolve(d9Arg) : undefined)

@@ -1,6 +1,5 @@
 import { writeFile, mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { execSync } from 'node:child_process'
 import type { TypescriptDepcruiseAdapter } from '../adapters/typescript-depcruise.ts'
 import type { D8AuditReport, Finding, SeverityCounts, ModuleMetrics, RawFinding, D9Index } from './types.ts'
 import { getBaselineRules } from './baseline-rules.ts'
@@ -15,6 +14,7 @@ import { enrichFindings } from '../helpers/enrich-findings.ts'
 import { generateMermaid } from '../helpers/generate-mermaid.ts'
 import { checkDepcruiseVersion } from './preflight.ts'
 import { resolveAuditSha } from './audit-sha.ts'
+import { resolveRuntimeRoot, runBundledDepcruise } from './depcruise-runtime.ts'
 
 export interface BuildOpts {
   auditSha?: string
@@ -59,17 +59,9 @@ export async function buildReportData(
 
   const configPath = await generateDepcruiseConfig({ baselineRules, projectRules, projectRoot })
 
-  const runner = opts.runDepcruise ?? ((cfg: string, src: string) => {
-    try {
-      return execSync(
-        `npx --no-install dependency-cruiser --output-type json --config ${cfg} ${src}`,
-        { cwd: projectRoot, encoding: 'utf-8' },
-      )
-    } catch (e: any) {
-      // depcruise exits non-zero when violations found; stdout still contains JSON
-      return (e.stdout as string) || ''
-    }
-  })
+  const runtimeRoot = resolveRuntimeRoot(import.meta.url)
+  const runner = opts.runDepcruise ?? ((cfg: string, src: string) =>
+    runBundledDepcruise(runtimeRoot, projectRoot, cfg, src))
   // Glob includes .tsx so the frontend import-graph is scanned (depcruise globs the arg
   // internally with brace support, so this is cross-platform). Without .tsx a React SPA
   // (components are .tsx, entry main.tsx) is not scanned at all.
