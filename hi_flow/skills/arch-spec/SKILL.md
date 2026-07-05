@@ -445,7 +445,25 @@ The feature-spec "Open items at closure" table mixes severities. Sort each row d
 
 ## Self-Review (via isolated subagent, P5)
 
-After writing, dispatch a fresh subagent (Agent tool) to review the spec with **isolated context** — no conversation history. The main agent spent the whole session immersed and is subject to confirmation bias. Pass the subagent the spec path + the rules-patch path + the checklist below.
+After writing either an architecture-gate waiver or a full arch-spec, dispatch a fresh subagent (Agent tool) with **isolated context** - no conversation history. The main agent spent the whole session immersed and is subject to confirmation bias.
+
+### Waiver self-review
+
+For a waiver, pass the subagent the waiver artifact/path + the feature-spec path + the checklist below. Do **not** pass or require a rules-patch path.
+
+Checklist:
+
+- All full-arch-spec triggers were checked and recorded as false.
+- The waiver names inspected architecture sources.
+- Behavior Contract coverage is named, and every scenario is implementable over existing owners/public surfaces.
+- No forced-now infrastructure axis is hidden.
+- No graph-formalizable invariant or rules-patch is needed.
+- The handoff to `hi_flow:implementation-plan` is explicit.
+- The waiver is a signed decision, not a silent skip.
+
+### Full arch-spec self-review
+
+For a full arch-spec, pass the subagent the spec path + the rules-patch path + the checklist below.
 
 Checklist:
 
@@ -453,7 +471,7 @@ Checklist:
 - Ceiling sub-sections present for every triggered condition.
 - Fitness invariants are actionable (checkable), not abstract; each has a stated mechanism + a D9 reference.
 - Delta (block C) checked against the principles; violations classified (redo feature / refactor environment / accept debt).
-- Decisions are derivable from the feature-spec (no "invented" architecture without a product root) — three-criteria gate.
+- Decisions are derivable from the feature-spec (no "invented" architecture without a product root) - three-criteria gate.
 - No meta / reasoning history in the spec; decisions as facts + a rationale line.
 - Operability limits recorded for those that passed triage; triggers + next steps went to backlog, not the spec.
 - Summary is plain language (P1).
@@ -461,9 +479,14 @@ Checklist:
 - Mermaid ego-graph regenerated from the block B text (source of truth = text); no drift.
 - If a backbone standard is declared (operational rule 11): §5 declares the feature's public surface, and the `<feature>-narrow-public-entry` allowlist **equals** that §5 surface (actual module names; no `<read-model>` placeholder; no drift). Absent the standard: no backbone artifacts emitted (no public-surface declaration, no narrow-entry rule).
 
-Apply safe fixes inline. Human-required findings → flag to the operator. **No re-review.**
+Apply safe fixes inline. Human-required findings -> flag to the operator. **No re-review.**
 
-After self-review fixes, present to the operator (User Review Gate): «Arch-spec written to `<path>`, rules-patch (not applied) to `<patch-path>`. Review and tell me if you want changes before we move to `hi_flow:implementation-plan`.» If changes — apply + re-run Self-Review. Only after approval — closure and the transition offer to `hi_flow:implementation-plan`.
+After self-review fixes, present the matching User Review Gate:
+
+- Waiver: «Architecture gate waiver written to `<path>`. Review and tell me if you want changes before we move to `hi_flow:implementation-plan`.»
+- Full arch-spec: «Arch-spec written to `<path>`, rules-patch (not applied) to `<patch-path>`. Review and tell me if you want changes before we move to `hi_flow:implementation-plan`.»
+
+If changes - apply + re-run Self-Review. Only after approval - closure and the transition offer to `hi_flow:implementation-plan`.
 
 ## Anti-patterns
 

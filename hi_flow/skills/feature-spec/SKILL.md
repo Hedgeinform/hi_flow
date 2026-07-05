@@ -12,7 +12,7 @@ Systematically surface hierarchical product forks — concrete behavioral decisi
 ## Out of scope
 
 - Product-level decomposition (separate skill `hi_flow:product-spec`).
-- Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
+- Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:implementation-plan`).
 - Visual layout / components / style (UI layer 3) → `hi_flow:arch-spec` (see "UX/UI boundary principle").
 - Building the behavior harness. feature-spec defines the contract; `hi_flow:implementation-plan`, bootstrap, and the target project's test runner make it executable.
 - Auto-invoking the next phase — operator initiates.
@@ -145,6 +145,23 @@ Flag each item: **likely blocker / nice-to-have / уточнить**. (The Open 
 
 Operator decides per item: **resolve now / leave for next phase / out of scope**.
 
+### Behavior Contract synthesis
+
+Before writing the final spec and before Self-Review, synthesize the resolved forks, sample dialogs, input/output contract, surfaces, cross-cutting policies, and premortem findings into `## Behavior Contract`.
+
+This section is the durable behavior truth for downstream implementation. It is not a separate BehaviorSpec document; it lives inside the feature-spec to avoid one more pre-implementation artifact.
+
+Each scenario gets a stable ID and a status:
+
+- `automated` — should become an executable behavior test in this feature's implementation plan.
+- `manual` — intentionally checked by a person; include why automation is not worth it yet.
+- `blocked` — cannot be automated until a named harness/foundation dependency exists.
+- `obsolete` — superseded; point to the replacement or removal reason.
+
+The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
+
+Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: contract + executable mapping + one runner command + CI gate.
+
 Then write the final `feature-spec.md` to the configured location.
 
 ### Self-Review (via subagent with isolated context)
@@ -160,29 +177,13 @@ Checks the subagent runs:
 3. **Scope check.** Is the spec focused on a single feature, or has it slipped into product-level decomposition (multiple features, roadmap, cross-feature deps)? If decomposition slipped — flag for split.
 4. **Ambiguity check.** Status tags consistent with Resolution content (`RESOLVED` forks have non-empty Resolution; `OPEN` forks explicitly say so)? Cardinality tags match branch semantics? Any Resolution wording that could be interpreted two different ways?
 5. **Format compliance.** All forks have status + cardinality tags. Inline-vs-cell branches follow the rule (ID ⇔ cell). Cross-cutting forks live in CC section, not nested. Reusable sub-policies properly factored as P-NAME blocks.
+6. **Behavior Contract completeness.** Every material resolved behavior has a `BS-*` scenario or an explicit reason for omission; statuses are honest; `manual` / `blocked` / `obsolete` rows carry reasons; `Then` and `Observability` are externally checkable; each row traces to a source fork / policy / sample.
 
 Subagent returns findings. **Fix issues inline. No need to re-review** — just fix and move on.
 
-### Behavior Contract synthesis
-
-Before User Review Gate, synthesize the resolved forks, sample dialogs, input/output contract, surfaces, cross-cutting policies, and premortem findings into `## Behavior Contract`.
-
-This section is the durable behavior truth for downstream implementation. It is not a separate BehaviorSpec document; it lives inside the feature-spec to avoid one more pre-implementation artifact.
-
-Each scenario gets a stable ID and a status:
-
-- `automated` — should become an executable behavior test in this feature's implementation plan.
-- `manual` — intentionally checked by a person; include why automation is not worth it yet.
-- `blocked` — cannot be automated until a named harness/foundation dependency exists.
-- `obsolete` — superseded; point to the replacement or removal reason.
-
-The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
-
-Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: contract + executable mapping + one runner command + CI gate.
-
 ### User Review Gate
 
-After self-review fixes are applied and the Behavior Contract is synthesized, present the spec to the operator:
+After self-review fixes are applied, present the spec to the operator:
 
 > «Spec written to `<path>`. Please review it and let me know if you want any changes before we move to the next phase.»
 

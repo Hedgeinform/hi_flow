@@ -1,6 +1,6 @@
 # Template: hi_flow implementation plan
 
-```markdown
+````markdown
 # <Feature Name> Implementation Plan
 
 > **For agentic workers:** REQUIRED EXECUTION SKILL: use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. REQUIRED IMPLEMENTATION DISCIPLINE: use `superpowers:test-driven-development` for production code changes. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -84,8 +84,7 @@ Expected: relevant scenarios PASS
 git add <files>
 git commit -m "<message>"
 ```
-```
-```
+````
 
 ## Filling notes
 

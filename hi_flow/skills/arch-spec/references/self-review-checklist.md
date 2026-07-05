@@ -1,6 +1,8 @@
-# arch-spec — Self-Review Checklist
+# arch-spec - Full Arch-Spec Self-Review Checklist
 
 For an **isolated subagent** (Agent tool), no conversation history. The main agent spent the whole session immersed in the design and is subject to confirmation bias; a fresh reader is more objective.
+
+Use this checklist only for the **full arch-spec** path. For an architecture-gate waiver, use the waiver self-review checklist in `hi_flow/skills/arch-spec/SKILL.md`; do not require a rules-patch.
 
 **Pass the subagent:** the arch-spec.md path + the rules-patch path + this checklist. **Task:** find problems, do NOT fix. Return a structured verdict.
 
