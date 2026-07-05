@@ -1,0 +1,20 @@
+{
+  "name": "hi-flow-local",
+  "interface": {
+    "displayName": "hi_flow Local"
+  },
+  "plugins": [
+    {
+      "name": "hi_flow",
+      "source": {
+        "source": "local",
+        "path": "./hi_flow"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -47,6 +47,23 @@ and must be shipped to a non-local target.
 - `hi_flow:ops` - last-mile delivery profile, CD, deploy scaffold, and staging
   verification.
 
+## Packaging
+
+hi_flow is packaged for both Claude Code and Codex.
+
+- Claude Code metadata lives in `.claude-plugin/` files.
+- Codex metadata lives in `hi_flow/.codex-plugin/plugin.json`.
+- The repo-local Codex marketplace entry lives in `.agents/plugins/marketplace.json`
+  and points at `./hi_flow`.
+
+The two packaging layers share the same `hi_flow/skills/` source. Do not fork
+skill contents per host unless a host-specific runtime constraint makes it
+unavoidable.
+
+For Codex local development, add this repository's `.agents/plugins/marketplace.json`
+as a local marketplace, then install `hi_flow` from `hi-flow-local`. Start a new
+Codex thread after reinstalling so the updated skills are picked up.
+
 ## Behavior Harness
 
 hi_flow does not require Cucumber by default.

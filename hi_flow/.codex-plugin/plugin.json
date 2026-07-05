@@ -1,0 +1,37 @@
+{
+  "name": "hi_flow",
+  "version": "0.9.0",
+  "description": "Feature-and-above solo+AI development methodology with product specs, architecture gates, Behavior Contracts, implementation plans, foundation wiring, and delivery rails.",
+  "author": {
+    "name": "viessedo",
+    "email": "viessedo@proton.me"
+  },
+  "keywords": [
+    "skills",
+    "methodology",
+    "spec",
+    "product",
+    "architecture",
+    "behavior-contract",
+    "implementation",
+    "solo-ai"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "hi_flow",
+    "shortDescription": "Behavior-first feature and architecture workflow for agentic development.",
+    "longDescription": "hi_flow guides feature-and-above solo+AI development from product intent through feature specs, Behavior Contracts, architecture gates, behavior-first implementation plans, project foundation wiring, and delivery setup. It is designed to coexist with Claude Code and Codex surfaces while keeping Superpowers as the recommended execution discipline.",
+    "developerName": "viessedo",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Create a hi_flow feature spec",
+      "Run a hi_flow architecture gate",
+      "Create a behavior-first implementation plan"
+    ],
+    "brandColor": "#0F766E"
+  }
+}
