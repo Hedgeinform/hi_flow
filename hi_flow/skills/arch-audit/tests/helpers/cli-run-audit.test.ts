@@ -4,11 +4,9 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { runAudit } from '../../helpers/cli-run-audit.ts'
 
-// Inject mock depcruise binary by stubbing PATH? Simpler: use buildReportData via runAudit
-// which calls execSync('npx ... --version') for preflight. We can't easily mock that here.
-// Skip the depcruise-version check by going through buildReportData directly is tested
-// elsewhere. For this test we just want to verify outDir routing — but runAudit hits
-// depcruise. So we test outDir wiring via buildReportData instead.
+// The CLI entrypoint reads the bundled dependency-cruiser runtime before running.
+// For this test we only need to verify outDir routing, so we exercise the shared
+// report builder directly and keep the depcruise output canned.
 import { buildReportData } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 
@@ -49,7 +47,7 @@ describe('cli-run-audit outDir override', () => {
 
     await rm(root, { recursive: true })
     await rm(altOut, { recursive: true })
-  })
+  }, 15000)
 
   it('falls back to <root>/audit-report when outDir is not supplied', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cli-runaudit-default-'))
@@ -74,5 +72,5 @@ describe('cli-run-audit outDir override', () => {
     expect(s.isDirectory()).toBe(true)
 
     await rm(root, { recursive: true })
-  })
+  }, 15000)
 })

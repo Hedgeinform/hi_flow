@@ -16,7 +16,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const prosePath = process.argv[3]
   const d9MdPath = process.argv[4]
   if (!jsonPath || !prosePath) {
-    console.error('Usage: npx tsx helpers/cli-render-md.ts <audit-report.json> <cluster-prose.json> [d9-md-path]')
+    console.error('Usage: npm run render-md -- <audit-report.json> <cluster-prose.json> [d9-md-path]')
     process.exit(1)
   }
   renderReportFromDisk(resolve(jsonPath), resolve(prosePath), d9MdPath ? resolve(d9MdPath) : undefined)

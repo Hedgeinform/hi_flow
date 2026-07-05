@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "audit": "tsx helpers/cli-run-audit.ts",
+    "apply-patch": "tsx helpers/cli-apply-patch.ts",
+    "depcruise:version": "node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --version",
+    "regenerate-principles-index": "tsx helpers/regenerate-principles-index.ts",
+    "render-md": "tsx helpers/cli-render-md.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -15,6 +20,7 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.0",
+    "dependency-cruiser": "^17.4.3",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0",
     "vitest": "^1.2.0"

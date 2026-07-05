@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { execSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createTypescriptDepcruiseAdapter } from '../adapters/typescript-depcruise.ts'
+import { readBundledDepcruiseVersion, resolveRuntimeRoot } from '../core/depcruise-runtime.ts'
 import { buildReportData, renderReport, type ClusterProseFn } from '../core/report-builder.ts'
 
 /**
@@ -24,12 +24,8 @@ export async function runAudit(
   clusterProsefn?: ClusterProseFn,
   outDir?: string,
 ): Promise<{ json_path: string; md_path: string | null; clusters_input_path: string }> {
-  let depcruiseVersion: string
-  try {
-    depcruiseVersion = execSync('npx --no-install dependency-cruiser --version', { encoding: 'utf-8' }).trim()
-  } catch {
-    throw new Error('dependency-cruiser not found. Install: npm install -g dependency-cruiser@^16.0.0')
-  }
+  const runtimeRoot = resolveRuntimeRoot(import.meta.url)
+  const depcruiseVersion = readBundledDepcruiseVersion(runtimeRoot)
 
   const adapter = createTypescriptDepcruiseAdapter()
   const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath, outDir })
@@ -70,11 +66,11 @@ function parseCliArgs(argv: string[]): ParsedCliArgs {
   return out
 }
 
-// CLI entry: invoked via `npx tsx helpers/cli-run-audit.ts [--out-dir <path>] <project-root> [d9-md-path]`
+// CLI entry: invoked via `npm run audit -- [--out-dir <path>] <project-root> [d9-md-path]`
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = parseCliArgs(process.argv.slice(2))
   if (args.help || !args.projectRoot) {
-    console.error('Usage: npx tsx helpers/cli-run-audit.ts [--out-dir <path>] <project-root> [d9-md-path]')
+    console.error('Usage: npm run audit -- [--out-dir <path>] <project-root> [d9-md-path]')
     console.error('')
     console.error('Options:')
     console.error('  --out-dir, -o <path>   Override default output directory (default: <project-root>/audit-report).')
