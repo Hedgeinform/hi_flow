@@ -1,6 +1,6 @@
 # Template: arch-spec.md
 
-Output structure for `hi_flow:arch-spec`. The agent fills this in; the consumer is `superpowers:writing-plans`.
+Output structure for `hi_flow:arch-spec`. The agent fills this in; the consumer is `hi_flow:implementation-plan`.
 
 **Cleanliness rule:** decisions as facts + at most one line of invariant rationale. NO history of rejected alternatives, NO reasoning trace, NO escalation log. The body must be cleaner than a feature-spec (its reader is an agent, not the operator).
 
@@ -16,10 +16,12 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 ## 1. Header
 
 **Feature-spec:** <path to the signed feature-spec.md>
+**Behavior Contract:** <scenario range / count, e.g. BS-001..BS-009; automated/manual/blocked counts>
 **Audit snapshot:** <path to audit-report.json> · audit_sha=<...> · freshness: <fresh | N commits behind | none>
 <!-- Fullstack: one **Audit snapshot:** line PER touched tree, prefixed `(<tree>)` — e.g. `**Audit snapshot (api):** ...` and `**Audit snapshot (web):** ...` -->
 **Date:** YYYY-MM-DD
 **Status:** draft | signed
+**Gate result:** full arch-spec required
 **Mode:** green field | brown field
 <!-- Fullstack: per-tree — e.g. `**Mode:** api: brown field · web: green field` -->
 
@@ -31,7 +33,7 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 
 - **Decided at the architectural level:** <one line each>
 - **Platform ports (cross-cutting capabilities owned here):** <port name — capability — consumers-per-roadmap (feature X, Y); contract designed one notch wider than single-consumer YAGNI. Include ONLY when a floor-2 port triggered the shared-capability lookahead (roadmap/backlog names other consumers / ARCHITECTURE infra-constant / orthogonal to domain); omit the bullet entirely otherwise. Awareness marker — no registry (D26).>
-- **Delegated to implementation:** <forks left for writing-plans — see §10>
+- **Delegated to implementation:** <forks left for implementation-plan — see §10>
 - **Deferred (→ product-backlog):** <pointer; full items synced to backlog at closure, not listed here>
 
 ## 4. Starting state
@@ -94,7 +96,7 @@ Boundary: this does NOT redefine the UX (layers 1-2 are consumed as a given — 
 
 > Graph-formalizable invariants (mechanism = graph) are additionally exported to `<feature-slug>-rules-patch.yaml`.
 > **D9 reference is mandatory only for type-1 (graph).** D9 is a static/structural library; type-2 (code/schema, e.g. table immutability, secret-filtering) and type-3 leave it `—` unless a principle genuinely fits. Do not cargo-cult an ill-fitting id.
-> **Security-critical tag.** Append the inline literal `[trust-chain review required — not diff-local]` to the invariant statement (inside the `Invariant` cell — the table stays 4 columns, do NOT add a column) when the invariant is security-critical: secrets / PII / trust boundary (§5.7 triggers). It is a downstream signal to writing-plans / reviewer — "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. The tag is a SIGNAL only, not a review implementation: the review methodology lives in superpowers (D14), not hi_flow.
+> **Security-critical tag.** Append the inline literal `[trust-chain review required - not diff-local]` to the invariant statement (inside the `Invariant` cell - the table stays 4 columns, do NOT add a column) when the invariant is security-critical: secrets / PII / trust boundary (§5.7 triggers). It is a downstream signal to implementation-plan / reviewer: "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. The tag is a SIGNAL only, not a review implementation: the review methodology lives in superpowers (D14), not hi_flow.
 > **Tree tag (fullstack).** A graph-type (type-1) invariant carries its tree INLINE in the Invariant cell — e.g. `<statement> [tree: web]` — like the security tag. The table stays 4 columns; do NOT add a Tree column. The tag routes the invariant to its tree's rules-patch.
 
 ## 9. Dependency graph
@@ -126,11 +128,11 @@ graph TD
 
 ### 10.1 Code-sight forks
 
-<Explicit forks left for writing-plans. For each: "Choose <X> having seen the code; mind <constraint Y>." Instructions to the implementer, not unresolved gaps. These are resolvable by reading the code.>
+<Explicit forks left for implementation-plan. For each: "Choose <X> having seen the code; mind <constraint Y>." Instructions to the implementer, not unresolved gaps. These are resolvable by reading the code.>
 
 ### 10.2 Deployment-bound bindings
 
-<Bindings inside an already-fixed infra axis (concrete scheduler, concrete blob-backend) that depend on the deployment model, NOT on reading the code. For each: recommended default + constraint + "unblocks when the deployment model is fixed." NOT an open choice for writing-plans — a recommendation with an explicit unblock condition, not a fork.>
+<Bindings inside an already-fixed infra axis (concrete scheduler, concrete blob-backend) that depend on the deployment model, NOT on reading the code. For each: recommended default + constraint + "unblocks when the deployment model is fixed." NOT an open choice for implementation-plan - a recommendation with an explicit unblock condition, not a fork.>
 
 <!-- OPTIONAL, only for a non-trivial multi-module flow — append after §10, no separate number: -->
 ## Key-flow trace (optional)
@@ -141,6 +143,32 @@ graph TD
 ---
 
 ## Filling notes (not part of the output)
+
+- **Architecture-gate waiver alternative.** If the gate result is waiver, do not emit this full 10-section document. Emit the short waiver form below instead:
+
+```markdown
+# <Feature name> — Architecture Gate Waiver
+
+**Feature-spec:** <path>
+**Behavior Contract:** <scenario IDs + automated/manual/blocked counts>
+**Date:** YYYY-MM-DD
+**Status:** draft | signed
+**Gate result:** waived — no full arch-spec required
+
+## Reason
+
+<Why existing modules/contracts own the behavior; no new ownership, boundary, infra axis, shared schema, security boundary, or graph invariant is introduced.>
+
+## Checked sources
+
+- <ARCHITECTURE.md / Module Map / audit snapshot / current code surfaces>
+
+## Handoff to implementation-plan
+
+- **Behavior scenarios:** <IDs>
+- **Existing owners / surfaces:** <modules or public APIs>
+- **Constraints:** <anything implementation-plan must preserve>
+```
 
 - **No "open questions" section** in the output. An open question is either resolved in-session (→ a fact above) or deferred (→ product-backlog via closure backlog-sync).
 - **rules-patch is a separate file** (`<feature-slug>-rules-patch.yaml`), not embedded. §8 lists all invariants; the patch carries only the graph-formalizable subset.

@@ -20,7 +20,7 @@ For an **isolated subagent** (Agent tool), no conversation history. The main age
 - [ ] No product decisions re-opened that the feature-spec already answered.
 - [ ] Spec body carries **decisions as facts** + at most one line of invariant rationale. No history of rejected alternatives, no escalation log, no reasoning trace.
 - [ ] **No "open questions" section.** Deferred items went to product-backlog (closure backlog-sync), not into the spec.
-- [ ] §10 delegations split correctly: code-sight → §10.1, deployment-bound → §10.2. No deployment-bound binding sent to writing-plans as an open choice.
+- [ ] §10 delegations split correctly: code-sight -> §10.1, deployment-bound -> §10.2. No deployment-bound binding sent to implementation-plan as an open choice.
 
 ## Block C — integration analysis
 

@@ -1,11 +1,11 @@
 ---
 name: feature-spec
-description: Use when operator says «продуктовая спека», «спека на фичу X», «продуктовый дизайн фичи X», «анализ нашей фичи X», «давай продумаем фичу X», or English equivalents. Produces feature-spec.md.
+description: Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», Behavior Contract, or English equivalents. Prefer this over generic brainstorming for feature-and-above hi_flow work; for small bugfixes/local changes, do not use hi_flow unless explicitly requested. Produces feature-spec.md.
 ---
 
 # `hi_flow:feature-spec` — Feature-Level Product Spec Skill
 
-Help the operator turn a feature request into a signed `feature-spec.md` that (1) gives the operator a focused artifact for deep review, and (2) gives the next phase (`hi_flow:arch-spec`) an unambiguous foundation for architectural design.
+Help the operator turn a feature request into a signed `feature-spec.md` that (1) gives the operator a focused artifact for deep review, (2) gives the next phase (`hi_flow:arch-spec`) an unambiguous foundation for architectural design or architecture-gate waiver, and (3) defines a Behavior Contract the implementation plan can turn into an executable harness.
 
 Systematically surface hierarchical product forks — concrete behavioral decisions, edge cases, hard policies, criteria distinguishing similar situations — through structured operator dialogue.
 
@@ -14,11 +14,12 @@ Systematically surface hierarchical product forks — concrete behavioral decisi
 - Product-level decomposition (separate skill `hi_flow:product-spec`).
 - Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:impl-plan`).
 - Visual layout / components / style (UI layer 3) → `hi_flow:arch-spec` (see "UX/UI boundary principle").
+- Building the behavior harness. feature-spec defines the contract; `hi_flow:implementation-plan`, bootstrap, and the target project's test runner make it executable.
 - Auto-invoking the next phase — operator initiates.
 
 ## Output
 
-A single `feature-spec.md`. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
+A single `feature-spec.md` with a `Behavior Contract` section. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
 
 ## Feature scope clarification (post product-spec v0.6.1 / D19 terminology alignment)
 
@@ -55,6 +56,8 @@ Either way, the output is one `feature-spec.md` for the whole feature with hiera
 - Bare feature-shape request («хочу добавить X», «давай добавим tool Z») — could be research / chatter / arch request. Clarify or propose the skill, do not run it.
 - «собери информацию про X» / «исследуй X» / «анализ конкурента» — research, not feature spec.
 - «реализуй X» / «нужна архитектура для X» — territory of sibling skills.
+- «мелкий багфикс», «почини тест», «локальная правка» — route to the general implementation workflow (for example Superpowers) unless the operator explicitly asks for hi_flow.
+- Bare «spec» with no feature/product context — clarify whether the operator wants hi_flow feature-spec or a generic design/implementation spec.
 
 ## Mode selection
 
@@ -160,9 +163,26 @@ Checks the subagent runs:
 
 Subagent returns findings. **Fix issues inline. No need to re-review** — just fix and move on.
 
+### Behavior Contract synthesis
+
+Before User Review Gate, synthesize the resolved forks, sample dialogs, input/output contract, surfaces, cross-cutting policies, and premortem findings into `## Behavior Contract`.
+
+This section is the durable behavior truth for downstream implementation. It is not a separate BehaviorSpec document; it lives inside the feature-spec to avoid one more pre-implementation artifact.
+
+Each scenario gets a stable ID and a status:
+
+- `automated` — should become an executable behavior test in this feature's implementation plan.
+- `manual` — intentionally checked by a person; include why automation is not worth it yet.
+- `blocked` — cannot be automated until a named harness/foundation dependency exists.
+- `obsolete` — superseded; point to the replacement or removal reason.
+
+The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
+
+Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: contract + executable mapping + one runner command + CI gate.
+
 ### User Review Gate
 
-After self-review fixes are applied, present the spec to the operator:
+After self-review fixes are applied and the Behavior Contract is synthesized, present the spec to the operator:
 
 > «Spec written to `<path>`. Please review it and let me know if you want any changes before we move to the next phase.»
 
@@ -434,6 +454,13 @@ Cross-ref: P8 (altitude), D14 (complementary layers), D25 (this boundary decisio
 - Возврат пользователю: ...
 - Side effects: ...
 
+## Behavior Contract
+[stable scenarios derived from the resolved feature behavior]
+
+| Scenario ID | Status | Given | When | Then | Observability | Source |
+|---|---|---|---|---|---|---|
+| BS-001 | automated / manual / blocked / obsolete | ... | ... | ... | API response / DB state / emitted event / UI state / bot reply | F1, CC1, sample happy path |
+
 ## Поверхности (UX)
 [conditional — only if the feature has a user-facing surface; covers UX layers 1-2, NOT layer 3]
 - перечень поверхностей
@@ -479,6 +506,16 @@ Per surface:
 Plus **навигация** — how the person moves between surfaces.
 
 **Altitude calibration (two-designers test):** if two designers could produce visually very different screens both satisfying this section, the altitude is correct (it describes *what*, not *how it looks*). If it dictates visuals, it has slipped into layer 3 → arch-spec.
+
+### Behavior Contract section
+
+Mandatory for every feature-spec. It is the scenario-level behavior contract consumed by `hi_flow:arch-spec` and `hi_flow:implementation-plan`.
+
+Scenario IDs are stable across edits. If behavior changes, update the scenario row in the same change that updates the feature. Do not silently leave obsolete scenarios in place.
+
+**Observability** must name what the harness can check from outside or near-outside the system: API response, bot reply, database state, emitted event, file output, UI state, or an explicit eval criterion. Do not assert private implementation details here.
+
+**Source** points back to forks / policies / sample dialogs so reviewers can trace why the scenario exists.
 
 ### Cell format
 
@@ -566,12 +603,16 @@ Plus **навигация** — how the person moves between surfaces.
 8. **No summary** at the end of the spec. Operator reads in full.
 9. **`**Backlog:**` block (organic convention).** Under a RESOLVED fork whose sub-functions are partly deferred, list the deferred sub-points as bullets under a bold `**Backlog:**` label. This is a harvest anchor (anchor 2 in "Backlog sync at closure") — the listed items are parked at closure. Do **not** introduce a conflicting single-line `**Backlog:** level: ... | ...` form; the block-of-bullets convention is canonical (it already exists in real specs).
 10. **Deferral tags on one-liners.** `Out of scope` (in Цель) and `Premortem findings` lines may carry a light tag: `→ backlog` (parked → Parked features) or `→ rejected: <reason>[; альтернатива <...>]` (hard rejection → Out-of-scope (rejected)). An untagged line is a plain scope boundary / absorbed finding and is **not** transferred. Tags are harvest anchor 4.
+11. **Behavior Contract IDs.** Scenario IDs use `BS-001`, `BS-002`, ... within the feature. Do not reuse an ID for a different behavior. Use `obsolete` with a replacement pointer instead.
+12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions.
 
 ## References
 
 - **Reference example** of a completed feature-spec.md: `references/example-goal-setting.md`. Read this when generating output to anchor format and style.
 - **Feature-spec template** with placeholders: `references/feature-spec-template.md`. Use as the starting structure when writing.
 - **Self-assessment proposal template:** `references/self-assessment-template.md`.
+- **Workflow routing:** `hi_flow/references/workflow-routing.md`. Read when a generic Superpowers skill could compete with hi_flow for the same operator request.
+- **Behavior harness contract:** `hi_flow/references/behavior-harness.md`. Read when writing or reviewing the `Behavior Contract` section.
 - **Backlog integration mechanism (shared, family):** `hi_flow/references/backlog-integration.md`. The generic backlog-contribution algorithm feature-spec follows by name at closure (detect → dedup → idempotency → patch + approval → create-if-missing). Read it before running backlog-sync.
 - **Product-backlog template (format authority):** `hi_flow/skills/product-spec/references/product-backlog-template.md`. The single source of backlog record format (Parked features / Deferred strategic forks / Out-of-scope (rejected)). Read-only for feature-spec — owned by product-spec.
 

@@ -14,7 +14,7 @@ ops is the **owner of the last mile** in the hi_flow family — making a built p
 **Place in the chain.**
 
 ```
-… arch-spec → bootstrap (foundation) → writing-plans (feature impl)
+... arch-spec -> bootstrap (foundation) -> implementation-plan (feature impl)
       → [feature works on YOUR machine] → ops (delivery onto a NOT-yours machine)
 ```
 
@@ -24,7 +24,7 @@ ops is the **owner of the last mile** in the hi_flow family — making a built p
 
 ## Anti-triggers (do NOT auto-activate)
 
-- «напиши план фичи», «implementation plan» — that is `superpowers:writing-plans`: the implementation plan for a **feature** over a ready codebase. ops is the last mile, orthogonal to feature planning.
+- «напиши план фичи», «implementation plan» — that is `hi_flow:implementation-plan`: the implementation plan for a **feature** over a ready codebase. ops is the last mile, orthogonal to feature planning.
 - «настрой фундамент», «зафиксируй стек» — that is `hi_flow:bootstrap`: the project's technical **foundation** (stack, scaffold, CI gates). bootstrap builds; ops delivers. (Note: «зафиксируй **сервер** / профиль» → ops; «зафиксируй **стек** / фундамент» → bootstrap — the object noun disambiguates.)
 - «обнови архитектуру» — that is `living-architecture`: maintaining the living **document**. ops does not write ARCHITECTURE.md (decoupled); a deployment may be recorded there by living-architecture's own event, not by ops.
 - «посмотреть фронт локально», local preview — **not ops** ("your machine"). Local preview is outside the scope line, already covered by the bootstrap scaffold.
@@ -147,7 +147,7 @@ The server-side `.env` is a **projection** of GH secrets, never an independent s
 |---|---|
 | **bootstrap** | "envelope early, machinery late" — see below. bootstrap fixes the code-abstraction + read-convention + CI-gates + the `delegated`-axis classification early (the foundation); ops fixes the concrete deploy / CD machinery + profile binding late (at shipping). |
 | **D14 (R6)** | ops owns the deploy / CD templates + wiring; `superpowers` is the methodology for implementing **new project code**. A Dockerfile/CD for a covered form is **template instantiation owned by ops**, not free-hand execution. |
-| **writing-plans** | plans a feature over a ready codebase; ops is the **last mile**, orthogonal. ops does **not** need writing-plans for its own work on the covered path (render + wire is deterministic, like a bootstrap scaffold). |
+| **implementation-plan** | plans a feature over a ready codebase; ops is the **last mile**, orthogonal. ops does **not** need implementation-plan for its own work on the covered path (render + wire is deterministic, like a bootstrap scaffold). |
 | **living-architecture** | decoupled (R5). A deployment may be documented by living-architecture's own event; ops does not touch the document. |
 
 **ops ↔ bootstrap — "envelope early, machinery late."**
@@ -164,7 +164,7 @@ The server-side `.env` is a **projection** of GH secrets, never an independent s
 
 ## The best-effort open seam (OQ-ops-7)
 
-The claim "render + wire is deterministic, so writing-plans is not needed" is true **only for the covered path**. It must not be over-generalised.
+The claim "render + wire is deterministic, so implementation-plan is not needed" is true **only for the covered path**. It must not be over-generalised.
 
 On **best-effort**, ops "configures ad-hoc" — and that **is** the non-deterministic config-authoring that finding #5 of the handoff warned about. At the same time, **superpowers has no deployment skill**. So for the best-effort path there remains an **unclosed execution seam**: neither template determinism **nor** an explicit execution owner. This is recorded **honestly as an open question (OQ-ops-7)** — it is **not** passed off as solved. The covered path is deterministic and ownerless-by-design (the template *is* the owner); the best-effort path is neither, and we say so.
 
@@ -189,7 +189,7 @@ The **profile is the distributable seam**: the same core consumes a profile whet
 
 **Anti-triggers** (these are *not* ops — see also the Anti-triggers section near the top):
 
-- «напиши план фичи» / "implementation plan" → `superpowers:writing-plans`.
+- «напиши план фичи» / "implementation plan" → `hi_flow:implementation-plan`.
 - «настрой фундамент», «зафиксируй стек» / "set up the foundation", "fix the stack" → `hi_flow:bootstrap`.
 - «обнови архитектуру» / "update the architecture" → `living-architecture`.
 - «посмотреть фронт локально» / local preview → **not ops** ("your machine") — outside the scope line, already covered by the bootstrap scaffold.
@@ -200,7 +200,7 @@ Done is an **enumerable set of gates**, like bootstrap's. The two coverage level
 
 **Covered onboarding — the gates, in order:**
 
-1. **CI gate green.**
+1. **CI gate green** (including `behavior:test` / the behavior gate when the project has a Behavior Contract harness).
 2. **Secrets present on the box** (`configure-env` has run) — this is a **precondition** of the next gate, not an afterthought (secrets ordering, the "wire" step).
 3. **First staging deploy succeeded** — the image built + pushed and the service is up (container form), or the static build is built + rsync'd (static form).
 4. **Healthcheck green** — `GET /health` returns `200` (container), or the static `index.html` is served (static). The `/health` contract is an obligation of the *project* toward ops, consumed here (see **Five delivery concerns → The `/health` contract**).

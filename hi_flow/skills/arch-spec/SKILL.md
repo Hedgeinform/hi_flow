@@ -1,13 +1,13 @@
 ---
 name: arch-spec
-description: Use when operator says «архитектурная спека», «arch-spec для фичи X», «спроектируй архитектуру фичи X», «технический дизайн фичи X», or English equivalents («arch-spec», «architecture spec for feature X», «design the architecture of feature X»). Consumes a signed feature-spec + arch-audit D8 snapshot; produces an arch-spec.md design doc plus a rules-patch. Downstream consumer — `superpowers:writing-plans`.
+description: Use when the operator has a signed hi_flow feature-spec and asks for architecture design, arch-spec, architecture gate, or whether the feature needs architecture work. Consumes feature-spec + Behavior Contract, and conditionally an arch-audit D8 snapshot. Produces either an architecture-gate waiver or a full arch-spec.md + rules-patch. Use before hi_flow:implementation-plan; do not route signed hi_flow specs to generic writing-plans.
 ---
 
 # arch-spec
 
 ## Overview
 
-arch-spec is the **per-feature architectural design spec** of the hi_flow family — the bridge between Phase 1 (behavioral `feature-spec`) and Phase 3 (implementation via `superpowers:writing-plans`). In plain superpowers, the role of "technical design doc" before writing-plans is played by ad-hoc brainstorming. hi_flow replaces that with a structured chain: feature-spec (what, product-level) → arch-spec (how, architecture-level) → writing-plans (implementation plan). arch-spec is a **full architectural design doc** for the feature, not a checklist.
+arch-spec is the **per-feature architecture gate and architectural design spec** of the hi_flow family - the bridge between Phase 1 (behavioral `feature-spec`) and Phase 3 (`hi_flow:implementation-plan`). In plain Superpowers, the role of "technical design doc" before planning is played by ad-hoc brainstorming. hi_flow replaces that with a structured chain: feature-spec (what, product-level + Behavior Contract) -> arch-spec (architecture gate, and full design when needed) -> implementation-plan (behavior-first implementation plan). arch-spec is not always a full document; it first decides whether a full architecture spec is needed.
 
 It does four jobs, none of which is the single defining one:
 
@@ -16,13 +16,13 @@ It does four jobs, none of which is the single defining one:
 3. **Checks integration into the existing architecture** — does the feature spawn cycles, blur boundaries, turn a neighbour into a God object, pull dependencies the wrong way? Prophylaxis of architectural violations at the moment a feature is added (so arch-redesign is not needed later to cure them).
 4. **Declares invariants** — for correct implementation (prophylaxis) and protection against regression as the architecture evolves.
 
-Integration-check (3) is **one of four**, not the whole point. On a green field (first feature) job (3) does not apply, yet the skill still fully does (1)(2)(4) — it produces a design spec. So the skill is needed **always**, not only when degradation is at risk.
+Integration-check (3) is **one of four**, not the whole point. On a green field (first feature) job (3) may not apply, but the architecture gate still asks whether the feature changes structure, ownership, integration, or invariants enough to need a full spec.
 
-Output: an `arch-spec.md` design doc consumed by `superpowers:writing-plans`, plus a rules-patch consumed by `hi_flow:arch-audit` via explicit operator apply (D11), plus backlog candidates for `product-backlog`.
+Output: either (a) an **architecture-gate waiver** appended to / emitted alongside the feature handoff, consumed directly by `hi_flow:implementation-plan`, or (b) an `arch-spec.md` design doc consumed by `hi_flow:implementation-plan`, plus a rules-patch consumed by `hi_flow:arch-audit` via explicit operator apply (D11), plus backlog candidates for `product-backlog`.
 
 ## When to use
 
-The operator has a signed feature-spec and wants the feature's architecture designed before implementation — module breakdown, contracts, data ownership, integration impact, invariants — so that writing-plans can produce an implementation plan without re-opening architectural decisions.
+The operator has a signed feature-spec and wants to know whether architecture work is needed before implementation, or wants the feature's architecture designed before implementation — module breakdown, contracts, data ownership, integration impact, invariants — so that `hi_flow:implementation-plan` can produce a plan without re-opening architectural decisions.
 
 ## Anti-triggers (do NOT auto-activate)
 
@@ -33,7 +33,7 @@ The operator has a signed feature-spec and wants the feature's architecture desi
 
 arch-spec is feature-level **prophylactic** design. arch-audit/redesign deal with debt that already exists; feature-spec decides product behavior, not structure.
 
-Per D14 (complementary layers): arch-spec does **not** duplicate implementation methodology (TDD, plan execution, code review, verification) — that stays in superpowers. arch-spec gives the WHAT (feature architecture); `writing-plans` gives the plan for HOW.
+Per D14 (complementary layers): arch-spec does **not** duplicate implementation methodology (TDD, plan execution, code review, verification) — that stays in the implementation workflow. arch-spec gives the architecture decision or waiver; `hi_flow:implementation-plan` turns the signed hi_flow artifacts into an executable, behavior-first plan.
 
 ## Pre-conditions
 
@@ -41,12 +41,35 @@ Per D14 (complementary layers): arch-spec does **not** duplicate implementation 
 
 | Artifact | Required | Role |
 |---|---|---|
-| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
+| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale + the `Behavior Contract`. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
 | `audit-report.json` (D8) | Conditional — see three situations | Snapshot of current architecture, needed for block C (integration). **Fullstack feature → one snapshot per touched tree** (per-tree audit, see "Fullstack features"). |
 | `ARCHITECTURE.md` Module Map + principles | If present | Map of existing modules, boundaries, known problems; **+ a declared feature-backbone / module-shape standard, if any (`## Project-specific принципы`)** — drives the module breakdown + public-surface declaration (read-only) |
 | `hi_flow/references/architectural-principles.md` (D9) | Yes (read-only) | Principle catalog for delta-checking + invariant references |
 
 The audit's role here is **narrower** than in arch-redesign: it is needed **only for block C** (integration). Blocks A/B/D/E are derived from the feature-spec and do not depend on the audit. The strictness differs accordingly.
+
+### Architecture gate
+
+Run the architecture gate before deciding whether to write a full `arch-spec.md`.
+
+**Full arch-spec is required** when any gate trigger is true:
+
+- New module, boundary, persistence owner, queue, scheduler, cache, search, storage, external integration, or platform port is needed.
+- Existing module ownership or dependency direction changes.
+- The Behavior Contract requires observable state or side effects that no current module clearly owns.
+- The feature touches security, PII, secrets, money, trust boundaries, migration, or shared schema/contract evolution.
+- A brown-field feature touches modules near known audit findings, cycles, God object risk, or boundary blur.
+- The implementation would need an architectural decision that cannot be resolved by reading code during implementation.
+
+**Waiver path is allowed** only when all are true:
+
+- The feature maps to existing modules and contracts without new ownership boundaries.
+- No infra axis is forced now.
+- The Behavior Contract can be implemented by local changes over existing public surfaces.
+- No graph-formalizable invariant or new arch-audit rules-patch is needed.
+- The operator accepts the waiver after seeing the concise reason.
+
+Waiver output must name the feature-spec path, Behavior Contract coverage, inspected architecture sources, reason for no full arch-spec, and the handoff to `hi_flow:implementation-plan`. It is still a signed architectural decision, not a silent skip.
 
 ### Three situations by audit
 
@@ -92,6 +115,7 @@ If the snapshot is found but broken (no reason fields, no `audit_sha`, no D9 ref
 
 Same pattern as feature-spec. Factors tuned to the architectural level:
 
+- **waiver**: architecture gate found no structural impact; no full arch-spec.
 - **direct** (propose skipping brainstorm, produce the spec straight away): simple feature, 1-2 modules, green field or green audit, few ceiling triggers.
 - **brainstorm** (conservative default): many touched modules, brown-field code with known problems nearby, several ceiling triggers, signals of possible degradation.
 - **skip**: operator explicitly declines (takes responsibility).
@@ -104,7 +128,7 @@ Show the operator the proposal with reasoning and factors, in feature-spec forma
 
 | Thought | Reality |
 |---|---|
-| "Green field, no audit, I'll just design freely" | Green field is the *normal* mode for the first feature — block C is skipped, but (1)(2)(4) still run. Do not skip the skill; do skip block C. |
+| "Green field, no audit, I'll just design freely" | Green field is the *normal* mode for the first feature — block C is skipped, but the architecture gate still decides whether a full spec is needed. |
 | "feature-spec already lists the modules, I'll go direct" | feature-spec lists product capabilities, not module breakdown, contracts, or data ownership. Those are architectural decisions block B must make. |
 | "Code exists but no fresh audit — I know the structure" | Without a D8 snapshot, block C's delta-graph reasoning is hallucinatory. Either run arch-audit, or skip block C *loudly* with a logged reason. Never silently. |
 | "The feature is small, I'll skip integration check" | "Small" is a feeling, not a check. Run the integration-risk triage; if it touches nothing, that's a recorded result, not a skipped step. |
@@ -122,7 +146,7 @@ Show the operator the proposal with reasoning and factors, in feature-spec forma
           ┌─────────┴──────────┐
    sits cleanly          does not sit (environment is wrong)
           │                     │
-   writing-plans      ┌─────────┼──────────┐
+   implementation-plan ┌─────────┼──────────┐
    (impl plan)    simplify   refactor   accept debt
                   product    environment  (Known Drift,
                   (back to   (arch-redesign deliberate)
@@ -130,7 +154,7 @@ Show the operator the proposal with reasoning and factors, in feature-spec forma
                   spec)
 ```
 
-arch-spec is not only a designer but also a **route fork**: it can send the operator back to feature-spec (simplify the product) or sideways to arch-redesign (clean the environment) before letting the feature into implementation (Phase 2 → Phase 1 feedback loop).
+arch-spec is not only a designer but also a **route fork**: it can waive full architecture work, send the operator back to feature-spec (simplify the product), or sideways to arch-redesign (clean the environment) before letting the feature into implementation (Phase 2 → Phase 1 feedback loop).
 
 The order of feature-spec ↔ arch-audit between themselves does not matter (independent in data: feature-spec is about the product, audit about existing code). What matters: both ready by the time arch-spec runs, snapshot fresh.
 
@@ -256,15 +280,15 @@ Replaces a premortem. Two-level — so as not to compute limits where there are 
 
 | Piece | Where | Why |
 |---|---|---|
-| Decision + limit-assumption ("no partitioning, valid up to 1 year") | **Into the spec**, one line | The frame in which writing-plans writes the plan. Prevents over-engineering |
+| Decision + limit-assumption ("no partitioning, valid up to 1 year") | **Into the spec**, one line | The frame in which implementation-plan writes the plan. Prevents over-engineering |
 | Monitoring trigger (at > Y we approach the limit) | **product-backlog** | Not needed by the current implementation |
 | Next step (partitioning / sharding) | **product-backlog** | Future work, not this feature |
 
-writing-plans sees only the limit-assumption (the frame). "What to do beyond the limit" is deferred work in the form "on reaching Z, develop W".
+implementation-plan sees only the limit-assumption (the frame). "What to do beyond the limit" is deferred work in the form "on reaching Z, develop W".
 
 ## Output document (`arch-spec.md`)
 
-### Cleanliness — consumer is writing-plans (an agent), not the operator
+### Cleanliness - consumer is implementation-plan (an agent), not the operator
 
 The spec body must be **cleaner than feature-spec** (which the operator reads): result only, no history of forks. Decisions as facts + one line of invariant rationale (why the rule, so it isn't broken) — but NOT the history of the choice (what was rejected). Escalation stays in the session; only the accepted decision lands in the document.
 
@@ -290,8 +314,8 @@ The spec body must be **cleaner than feature-spec** (which the operator reads): 
 8. **Fitness invariants** — list classified by mechanism. The graph part additionally exported as a rules-patch file alongside.
 9. **Dependency graph** — Mermaid ego-graph of the feature's neighbourhood with delta highlighting.
 10. **Delegated to implementation** — two sub-channels with opposed consumers:
-    - **§10.1 Code-sight forks** → `writing-plans`. Explicit forks resolvable by reading the code (with the instruction "choose having seen the code, mind the constraint"). An open choice the implementer makes having seen the code.
-    - **§10.2 Deployment-bound bindings** → a separate channel: a recommended default + the constraint + an explicit note "unblocks when the deployment model is fixed". NOT an open choice for `writing-plans` — it is bound to the deployment model, not to the code.
+    - **§10.1 Code-sight forks** -> `hi_flow:implementation-plan`. Explicit forks resolvable by reading the code (with the instruction "choose having seen the code, mind the constraint"). An open choice the implementer makes having seen the code.
+    - **§10.2 Deployment-bound bindings** -> a separate channel: a recommended default + the constraint + an explicit note "unblocks when the deployment model is fixed". NOT an open choice for `hi_flow:implementation-plan` - it is bound to the deployment model, not to the code.
 
     **Separation test:** *Resolvable by reading the code? No → §10.2 (deployment-bound), not §10.1.*
 
@@ -327,11 +351,11 @@ For features with a non-trivial multi-module flow, a short "trace of the key flo
 
 ### Primary consumer is implementation, not audit
 
-Fundamental priority: if invariants go only to arch-audit, prophylaxis becomes "cure a day late" (code is written not knowing the invariants → audit catches it after the fact). Prophylaxis = the invariant reaches writing-plans **before** the code is written.
+Fundamental priority: if invariants go only to arch-audit, prophylaxis becomes "cure a day late" (code is written not knowing the invariants → audit catches it after the fact). Prophylaxis = the invariant reaches `hi_flow:implementation-plan` **before** the code is written.
 
 | Consumer | When | Role |
 |---|---|---|
-| **writing-plans → implementation** | now, when writing the feature | **prophylaxis** — code straight to invariants. Primary |
+| **implementation-plan → implementation** | now, when writing the feature | **prophylaxis** — code straight to invariants. Primary |
 | **arch-audit** | later, on evolution | **safety net + anti-regression** — catches violations outside the plan and old invariants broken by new features. Secondary |
 
 ### Classification by check mechanism
@@ -339,14 +363,14 @@ Fundamental priority: if invariants go only to arch-audit, prophylaxis becomes "
 | Type | What | Where |
 |---|---|---|
 | **1. Graph-formalizable** | Module dependencies: who may import whom | Into the spec **+ additionally** a rules-patch for arch-audit (auto-check) |
-| **2. Code-content / schema** | SQL operations, payload contents, DB migration | Into the spec as an invariant + the named mechanism (test / lint / migration check) → built by writing-plans |
+| **2. Code-content / schema** | SQL operations, payload contents, DB migration | Into the spec as an invariant + the named mechanism (test / lint / migration check) -> built by implementation-plan / execution workflow |
 | **3. Dynamic** | Latency, error rates | Text requirement to monitoring, no enforcement (out of scope now, like D9 static-only) |
 
 Whether something is graph-formalizable is the LLM's call when formulating (about imports, or about SQL). All types → into the design spec as explicit invariants with a stated mechanism (primary path, prophylaxis). The graph part is **additionally** exported as a rules-patch (secondary path, anti-regression).
 
 **D9 reference scope.** A `principle` reference is **mandatory only for type-1 (graph)** invariants — they go to the rules-patch, where the D8 reason-field contract requires it. For **type-2 (code/schema) and type-3 (dynamic)** a D9 reference is **optional**: D9 is a static/structural library (cycles, boundaries, direction) and has no canonical id for things like table immutability or secret-filtering. Do NOT cargo-cult an ill-fitting principle (principle 6) — leave it blank (`—`) when D9 does not cover the invariant.
 
-**Security-critical tag.** A security-critical invariant (secrets / PII / trust boundary — §5.7 triggers) carries the inline marker `[trust-chain review required — not diff-local]` on its §8 statement. This is a downstream signal to `writing-plans` / the reviewer: "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. arch-spec only **TAGS** — the review methodology is superpowers (D14), not hi_flow. (Motivating case: a secret-filter that does not recurse into arrays passes a diff-local check yet leaks secrets — caught only by tracing the trust-chain past the diff.)
+**Security-critical tag.** A security-critical invariant (secrets / PII / trust boundary — §5.7 triggers) carries the inline marker `[trust-chain review required — not diff-local]` on its §8 statement. This is a downstream signal to `hi_flow:implementation-plan` / the reviewer: "matches the spec" is insufficient; the invariant needs adversarial review tracing the data flow past the diff boundary. arch-spec only **TAGS** — the review methodology lives in the implementation workflow (D14), not hi_flow. (Motivating case: a secret-filter that does not recurse into arrays passes a diff-local check yet leaks secrets — caught only by tracing the trust-chain past the diff.)
 
 ### rules-patch format = same as arch-redesign (D11)
 
@@ -439,7 +463,7 @@ Checklist:
 
 Apply safe fixes inline. Human-required findings → flag to the operator. **No re-review.**
 
-After self-review fixes, present to the operator (User Review Gate): «Arch-spec written to `<path>`, rules-patch (not applied) to `<patch-path>`. Review and tell me if you want changes before we move to writing-plans.» If changes — apply + re-run Self-Review. Only after approval — closure and the transition offer to `superpowers:writing-plans`.
+After self-review fixes, present to the operator (User Review Gate): «Arch-spec written to `<path>`, rules-patch (not applied) to `<patch-path>`. Review and tell me if you want changes before we move to `hi_flow:implementation-plan`.» If changes — apply + re-run Self-Review. Only after approval — closure and the transition offer to `hi_flow:implementation-plan`.
 
 ## Anti-patterns
 
@@ -448,7 +472,8 @@ After self-review fixes, present to the operator (User Review Gate): «Arch-spec
 - **File-level integration analysis.** The hypothetical graph is module-level; file-level is unworkable (predicting non-existent imports).
 - **Inventing architecture.** Every decision must pass the derivability gate. No structure without a product root.
 - **Padding ceiling categories.** Probe only triggered qualities. An untouched category is a normal empty result, not a hole to fill — padding breeds hallucination.
-- **Building enforcement.** arch-spec declares invariants and names the check mechanism; it does not build checks. rules-patch is applied by the operator (D11), tests by writing-plans, gates by L3 hygiene.
+- **Building enforcement.** arch-spec declares invariants and names the check mechanism; it does not build checks. rules-patch is applied by the operator (D11), tests are planned by `hi_flow:implementation-plan`, and gates stay with L3 hygiene / project CI.
+- **Sending signed hi_flow specs to generic writing-plans.** Once the feature has a Behavior Contract and an architecture gate/spec, the next hi_flow step is `hi_flow:implementation-plan`. Generic `superpowers:writing-plans` remains useful outside hi_flow or as a fallback when the hi_flow planner is unavailable.
 - **Writing to ARCHITECTURE.md.** Decoupled (variant 2). The spec is the only output; pickup into living docs is someone else's job.
 - **Logging the reasoning in the document.** The spec is the result, not the process. Rejected alternatives and escalation history stay in the session.
 - **Emitting backbone artifacts because the feature LOOKS like a vertical slice.** The trigger for declaring a public surface / emitting `<feature>-narrow-public-entry` is a backbone standard **DECLARED** in the project's `ARCHITECTURE.md` `## Project-specific принципы` (operational rule 11) — NOT the feature's shape, NOT the D9 library (`module-boundary-awareness` / `vertical-slice-cohesion` exist there, but reaching for them to hand-roll a narrow-entry-shaped rule absent a declaration is the same violation). A CRUD feature naturally resembles `store/service/api`; that resemblance is not a declaration. Absent the declaration: inert.
@@ -463,3 +488,5 @@ After self-review fixes, present to the operator (User Review Gate): «Arch-spec
 - `hi_flow/skills/arch-audit/references/d8-schema.md` — D8 snapshot schema (audit-report format consumed for block C).
 - **Shared graph-core** — `hi_flow/skills/arch-audit/core/graph-core.ts` (BUILT, owner arch-audit per D7). Pure metric formulas (`computeNCCD`, `computeCoupling` for Ca/Ce, `instability` for I) + declarative-graph traversal (`reachableFrom`, `findCycles`). Block C imports these for its live delta computation; this skill does not reimplement them.
 - **backlog-integration** (shared family mechanism, `hi_flow/references/backlog-integration.md`, D22) — closure backlog-sync follows it by name.
+- `hi_flow/references/workflow-routing.md` — family-level routing between hi_flow and generic implementation workflows.
+- `hi_flow/references/behavior-harness.md` — behavior gate contract consumed by the implementation-plan handoff.
