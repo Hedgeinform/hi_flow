@@ -1,6 +1,6 @@
 {
   "name": "hi_flow",
-  "description": "Three-Phase Flow methodology for solo+AI development: product spec, architecture spec, implementation plan.",
+  "description": "Feature-and-above solo+AI development methodology: product specs, architecture gates, Behavior Contracts, implementation plans, foundation wiring, and delivery rails.",
   "version": "0.9.0",
   "author": {
     "name": "viessedo",
@@ -12,6 +12,7 @@
     "spec",
     "product",
     "architecture",
+    "behavior-contract",
     "implementation",
     "solo-ai"
   ]
