@@ -1,7 +1,7 @@
 {
-  "name": "hi-flow-local",
+  "name": "hi_flow-marketplace",
   "interface": {
-    "displayName": "hi_flow Local"
+    "displayName": "hi_flow Marketplace"
   },
   "plugins": [
     {
