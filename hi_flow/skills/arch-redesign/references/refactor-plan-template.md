@@ -1,6 +1,6 @@
 # Refactor Plan: <Cluster Name>
 
-> Шаблон output cluster-mode сессии скилла `hi_flow:arch-redesign`. Заменяй `<placeholder>` конкретным содержимым. Артефакт читается оператором-продуктологом и потребляется как input spec для `superpowers:writing-plans` или эквивалентного impl-toolchain'а.
+> Шаблон output cluster-mode сессии скилла `hi_flow:arch-redesign`. Заменяй `<placeholder>` конкретным содержимым. Артефакт читается оператором-продуктологом и потребляется implementation handoff'ом: feature-bound redesign -> `hi_flow:implementation-plan`; standalone debt campaign -> execution workflow with characterization tests.
 
 **Goal:** <Одно предложение — что чиним на архитектурном уровне.>
 **Tech Stack:** <Стек проекта — например, TypeScript / Node, Python / Django, Java / Spring.>
@@ -56,7 +56,7 @@
 - <Module-level описание новой структуры. Пример: «Существует модуль `src/transport/`, send-path логика перенесена туда из `pipeline/`.»>
 - <...>
 
-Формулировка — на уровне модулей и их границ. Без file-level (это работа `superpowers:writing-plans`).
+Формулировка — на уровне модулей и их границ. Без file-level (это работа `hi_flow:implementation-plan` для feature-bound redesign или execution workflow для standalone debt campaign).
 
 ---
 
@@ -113,7 +113,7 @@ Verification: запустить `arch-audit`, проверить, что эти
 - `<rule-name-2>` — `<...>`.
 - `<...>`
 
-**Apply через:** `arch-audit apply-patch <patch-file>` — рекомендуется до Phase 3, чтобы прогресс был виден в audit'ах. Альтернативы: дождаться следующего полного audit'а (он сам спросит про un-applied patches), либо handcraft, либо отложить до post-impl.
+**Apply через:** `arch-audit apply-patch <patch-file>` — рекомендуется до implementation handoff, чтобы прогресс был виден в audit'ах. Альтернативы: дождаться следующего полного audit'а (он сам спросит про un-applied patches), либо handcraft, либо отложить до post-impl.
 
 ---
 
