@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "hi_flow",
-      "description": "Feature-and-above solo+AI development methodology. Eight skills: product-spec (product decomposition + backlog), feature-spec (feature-level product spec + Behavior Contract), arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (architecture gate or full per-feature design), implementation-plan (behavior-first Superpowers-compatible plan), bootstrap (project foundation: stack, scaffold, audit, CI/gates, optional behavior-gate rails), and ops (last-mile delivery: profile, CD workflow, compose/Dockerfile or static deploy, reverse-proxy wiring, first staging deploy). hi_flow owns the product/architecture/behavior/planning rails; Superpowers is recommended as the execution layer, not as a replacement for signed hi_flow specs.",
-      "version": "0.9.2",
+      "description": "Feature-and-above solo+AI development methodology. Eight skills: product-spec (product decomposition + backlog), feature-spec (feature-level product spec + Behavior Registry change-set), arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (architecture gate or full per-feature design), implementation-plan (behavior-first Superpowers-compatible plan with registry and harness artifact tasks), bootstrap (project foundation: stack, scaffold, audit, CI/gates, optional behavior-gate rails), and ops (last-mile delivery: profile, CD workflow, compose/Dockerfile or static deploy, reverse-proxy wiring, first staging deploy). hi_flow owns the product/architecture/behavior/planning rails; Superpowers is recommended as the execution layer, not as a replacement for signed hi_flow specs.",
+      "version": "0.10.0",
       "source": "./hi_flow",
       "author": {
         "name": "viessedo",

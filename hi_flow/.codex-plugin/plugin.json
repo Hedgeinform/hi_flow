@@ -1,7 +1,7 @@
 {
   "name": "hi_flow",
-  "version": "0.9.2",
-  "description": "Feature-and-above solo+AI development methodology with product specs, architecture gates, Behavior Contracts, implementation plans, foundation wiring, and delivery rails.",
+  "version": "0.10.0",
+  "description": "Feature-and-above solo+AI development methodology with product specs, architecture gates, Behavior Registry, implementation plans, foundation wiring, and delivery rails.",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"
@@ -12,7 +12,8 @@
     "spec",
     "product",
     "architecture",
-    "behavior-contract",
+    "behavior-registry",
+    "behavior-harness",
     "implementation",
     "solo-ai"
   ],
@@ -20,7 +21,7 @@
   "interface": {
     "displayName": "hi_flow",
     "shortDescription": "Behavior-first feature and architecture workflow for agentic development.",
-    "longDescription": "hi_flow guides feature-and-above solo+AI development from product intent through feature specs, Behavior Contracts, architecture gates, behavior-first implementation plans, project foundation wiring, and delivery setup. It is designed to coexist with Claude Code and Codex surfaces while keeping Superpowers as the recommended execution discipline.",
+    "longDescription": "hi_flow guides feature-and-above solo+AI development from product intent through feature specs, Behavior Registry changes, architecture gates, behavior-first implementation plans, project foundation wiring, and delivery setup. It is designed to coexist with Claude Code and Codex surfaces while keeping Superpowers as the recommended execution discipline.",
     "developerName": "viessedo",
     "category": "Productivity",
     "capabilities": [
