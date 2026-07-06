@@ -17,6 +17,7 @@
 - <copied binding constraints from feature-spec / arch gate / arch-spec>
 - Behavior changes must update Behavior Contract scenario rows in the same PR.
 - `automated` behavior scenarios must be green before completion.
+- Every `automated` scenario must map to a concrete executable harness/test file in this plan.
 
 ## Behavior Harness Strategy
 
@@ -24,17 +25,62 @@
 **Harness backend:** project-native / Cucumber / Playwright / pytest / custom / existing
 **Adapters:** <API / CLI / bot handler / DB / event bus / LLM eval / UI>
 **CI gate:** <workflow/job/check name or "add in Task N">
+**Foundation state:** existing / create in Task 0
 
-| Scenario ID | Status | Automation target | Covering task | Notes |
-|---|---|---|---|---|
-| BS-001 | automated | <test/harness case> | Task 1 | <observable assertion> |
-| BS-002 | blocked: <reason> | - | - | <unblock condition> |
+### Harness Artifacts
+
+- Mapping: `<path>` - maps `BS-*` ids to executable cases.
+- Behavior tests: `<path>` - <API/UI/agent/eval coverage>.
+- Runner: `<package/script/config path>` - exposes `<command>`.
+- CI: `<workflow path>` - runs `<command>`.
+
+| Scenario ID | Status | Mapping target | Executable file | Covering task | Observable assertion |
+|---|---|---|---|---|---|
+| BS-001 | automated | `<case id / test name>` | `<path>` | Task 1 | <API response / DB state / event / UI state / bot reply / eval criterion> |
+| BS-002 | blocked: <reason> | - | - | - | <unblock condition> |
 
 ## File Structure
 
 - Create: `<path>` - <responsibility>
 - Modify: `<path>` - <responsibility>
 - Test: `<path>` - <what it verifies>
+
+---
+
+### Task 0: Behavior harness foundation
+
+**Covers:** none - behavior harness foundation
+
+Use this task only if the project lacks runner/mapping/CI rails for behavior scenarios. Delete this task when foundation already exists.
+
+**Files:**
+- Create: `<behavior mapping path>`
+- Create: `<behavior test folder/sample case>`
+- Modify: `<package/script/config path>`
+- Modify: `<CI workflow path>`
+
+**Interfaces:**
+- Consumes: `feature-spec.md#Behavior Contract`
+- Produces: `<runner command>` and `BS-* -> executable case` mapping convention
+
+- [ ] **Step 1: Create a runner smoke/self-check**
+
+Run: `<command>`
+Expected: PASS for the harness smoke/self-check, or FAIL only because the runner is not wired yet
+
+- [ ] **Step 2: Wire runner and mapping convention**
+
+Create/update the runner, mapping file, and folder convention named above.
+
+- [ ] **Step 3: Run behavior runner**
+
+Run: `<command>`
+Expected: runner executes successfully without intentional failing samples in the CI path
+
+- [ ] **Step 4: Add CI hook**
+
+Run: `<CI local equivalent or config validation>`
+Expected: behavior gate is part of merge/delivery checks
 
 ---
 
@@ -92,4 +138,5 @@ git commit -m "<message>"
 - Do not require `superpowers:writing-plans`; this template is the plan.
 - Use exact file paths and exact commands.
 - Each behavior-impact task must name `Covers: BS-...`.
+- Each `automated` scenario must name a mapping target and executable file in the Behavior Harness Strategy table.
 - Foundation-only tasks may say `Covers: none - foundation task`.
