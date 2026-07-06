@@ -1,6 +1,10 @@
 # Operational artifacts not part of distributed plugin
 PROJECT_META.md
 
+# Private/operator-only notes; never part of the public plugin repo
+docs/private/
+docs/**/*.private.md
+
 # Dependencies (arch-audit TS subproject)
 node_modules/
 
