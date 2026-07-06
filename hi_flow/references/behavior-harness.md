@@ -44,7 +44,7 @@ Do not recommend Cucumber by default for solo/agent-first projects where the sce
 
 - `automated` - mapped to a runnable behavior test; must pass.
 - `manual` - intentionally checked by a person; must say why automation is not worth it yet.
-- `blocked` - not automatable until a named foundation/harness dependency exists.
+- `blocked` - not automatable until a named external/domain dependency exists outside normal project harness wiring.
 - `obsolete` - superseded by a newer scenario; must point to the replacement or removal reason.
 
 Changing product behavior means changing the Behavior Contract first or in the same PR. Silent drift is a failure.

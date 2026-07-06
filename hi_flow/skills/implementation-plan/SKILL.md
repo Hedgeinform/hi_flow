@@ -85,8 +85,10 @@ If the project has no behavior runner/mapping convention yet, add a first task w
 - runner command;
 - folder convention;
 - scenario mapping file or equivalent lookup from `BS-*` to executable cases;
-- at least one sample failing scenario wired to the runner;
+- a runner smoke/self-check or equivalent proof that the rail executes successfully;
 - CI hook or explicit CI follow-up in the same plan.
+
+Do not leave intentionally failing foundation samples in CI. Real `BS-*` scenarios should fail first inside the product behavior task that implements them, then pass before completion.
 
 Do not downgrade `automated` scenarios just because the rail is missing. Missing project-wide rail is a foundation task in the plan.
 

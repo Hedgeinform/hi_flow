@@ -63,10 +63,10 @@ Use this task only if the project lacks runner/mapping/CI rails for behavior sce
 - Consumes: `feature-spec.md#Behavior Contract`
 - Produces: `<runner command>` and `BS-* -> executable case` mapping convention
 
-- [ ] **Step 1: Create a failing sample behavior scenario**
+- [ ] **Step 1: Create a runner smoke/self-check**
 
 Run: `<command>`
-Expected: FAIL because the sample mapped scenario is not implemented / assertion intentionally fails
+Expected: PASS for the harness smoke/self-check, or FAIL only because the runner is not wired yet
 
 - [ ] **Step 2: Wire runner and mapping convention**
 
@@ -75,7 +75,7 @@ Create/update the runner, mapping file, and folder convention named above.
 - [ ] **Step 3: Run behavior runner**
 
 Run: `<command>`
-Expected: runner executes the sample scenario and reports the expected failure/pass state after wiring
+Expected: runner executes successfully without intentional failing samples in the CI path
 
 - [ ] **Step 4: Add CI hook**
 

@@ -155,7 +155,7 @@ Each scenario gets a stable ID and a status:
 
 - `automated` — should become an executable behavior test in this feature's implementation plan.
 - `manual` — intentionally checked by a person; include why automation is not worth it yet.
-- `blocked` — cannot be automated until a named harness/foundation dependency exists.
+- `blocked` — cannot be automated until a named external/domain dependency exists outside normal project harness wiring.
 - `obsolete` — superseded; point to the replacement or removal reason.
 
 The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
