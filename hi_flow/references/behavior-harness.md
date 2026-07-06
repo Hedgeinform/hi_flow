@@ -8,11 +8,14 @@ Every hi_flow project that opts into behavior-gated implementation must provide:
 
 1. **Canonical behavior contract** - `feature-spec.md` contains stable scenario IDs and expected externally observable behavior.
 2. **Executable mapping** - every automated scenario maps from `scenario_id` to a test or harness case.
-3. **Single runner command** - one project command runs the behavior gate, for example `npm run behavior:test`, `bun run behavior:test`, `pytest -m behavior`, or an equivalent stack-native command.
-4. **CI gate** - the behavior runner is part of CI before merge or delivery. A broken automated scenario blocks completion.
-5. **Visible non-automation** - scenarios that are `manual`, `blocked`, or `obsolete` are explicit debt, not silent omissions.
+3. **Concrete executable files** - mapping points to real test/harness files, not prose promises.
+4. **Single runner command** - one project command runs the behavior gate, for example `npm run behavior:test`, `bun run behavior:test`, `pytest -m behavior`, or an equivalent stack-native command.
+5. **CI gate** - the behavior runner is part of CI before merge or delivery. A broken automated scenario blocks completion.
+6. **Visible non-automation** - scenarios that are `manual`, `blocked`, or `obsolete` are explicit debt, not silent omissions.
 
 Hardness comes from the contract + executable mapping + CI gate. Cucumber is only one possible backend.
+
+`hi_flow:feature-spec` owns the canonical contract. `hi_flow:implementation-plan` owns the first concrete handoff from contract to executable artifacts: mapping file, test/harness files, runner command, and CI hook. Downstream execution tools are expected to follow that plan, not infer this discipline themselves.
 
 ## Default backend policy
 
@@ -45,3 +48,5 @@ Do not recommend Cucumber by default for solo/agent-first projects where the sce
 - `obsolete` - superseded by a newer scenario; must point to the replacement or removal reason.
 
 Changing product behavior means changing the Behavior Contract first or in the same PR. Silent drift is a failure.
+
+General absence of project-wide behavior harness rails is not a reason to mark each new feature scenario `manual` or `blocked`. Keep product behavior as `automated`; the implementation plan must add the missing foundation rail or explicitly block the feature handoff before execution.

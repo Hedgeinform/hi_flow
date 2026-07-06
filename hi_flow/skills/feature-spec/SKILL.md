@@ -160,6 +160,10 @@ Each scenario gets a stable ID and a status:
 
 The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
 
+General absence of project behavior-harness foundation is **not** a reason to downgrade individual scenarios from `automated` to `manual` or `blocked`. feature-spec describes the desired behavior contract; `hi_flow:implementation-plan` is responsible for turning `automated` rows into concrete harness files/tasks and for adding a foundation task when the project lacks runner/mapping/CI rails.
+
+Do not put scope guards, follow-up reminders, or "this feature does not promise X" rows into `Behavior Contract` unless they describe externally checkable product behavior. Put those in Out of scope, backlog anchors, or Open items at closure.
+
 Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: contract + executable mapping + one runner command + CI gate.
 
 Then write the final `feature-spec.md` to the configured location.
@@ -178,6 +182,7 @@ Checks the subagent runs:
 4. **Ambiguity check.** Status tags consistent with Resolution content (`RESOLVED` forks have non-empty Resolution; `OPEN` forks explicitly say so)? Cardinality tags match branch semantics? Any Resolution wording that could be interpreted two different ways?
 5. **Format compliance.** All forks have status + cardinality tags. Inline-vs-cell branches follow the rule (ID ⇔ cell). Cross-cutting forks live in CC section, not nested. Reusable sub-policies properly factored as P-NAME blocks.
 6. **Behavior Contract completeness.** Every material resolved behavior has a `BS-*` scenario or an explicit reason for omission; statuses are honest; `manual` / `blocked` / `obsolete` rows carry reasons; `Then` and `Observability` are externally checkable; each row traces to a source fork / policy / sample.
+7. **Behavior Contract harness-readiness.** `automated` rows do not rely on neighboring rows ("same as BS-001", "analogous"); each row is self-contained enough for `hi_flow:implementation-plan` to map it to an executable case. `manual` is not used for "not wired yet"; `blocked` names a specific missing domain or harness dependency. Scope guards and follow-up reminders are outside the BS table unless externally checkable.
 
 Subagent returns findings. **Fix issues inline. No need to re-review** — just fix and move on.
 
@@ -429,6 +434,8 @@ Cross-ref: P8 (altitude), D14 (complementary layers), D25 (this boundary decisio
 ```markdown
 # <Feature name>
 
+**Status:** draft / awaiting operator review / signed (YYYY-MM-DD, operator)
+
 ## Sample dialogs
 ### Happy path
 [concrete dialog]
@@ -515,6 +522,10 @@ Mandatory for every feature-spec. It is the scenario-level behavior contract con
 Scenario IDs are stable across edits. If behavior changes, update the scenario row in the same change that updates the feature. Do not silently leave obsolete scenarios in place.
 
 **Observability** must name what the harness can check from outside or near-outside the system: API response, bot reply, database state, emitted event, file output, UI state, or an explicit eval criterion. Do not assert private implementation details here.
+
+Each row must be self-contained. Avoid references like "same as BS-001" in `Then` or `Observability`; downstream mapping should not require reading another scenario to understand what to execute or assert.
+
+Use `manual` only when human review is the intended durable check and automation is not worth it. Use `blocked` only when a named dependency prevents automation even after normal project harness wiring. Missing project-wide harness foundation is handled by `hi_flow:implementation-plan`, not by downgrading every scenario.
 
 **Source** points back to forks / policies / sample dialogs so reviewers can trace why the scenario exists.
 
@@ -605,7 +616,7 @@ Scenario IDs are stable across edits. If behavior changes, update the scenario r
 9. **`**Backlog:**` block (organic convention).** Under a RESOLVED fork whose sub-functions are partly deferred, list the deferred sub-points as bullets under a bold `**Backlog:**` label. This is a harvest anchor (anchor 2 in "Backlog sync at closure") — the listed items are parked at closure. Do **not** introduce a conflicting single-line `**Backlog:** level: ... | ...` form; the block-of-bullets convention is canonical (it already exists in real specs).
 10. **Deferral tags on one-liners.** `Out of scope` (in Цель) and `Premortem findings` lines may carry a light tag: `→ backlog` (parked → Parked features) or `→ rejected: <reason>[; альтернатива <...>]` (hard rejection → Out-of-scope (rejected)). An untagged line is a plain scope boundary / absorbed finding and is **not** transferred. Tags are harvest anchor 4.
 11. **Behavior Contract IDs.** Scenario IDs use `BS-001`, `BS-002`, ... within the feature. Do not reuse an ID for a different behavior. Use `obsolete` with a replacement pointer instead.
-12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions.
+12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions. General absence of behavior harness foundation is not a scenario-level reason to downgrade status.
 
 ## References
 
