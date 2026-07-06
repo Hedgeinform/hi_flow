@@ -2,7 +2,7 @@
   "name": "hi_flow",
   "displayName": "hi_flow",
   "description": "Behavior-first feature and architecture workflow for agentic development.",
-  "version": "0.9.2",
+  "version": "0.10.0",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"
@@ -15,7 +15,8 @@
     "spec",
     "product",
     "architecture",
-    "behavior-contract",
+    "behavior-registry",
+    "behavior-harness",
     "implementation",
     "solo-ai"
   ],
