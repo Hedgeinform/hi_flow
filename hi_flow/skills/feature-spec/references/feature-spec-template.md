@@ -74,7 +74,7 @@ Bot:   <финальное подтверждение>
 <!-- Mandatory. Stable scenario-level behavior contract consumed by arch-spec / implementation-plan / behavior harness.
      Hardness comes from scenario_id -> executable mapping -> one runner command -> CI gate, not from Cucumber specifically.
      Default status for new feature behavior is `automated`; use `manual` / `blocked` / `obsolete` only with a reason.
-     Missing project-wide harness foundation is handled by implementation-plan, not by downgrading scenario statuses.
+     Set status from intended durable verification, not current project wiring.
      Keep rows self-contained: no "same as BS-001" in Then/Observability. Scope guards belong outside this table. -->
 
 | Scenario ID | Status | Given | When | Then | Observability | Source |

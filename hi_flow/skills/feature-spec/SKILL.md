@@ -160,7 +160,7 @@ Each scenario gets a stable ID and a status:
 
 The default status for new feature behavior is `automated` unless the scenario is genuinely impossible or wasteful to automate now. Do not mark scenarios `manual` just to make implementation easier.
 
-General absence of project behavior-harness foundation is **not** a reason to downgrade individual scenarios from `automated` to `manual` or `blocked`. feature-spec describes the desired behavior contract; `hi_flow:implementation-plan` is responsible for turning `automated` rows into concrete harness files/tasks and for adding a foundation task when the project lacks runner/mapping/CI rails.
+Internal routing rule: scenario status reflects the desired durable verification for product behavior, not the project's current harness wiring. Do not mention absent project-wide harness foundation in the generated feature-spec. Keep automatable product behavior as `automated`; `hi_flow:implementation-plan` owns the later work of creating concrete harness files/tasks and adding a foundation task when runner/mapping/CI rails are missing.
 
 Do not put scope guards, follow-up reminders, or "this feature does not promise X" rows into `Behavior Contract` unless they describe externally checkable product behavior. Put those in Out of scope, backlog anchors, or Open items at closure.
 
@@ -525,7 +525,7 @@ Scenario IDs are stable across edits. If behavior changes, update the scenario r
 
 Each row must be self-contained. Avoid references like "same as BS-001" in `Then` or `Observability`; downstream mapping should not require reading another scenario to understand what to execute or assert.
 
-Use `manual` only when human review is the intended durable check and automation is not worth it. Use `blocked` only when a named dependency prevents automation even after normal project harness wiring. Missing project-wide harness foundation is handled by `hi_flow:implementation-plan`, not by downgrading every scenario.
+Use `manual` only when human review is the intended durable check and automation is not worth it. Use `blocked` only when a named domain dependency prevents automation even after normal project harness wiring. Do not discuss missing project-wide harness foundation here; that is an implementation-plan concern, not feature-spec content.
 
 **Source** points back to forks / policies / sample dialogs so reviewers can trace why the scenario exists.
 
@@ -616,7 +616,7 @@ Use `manual` only when human review is the intended durable check and automation
 9. **`**Backlog:**` block (organic convention).** Under a RESOLVED fork whose sub-functions are partly deferred, list the deferred sub-points as bullets under a bold `**Backlog:**` label. This is a harvest anchor (anchor 2 in "Backlog sync at closure") — the listed items are parked at closure. Do **not** introduce a conflicting single-line `**Backlog:** level: ... | ...` form; the block-of-bullets convention is canonical (it already exists in real specs).
 10. **Deferral tags on one-liners.** `Out of scope` (in Цель) and `Premortem findings` lines may carry a light tag: `→ backlog` (parked → Parked features) or `→ rejected: <reason>[; альтернатива <...>]` (hard rejection → Out-of-scope (rejected)). An untagged line is a plain scope boundary / absorbed finding and is **not** transferred. Tags are harvest anchor 4.
 11. **Behavior Contract IDs.** Scenario IDs use `BS-001`, `BS-002`, ... within the feature. Do not reuse an ID for a different behavior. Use `obsolete` with a replacement pointer instead.
-12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions. General absence of behavior harness foundation is not a scenario-level reason to downgrade status.
+12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions. Status is about intended durable verification, not current project wiring; do not turn missing project-wide harness foundation into feature-spec content.
 
 ## References
 
