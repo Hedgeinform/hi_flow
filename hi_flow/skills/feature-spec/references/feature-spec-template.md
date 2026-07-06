@@ -69,18 +69,49 @@ Bot:   <финальное подтверждение>
 
 ---
 
-## Behavior Contract
+## Behavior Registry Changes
 
-<!-- Mandatory. Stable scenario-level behavior contract consumed by arch-spec / implementation-plan / behavior harness.
-     Hardness comes from scenario_id -> executable mapping -> one runner command -> CI gate, not from Cucumber specifically.
-     Default status for new feature behavior is `automated`; use `manual` / `blocked` / `obsolete` only with a reason.
+<!-- Mandatory. Proposed changes to the living Behavior Registry, consumed by arch-spec / implementation-plan / behavior harness.
+     Feature specs are historical reasoning records; the Behavior Registry is the living source of truth.
+     First scan existing registry/specs semantically by domain/surface/actor/trigger/object/observable.
+     If no registry exists, still scan legacy signed specs; do not assume a new-only change-set.
+     Default status for new or updated behavior is `automated`; use `manual` / `blocked` / `obsolete` only with a reason.
      Set status from intended durable verification, not current project wiring.
-     Keep rows self-contained: no "same as BS-001" in Then/Observability. Scope guards belong outside this table. -->
+     Keep rows self-contained: no "same as BS-DOC-007" in Then/Observability. Scope guards belong outside this section. -->
 
-| Scenario ID | Status | Given | When | Then | Observability | Source |
-|-------------|--------|-------|------|------|---------------|--------|
-| BS-001      | automated | <initial externally visible state> | <user/system action> | <expected externally visible outcome> | <API response / DB state / emitted event / UI state / bot reply / eval criterion> | <F1, CC1, sample happy path> |
-| BS-002      | manual / blocked / obsolete: <reason> | <...> | <...> | <...> | <...> | <...> |
+**Behavior Registry:** <path or "to be created by implementation-plan/bootstrap">
+
+### Reviewed existing contracts
+
+| Scenario ID | Relation | Classification | Reason |
+|-------------|----------|----------|--------|
+| BS-DOC-007  | <same actor/action/object> | Updated / Obsoleted / Unchanged related | <why> |
+
+### New
+
+| Scenario ID | Status | Summary | Given | When | Then | Observability | Source |
+|-------------|--------|---------|-------|------|------|---------------|--------|
+| BS-DOC-018  | automated | <short behavior summary> | <initial externally visible state> | <user/system action> | <expected externally visible outcome> | <API response / DB state / emitted event / UI state / bot reply / eval criterion> | <F1, CC1, sample happy path> |
+
+**Semantic keys for New:** domain=<...>; surface=<...>; actor=<...>; trigger=<...>; object=<...>; observable=<...>.
+
+### Updated
+
+| Scenario ID | Status | Previous expectation | New expectation | Observability change | Reason | Source |
+|-------------|--------|----------------------|-----------------|----------------------|--------|--------|
+| BS-DOC-007  | automated | <old current registry expectation> | <new expectation> | <none / changed check> | <why behavior changes> | <F2> |
+
+### Obsoleted
+
+| Scenario ID | Replacement / removal reason | Source |
+|-------------|------------------------------|--------|
+| BS-DOC-003  | replaced by BS-DOC-018 | <F3> |
+
+### Unchanged related
+
+| Scenario ID | Why unchanged |
+|-------------|---------------|
+| BS-DOC-011  | <related but different trigger/surface/result> |
 
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: arch-spec
-description: Use when the operator has a signed hi_flow feature-spec and asks for architecture design, arch-spec, architecture gate, or whether the feature needs architecture work. Consumes feature-spec + Behavior Contract, and conditionally an arch-audit D8 snapshot. Produces either an architecture-gate waiver or a full arch-spec.md + rules-patch. Use before hi_flow:implementation-plan; do not route signed hi_flow specs to generic writing-plans.
+description: Use when the operator has a signed hi_flow feature-spec and asks for architecture design, arch-spec, architecture gate, or whether the feature needs architecture work. Consumes feature-spec + Behavior Registry Changes, and conditionally an arch-audit D8 snapshot. Produces either an architecture-gate waiver or a full arch-spec.md + rules-patch. Use before hi_flow:implementation-plan; do not route signed hi_flow specs to generic writing-plans.
 ---
 
 # arch-spec
 
 ## Overview
 
-arch-spec is the **per-feature architecture gate and architectural design spec** of the hi_flow family - the bridge between Phase 1 (behavioral `feature-spec`) and Phase 3 (`hi_flow:implementation-plan`). In plain Superpowers, the role of "technical design doc" before planning is played by ad-hoc brainstorming. hi_flow replaces that with a structured chain: feature-spec (what, product-level + Behavior Contract) -> arch-spec (architecture gate, and full design when needed) -> implementation-plan (behavior-first implementation plan). arch-spec is not always a full document; it first decides whether a full architecture spec is needed.
+arch-spec is the **per-feature architecture gate and architectural design spec** of the hi_flow family - the bridge between Phase 1 (behavioral `feature-spec`) and Phase 3 (`hi_flow:implementation-plan`). In plain Superpowers, the role of "technical design doc" before planning is played by ad-hoc brainstorming. hi_flow replaces that with a structured chain: feature-spec (what, product-level + Behavior Registry Changes) -> arch-spec (architecture gate, and full design when needed) -> implementation-plan (behavior-first implementation plan). arch-spec is not always a full document; it first decides whether a full architecture spec is needed.
 
 It does four jobs, none of which is the single defining one:
 
@@ -41,7 +41,8 @@ Per D14 (complementary layers): arch-spec does **not** duplicate implementation 
 
 | Artifact | Required | Role |
 |---|---|---|
-| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale + the `Behavior Contract`. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
+| `feature-spec.md` of the feature | **Yes** | Feature contract. Source of ready-made architectural decisions (schema, policies, emission points are already there) + product rationale + the proposed `Behavior Registry Changes`. For user-facing features, its **«Поверхности (UX)»** section (UX layers 1-2) is consumed as a given — see the note below |
+| Behavior Registry (`docs/behavior/registry.md` or configured equivalent) | If present | Living current behavior contracts. Read when the feature updates/obsoletes existing scenarios or when semantic dedup needs current expectation context. |
 | `audit-report.json` (D8) | Conditional — see three situations | Snapshot of current architecture, needed for block C (integration). **Fullstack feature → one snapshot per touched tree** (per-tree audit, see "Fullstack features"). |
 | `ARCHITECTURE.md` Module Map + principles | If present | Map of existing modules, boundaries, known problems; **+ a declared feature-backbone / module-shape standard, if any (`## Project-specific принципы`)** — drives the module breakdown + public-surface declaration (read-only) |
 | `hi_flow/references/architectural-principles.md` (D9) | Yes (read-only) | Principle catalog for delta-checking + invariant references |
@@ -56,7 +57,7 @@ Run the architecture gate before deciding whether to write a full `arch-spec.md`
 
 - New module, boundary, persistence owner, queue, scheduler, cache, search, storage, external integration, or platform port is needed.
 - Existing module ownership or dependency direction changes.
-- The Behavior Contract requires observable state or side effects that no current module clearly owns.
+- The Behavior Registry Changes require observable state or side effects that no current module clearly owns.
 - The feature touches security, PII, secrets, money, trust boundaries, migration, or shared schema/contract evolution.
 - A brown-field feature touches modules near known audit findings, cycles, God object risk, or boundary blur.
 - The implementation would need an architectural decision that cannot be resolved by reading code during implementation.
@@ -65,11 +66,11 @@ Run the architecture gate before deciding whether to write a full `arch-spec.md`
 
 - The feature maps to existing modules and contracts without new ownership boundaries.
 - No infra axis is forced now.
-- The Behavior Contract can be implemented by local changes over existing public surfaces.
+- The Behavior Registry Changes can be implemented by local changes over existing public surfaces.
 - No graph-formalizable invariant or new arch-audit rules-patch is needed.
 - The operator accepts the waiver after seeing the concise reason.
 
-Waiver output must name the feature-spec path, Behavior Contract coverage, inspected architecture sources, reason for no full arch-spec, and the handoff to `hi_flow:implementation-plan`. It is still a signed architectural decision, not a silent skip.
+Waiver output must name the feature-spec path, Behavior Registry Changes coverage, inspected architecture sources, reason for no full arch-spec, and the handoff to `hi_flow:implementation-plan`. It is still a signed architectural decision, not a silent skip.
 
 ### Three situations by audit
 
@@ -455,7 +456,7 @@ Checklist:
 
 - All full-arch-spec triggers were checked and recorded as false.
 - The waiver names inspected architecture sources.
-- Behavior Contract coverage is named, and every scenario is implementable over existing owners/public surfaces.
+- Behavior Registry Changes coverage is named, and every new/updated/obsoleted scenario is implementable over existing owners/public surfaces or routed to a full arch-spec trigger.
 - No forced-now infrastructure axis is hidden.
 - No graph-formalizable invariant or rules-patch is needed.
 - The handoff to `hi_flow:implementation-plan` is explicit.
@@ -496,7 +497,7 @@ If changes - apply + re-run Self-Review. Only after approval - closure and the t
 - **Inventing architecture.** Every decision must pass the derivability gate. No structure without a product root.
 - **Padding ceiling categories.** Probe only triggered qualities. An untouched category is a normal empty result, not a hole to fill — padding breeds hallucination.
 - **Building enforcement.** arch-spec declares invariants and names the check mechanism; it does not build checks. rules-patch is applied by the operator (D11), tests are planned by `hi_flow:implementation-plan`, and gates stay with L3 hygiene / project CI.
-- **Sending signed hi_flow specs to generic writing-plans.** Once the feature has a Behavior Contract and an architecture gate/spec, the next hi_flow step is `hi_flow:implementation-plan`. Generic `superpowers:writing-plans` remains useful outside hi_flow or as a fallback when the hi_flow planner is unavailable.
+- **Sending signed hi_flow specs to generic writing-plans.** Once the feature has Behavior Registry Changes and an architecture gate/spec, the next hi_flow step is `hi_flow:implementation-plan`. Generic `superpowers:writing-plans` remains useful outside hi_flow or as a fallback when the hi_flow planner is unavailable.
 - **Writing to ARCHITECTURE.md.** Decoupled (variant 2). The spec is the only output; pickup into living docs is someone else's job.
 - **Logging the reasoning in the document.** The spec is the result, not the process. Rejected alternatives and escalation history stay in the session.
 - **Emitting backbone artifacts because the feature LOOKS like a vertical slice.** The trigger for declaring a public surface / emitting `<feature>-narrow-public-entry` is a backbone standard **DECLARED** in the project's `ARCHITECTURE.md` `## Project-specific принципы` (operational rule 11) — NOT the feature's shape, NOT the D9 library (`module-boundary-awareness` / `vertical-slice-cohesion` exist there, but reaching for them to hand-roll a narrow-entry-shaped rule absent a declaration is the same violation). A CRUD feature naturally resembles `store/service/api`; that resemblance is not a declaration. Absent the declaration: inert.
@@ -512,4 +513,5 @@ If changes - apply + re-run Self-Review. Only after approval - closure and the t
 - **Shared graph-core** — `hi_flow/skills/arch-audit/core/graph-core.ts` (BUILT, owner arch-audit per D7). Pure metric formulas (`computeNCCD`, `computeCoupling` for Ca/Ce, `instability` for I) + declarative-graph traversal (`reachableFrom`, `findCycles`). Block C imports these for its live delta computation; this skill does not reimplement them.
 - **backlog-integration** (shared family mechanism, `hi_flow/references/backlog-integration.md`, D22) — closure backlog-sync follows it by name.
 - `hi_flow/references/workflow-routing.md` — family-level routing between hi_flow and generic implementation workflows.
+- `hi_flow/references/behavior-registry.md` — behavior registry lifecycle and semantic dedup rules consumed when interpreting feature-spec changes.
 - `hi_flow/references/behavior-harness.md` — behavior gate contract consumed by the implementation-plan handoff.
