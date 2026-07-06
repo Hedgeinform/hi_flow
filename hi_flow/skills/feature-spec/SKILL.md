@@ -1,11 +1,11 @@
 ---
 name: feature-spec
-description: Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», Behavior Contract, or English equivalents. Prefer this over generic brainstorming for feature-and-above hi_flow work; for small bugfixes/local changes, do not use hi_flow unless explicitly requested. Produces feature-spec.md.
+description: Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», Behavior Registry Changes, or English equivalents. Prefer this over generic brainstorming for feature-and-above hi_flow work; for small bugfixes/local changes, do not use hi_flow unless explicitly requested. Produces feature-spec.md.
 ---
 
 # `hi_flow:feature-spec` — Feature-Level Product Spec Skill
 
-Help the operator turn a feature request into a signed `feature-spec.md` that (1) gives the operator a focused artifact for deep review, (2) gives the next phase (`hi_flow:arch-spec`) an unambiguous foundation for architectural design or architecture-gate waiver, and (3) defines a Behavior Contract the implementation plan can turn into an executable harness.
+Help the operator turn a feature request into a signed `feature-spec.md` that (1) gives the operator a focused artifact for deep review, (2) gives the next phase (`hi_flow:arch-spec`) an unambiguous foundation for architectural design or architecture-gate waiver, and (3) proposes `Behavior Registry Changes` that the implementation plan can map into registry, harness, and code tasks.
 
 Systematically surface hierarchical product forks — concrete behavioral decisions, edge cases, hard policies, criteria distinguishing similar situations — through structured operator dialogue.
 
@@ -14,12 +14,14 @@ Systematically surface hierarchical product forks — concrete behavioral decisi
 - Product-level decomposition (separate skill `hi_flow:product-spec`).
 - Architectural / technical decisions (`hi_flow:arch-spec`, `hi_flow:implementation-plan`).
 - Visual layout / components / style (UI layer 3) → `hi_flow:arch-spec` (see "UX/UI boundary principle").
-- Building the behavior harness. feature-spec defines the contract; `hi_flow:implementation-plan`, bootstrap, and the target project's test runner make it executable.
+- Building or applying the behavior harness. feature-spec proposes behavior registry changes; `hi_flow:implementation-plan` plans how execution will make them executable, while bootstrap, the execution workflow, and the target project's test runner build and run the rail.
 - Auto-invoking the next phase — operator initiates.
 
 ## Output
 
-A single `feature-spec.md` with a `Behavior Contract` section. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
+A single `feature-spec.md` with a `Behavior Registry Changes` section. Default location: `<project>/docs/specs/YYYY-MM-DD-<feature-slug>-feature-spec.md` (configurable).
+
+Signed feature specs are historical decision records. They are not the living source of truth for current behavior after later features change it. The living source of truth is the project Behavior Registry described in `hi_flow/references/behavior-registry.md`.
 
 ## Feature scope clarification (post product-spec v0.6.1 / D19 terminology alignment)
 
@@ -145,11 +147,20 @@ Flag each item: **likely blocker / nice-to-have / уточнить**. (The Open 
 
 Operator decides per item: **resolve now / leave for next phase / out of scope**.
 
-### Behavior Contract synthesis
+### Behavior Registry Changes synthesis
 
-Before writing the final spec and before Self-Review, synthesize the resolved forks, sample dialogs, input/output contract, surfaces, cross-cutting policies, and premortem findings into `## Behavior Contract`.
+Before writing the final spec and before Self-Review, synthesize the resolved forks, sample dialogs, input/output contract, surfaces, cross-cutting policies, and premortem findings into `## Behavior Registry Changes`.
 
-This section is the durable behavior truth for downstream implementation. It is not a separate BehaviorSpec document; it lives inside the feature-spec to avoid one more pre-implementation artifact.
+This section is a proposed change-set, not the living source of truth. It tells the operator what current registry entries will be created, changed, obsoleted, or left unchanged. After sign-off, `hi_flow:implementation-plan` plans how execution will apply the change-set to the Behavior Registry and harness. Do not rewrite old signed specs just because this change-set updates behavior they originally introduced.
+
+First run an existing-contract impact scan:
+
+1. Read the project Behavior Registry when present (`docs/behavior/registry.md` or configured equivalent).
+2. Search existing specs and registry with `rg` by domain, surface, actor, trigger/action, object, and observable result. If no registry exists yet, legacy signed specs are the only historical contract source and must still be scanned.
+3. Compare candidate scenarios semantically, not word-for-word.
+4. Classify every related scenario as `New`, `Updated`, `Obsoleted`, or `Unchanged related`.
+
+If no registry exists yet, write `Behavior Registry: to be created by implementation-plan/bootstrap` and still classify legacy spec contracts semantically. Do not assume the change-set is new-only just because the registry file is missing. Do not downgrade scenario statuses because the registry file is missing.
 
 Each scenario gets a stable ID and a status:
 
@@ -162,9 +173,9 @@ The default status for new feature behavior is `automated` unless the scenario i
 
 Internal routing rule: scenario status reflects the desired durable verification for product behavior, not the project's current harness wiring. Do not mention absent project-wide harness foundation in the generated feature-spec. Keep automatable product behavior as `automated`; `hi_flow:implementation-plan` owns the later work of creating concrete harness files/tasks and adding a foundation task when runner/mapping/CI rails are missing.
 
-Do not put scope guards, follow-up reminders, or "this feature does not promise X" rows into `Behavior Contract` unless they describe externally checkable product behavior. Put those in Out of scope, backlog anchors, or Open items at closure.
+Do not put scope guards, follow-up reminders, or "this feature does not promise X" rows into `Behavior Registry Changes` unless they describe externally checkable product behavior. Put those in Out of scope, backlog anchors, or Open items at closure.
 
-Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: contract + executable mapping + one runner command + CI gate.
+Use product-readable Given/When/Then wording, but do not require Gherkin or Cucumber syntax. The canonical enforcement rule is in `hi_flow/references/behavior-harness.md`: registry + executable mapping + one runner command + CI gate.
 
 Then write the final `feature-spec.md` to the configured location.
 
@@ -181,8 +192,9 @@ Checks the subagent runs:
 3. **Scope check.** Is the spec focused on a single feature, or has it slipped into product-level decomposition (multiple features, roadmap, cross-feature deps)? If decomposition slipped — flag for split.
 4. **Ambiguity check.** Status tags consistent with Resolution content (`RESOLVED` forks have non-empty Resolution; `OPEN` forks explicitly say so)? Cardinality tags match branch semantics? Any Resolution wording that could be interpreted two different ways?
 5. **Format compliance.** All forks have status + cardinality tags. Inline-vs-cell branches follow the rule (ID ⇔ cell). Cross-cutting forks live in CC section, not nested. Reusable sub-policies properly factored as P-NAME blocks.
-6. **Behavior Contract completeness.** Every material resolved behavior has a `BS-*` scenario or an explicit reason for omission; statuses are honest; `manual` / `blocked` / `obsolete` rows carry reasons; `Then` and `Observability` are externally checkable; each row traces to a source fork / policy / sample.
-7. **Behavior Contract harness-readiness.** `automated` rows do not rely on neighboring rows ("same as BS-001", "analogous"); each row is self-contained enough for `hi_flow:implementation-plan` to map it to an executable case. `manual` is not used for "not wired yet"; `blocked` names a specific missing domain or harness dependency. Scope guards and follow-up reminders are outside the BS table unless externally checkable.
+6. **Behavior Registry impact scan.** The spec lists reviewed existing contracts and classifies related behavior as New / Updated / Obsoleted / Unchanged related. Potential duplicates are resolved semantically, not by wording alone.
+7. **Behavior Registry Changes completeness.** Every material resolved behavior has a registry change row or an explicit reason for omission; statuses are honest; `manual` / `blocked` / `obsolete` rows carry reasons; `Then` and `Observability` are externally checkable; each row traces to a source fork / policy / sample.
+8. **Behavior Registry Changes harness-readiness.** `automated` rows do not rely on neighboring rows ("same as BS-DOC-007", "analogous"); each row is self-contained enough for `hi_flow:implementation-plan` to map it to an executable case. `manual` is not used for "not wired yet"; `blocked` names a specific missing external/domain dependency. Scope guards and follow-up reminders are outside registry changes unless externally checkable.
 
 Subagent returns findings. **Fix issues inline. No need to re-review** — just fix and move on.
 
@@ -462,12 +474,42 @@ Cross-ref: P8 (altitude), D14 (complementary layers), D25 (this boundary decisio
 - Возврат пользователю: ...
 - Side effects: ...
 
-## Behavior Contract
-[stable scenarios derived from the resolved feature behavior]
+## Behavior Registry Changes
+[proposed changes to the living behavior registry, derived from the resolved feature behavior]
 
-| Scenario ID | Status | Given | When | Then | Observability | Source |
+**Behavior Registry:** <path or "to be created by implementation-plan/bootstrap">
+
+### Reviewed existing contracts
+
+| Scenario ID | Relation | Classification | Reason |
+|---|---|---|---|
+| BS-DOC-007 | similar actor/action/object | Updated | expected result changes |
+
+### New
+
+| Scenario ID | Status | Summary | Given | When | Then | Observability | Source |
+|---|---|---|---|---|---|---|---|
+| BS-DOC-018 | automated / manual / blocked | user can edit a document title | ... | ... | ... | API response / DB state / emitted event / UI state / bot reply | F1, CC1, sample happy path |
+
+**Semantic keys for New:** domain=<...>; surface=<...>; actor=<...>; trigger=<...>; object=<...>; observable=<...>.
+
+### Updated
+
+| Scenario ID | Status | Previous expectation | New expectation | Observability change | Reason | Source |
 |---|---|---|---|---|---|---|
-| BS-001 | automated / manual / blocked / obsolete | ... | ... | ... | API response / DB state / emitted event / UI state / bot reply | F1, CC1, sample happy path |
+| BS-DOC-007 | automated | ... | ... | ... | ... | F2 |
+
+### Obsoleted
+
+| Scenario ID | Replacement / removal reason | Source |
+|---|---|---|
+| BS-DOC-003 | replaced by BS-DOC-018 | F3 |
+
+### Unchanged related
+
+| Scenario ID | Why unchanged |
+|---|---|
+| BS-DOC-011 | same surface, different trigger |
 
 ## Поверхности (UX)
 [conditional — only if the feature has a user-facing surface; covers UX layers 1-2, NOT layer 3]
@@ -515,19 +557,21 @@ Plus **навигация** — how the person moves between surfaces.
 
 **Altitude calibration (two-designers test):** if two designers could produce visually very different screens both satisfying this section, the altitude is correct (it describes *what*, not *how it looks*). If it dictates visuals, it has slipped into layer 3 → arch-spec.
 
-### Behavior Contract section
+### Behavior Registry Changes section
 
-Mandatory for every feature-spec. It is the scenario-level behavior contract consumed by `hi_flow:arch-spec` and `hi_flow:implementation-plan`.
+Mandatory for every feature-spec. It is the scenario-level change-set consumed by `hi_flow:arch-spec` and `hi_flow:implementation-plan`; the living source of truth is the Behavior Registry.
 
-Scenario IDs are stable across edits. If behavior changes, update the scenario row in the same change that updates the feature. Do not silently leave obsolete scenarios in place.
+Scenario IDs are stable project-wide in the registry. New projects should use project-unique IDs such as `BS-<DOMAIN>-NNN`. Legacy feature-local IDs may appear in old specs; when a scenario is moved into the registry, assign or reference its project-unique ID and preserve legacy aliases only as history.
+
+If behavior changes, classify it as `Updated` / `Obsoleted` / `New` in this change-set. Do not create a new scenario when an existing registry entry already describes the same actor/action/object with a changed expected result. Do not silently leave obsolete scenarios active.
 
 **Observability** must name what the harness can check from outside or near-outside the system: API response, bot reply, database state, emitted event, file output, UI state, or an explicit eval criterion. Do not assert private implementation details here.
 
-Each row must be self-contained. Avoid references like "same as BS-001" in `Then` or `Observability`; downstream mapping should not require reading another scenario to understand what to execute or assert.
+Each row must be self-contained. Avoid references like "same as BS-DOC-007" in `Then` or `Observability`; downstream mapping should not require reading another scenario to understand what to execute or assert.
 
 Use `manual` only when human review is the intended durable check and automation is not worth it. Use `blocked` only when a named domain dependency prevents automation even after normal project harness wiring. Do not discuss missing project-wide harness foundation here; that is an implementation-plan concern, not feature-spec content.
 
-**Source** points back to forks / policies / sample dialogs so reviewers can trace why the scenario exists.
+**Source** points back to forks / policies / sample dialogs so reviewers can trace why the registry change exists.
 
 ### Cell format
 
@@ -615,8 +659,9 @@ Use `manual` only when human review is the intended durable check and automation
 8. **No summary** at the end of the spec. Operator reads in full.
 9. **`**Backlog:**` block (organic convention).** Under a RESOLVED fork whose sub-functions are partly deferred, list the deferred sub-points as bullets under a bold `**Backlog:**` label. This is a harvest anchor (anchor 2 in "Backlog sync at closure") — the listed items are parked at closure. Do **not** introduce a conflicting single-line `**Backlog:** level: ... | ...` form; the block-of-bullets convention is canonical (it already exists in real specs).
 10. **Deferral tags on one-liners.** `Out of scope` (in Цель) and `Premortem findings` lines may carry a light tag: `→ backlog` (parked → Parked features) or `→ rejected: <reason>[; альтернатива <...>]` (hard rejection → Out-of-scope (rejected)). An untagged line is a plain scope boundary / absorbed finding and is **not** transferred. Tags are harvest anchor 4.
-11. **Behavior Contract IDs.** Scenario IDs use `BS-001`, `BS-002`, ... within the feature. Do not reuse an ID for a different behavior. Use `obsolete` with a replacement pointer instead.
+11. **Behavior Registry IDs.** Scenario IDs are project-unique in the registry; use `BS-<DOMAIN>-NNN` or the project convention. Do not reuse an ID for a different behavior. Use `obsolete` with a replacement pointer instead.
 12. **Behavior statuses are honest.** `automated` means downstream implementation must map it to an executable behavior case. `manual`, `blocked`, and `obsolete` require a reason. No silent omissions. Status is about intended durable verification, not current project wiring; do not turn missing project-wide harness foundation into feature-spec content.
+13. **Behavior Registry semantic dedup.** Before adding `New`, scan existing registry/specs for semantically related contracts. Same actor/action/object with changed expected result is `Updated` or `Obsoleted + New`, not an unrelated new scenario.
 
 ## References
 
@@ -624,7 +669,8 @@ Use `manual` only when human review is the intended durable check and automation
 - **Feature-spec template** with placeholders: `references/feature-spec-template.md`. Use as the starting structure when writing.
 - **Self-assessment proposal template:** `references/self-assessment-template.md`.
 - **Workflow routing:** `hi_flow/references/workflow-routing.md`. Read when a generic Superpowers skill could compete with hi_flow for the same operator request.
-- **Behavior harness contract:** `hi_flow/references/behavior-harness.md`. Read when writing or reviewing the `Behavior Contract` section.
+- **Behavior registry lifecycle:** `hi_flow/references/behavior-registry.md`. Read when writing or reviewing the `Behavior Registry Changes` section.
+- **Behavior harness contract:** `hi_flow/references/behavior-harness.md`. Read when writing or reviewing harness-readiness of registry changes.
 - **Backlog integration mechanism (shared, family):** `hi_flow/references/backlog-integration.md`. The generic backlog-contribution algorithm feature-spec follows by name at closure (detect → dedup → idempotency → patch + approval → create-if-missing). Read it before running backlog-sync.
 - **Product-backlog template (format authority):** `hi_flow/skills/product-spec/references/product-backlog-template.md`. The single source of backlog record format (Parked features / Deferred strategic forks / Out-of-scope (rejected)). Read-only for feature-spec — owned by product-spec.
 

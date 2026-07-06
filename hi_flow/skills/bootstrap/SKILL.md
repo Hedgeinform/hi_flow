@@ -1,13 +1,13 @@
 ---
 name: bootstrap
-description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, optional behavior-gate foundation) plus a created ARCHITECTURE.md with a projected `## Stack`. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
+description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, optional behavior-registry / behavior-gate foundation) plus a created ARCHITECTURE.md with a projected `## Stack`. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
 ---
 
 # bootstrap
 
 ## Overview
 
-bootstrap is the **project-level owner of the technical foundation** in the hi_flow family - everything that must exist **before** the first feature goes into implementation. It closes finding A from the first live run of arch-spec: on a green field, the chain `product-spec -> feature-spec -> arch-spec -> implementation-plan` stalls at the arch-spec -> implementation-plan seam, because nobody fixes the app-stack (language, framework, test-runner, ORM, scaffolding, CI, behavior-gate command), yet implementation planning is built for "existing codebase, follow established patterns".
+bootstrap is the **project-level owner of the technical foundation** in the hi_flow family - everything that must exist **before** the first feature goes into implementation. It closes finding A from the first live run of arch-spec: on a green field, the chain `product-spec -> feature-spec -> arch-spec -> implementation-plan` stalls at the arch-spec -> implementation-plan seam, because nobody fixes the app-stack (language, framework, test-runner, ORM, scaffolding, CI, behavior-registry path, behavior-gate command), yet implementation planning is built for "existing codebase, follow established patterns".
 
 bootstrap fills that gap: it brings the repo to the state where the patterns are **already established**, after which `hi_flow:implementation-plan` can produce a concrete plan over the real project.
 
@@ -23,7 +23,7 @@ It does six jobs, one atom (probe -> scaffold -> wire) reused by two modes (init
 
 ## When to use
 
-The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md created (init), and, where covered, a behavior-gate foundation exists - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
+The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md created (init), and, where covered, a behavior-registry / behavior-gate foundation exists - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
 
 ## Anti-triggers (do NOT auto-activate)
 
@@ -41,7 +41,7 @@ bootstrap owns:
 3. **Scaffolding** — a green skeleton + one convention reference pattern (generic, non-domain).
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
 5. **Wiring the L3-hygiene harness (Function 3a)** — laying the CI workflow + linter/formatter baseline + gates aggregate **delivered by Function 3a** into the project. bootstrap is the **consumer** of these templates, not the owner of their design (ownership stays with Function 3a).
-6. **Wiring the behavior-gate foundation when covered/requested** - creating the project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, and CI hook that future Behavior Contract scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the rail.
+6. **Wiring the behavior-registry / behavior-gate foundation when covered/requested** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the registry and rail.
 
 **Out of scope:** hooks / enforcement (Function 3b) — deferred to a research-trigger (decision 2026-06-01: a quality CI is enough; revisit hooks only if CI proves insufficient).
 
@@ -164,7 +164,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 
 - repo compiles, AND
 - gates green for the **managed (covered) axes** — typecheck + lint + arch-audit no-violations + the reference test passes, AND
-- if the behavior-gate foundation is covered/requested, the behavior runner command exists and is included in CI, AND
+- if the behavior-registry / behavior-gate foundation is covered/requested, the Behavior Registry path exists, the behavior mapping convention exists, the behavior runner command runs a green smoke/self-check and is included in CI, AND
 - CI present, AND
 - ARCHITECTURE.md exists with a `## Stack` section.
 
@@ -198,7 +198,8 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - `references/coverage-manifest.md` — the SSoT of coverage (`axis → technology → { stack-file, baseline, audit-adapter, scaffold-template, probe-class }`). Read dynamically; coverage-gated probing reads it. Pointer, not duplicated here.
 - `references/scaffold-templates/` — the green-skeleton + convention reference patterns per technology (owned by other bootstrap tasks). The atom's scaffold step lays the template named for the chosen technology in the coverage-manifest.
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
-- `hi_flow/references/behavior-harness.md` - behavior-gate foundation policy. bootstrap owns only the runner/folder/CI rail; feature-spec and implementation-plan own scenario content and mapping.
+- `hi_flow/references/behavior-registry.md` - behavior registry source-of-truth and entry convention. bootstrap owns only the empty registry path/convention; feature-spec proposes changes and implementation-plan maps scenario-specific registry/harness/code tasks.
+- `hi_flow/references/behavior-harness.md` - behavior-gate foundation policy. bootstrap owns the empty registry path/convention, runner/folder/CI rail, mapping convention, and green smoke/self-check; implementation-plan owns scenario-specific mapping and executable cases.
 - `hi_flow/references/workflow-routing.md` - hi_flow vs generic workflow routing.
 - `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` — the design spec this skill implements (D20 Function 1, extended by finding A).
 - `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` — the backbone-propagation design (forward carrier = this skill's seeding step; consumer = arch-spec).

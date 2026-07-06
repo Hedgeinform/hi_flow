@@ -200,7 +200,7 @@ Done is an **enumerable set of gates**, like bootstrap's. The two coverage level
 
 **Covered onboarding — the gates, in order:**
 
-1. **CI gate green** (including `behavior:test` / the behavior gate when the project has a Behavior Contract harness).
+1. **CI gate green** (including `behavior:test` / the behavior gate when the project has Behavior Registry harness rails).
 2. **Secrets present on the box** (`configure-env` has run) — this is a **precondition** of the next gate, not an afterthought (secrets ordering, the "wire" step).
 3. **First staging deploy succeeded** — the image built + pushed and the service is up (container form), or the static build is built + rsync'd (static form).
 4. **Healthcheck green** — `GET /health` returns `200` (container), or the static `index.html` is served (static). The `/health` contract is an obligation of the *project* toward ops, consumed here (see **Five delivery concerns → The `/health` contract**).

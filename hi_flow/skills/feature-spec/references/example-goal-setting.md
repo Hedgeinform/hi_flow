@@ -1,4 +1,4 @@
-> **Reference example for `hi_flow:feature-spec` skill.** Это полный пример product-spec.md, сгенерированный по дизайну скилла на реальном кейсе goal-setting в Zhenka (фитнес-бот). Используй как образец формата, плотности, баланса деталей при генерации собственных product-spec.md.
+> **Reference example for `hi_flow:feature-spec` skill.** Это пример feature-spec.md на реальном кейсе goal-setting в Zhenka (фитнес-бот). Используй как образец плотности, баланса деталей и структуры развилок; для актуальной структуры `Behavior Registry Changes` сверяйся также с `feature-spec-template.md`.
 >
 > **Что хорошо демонстрирует пример:**
 > - Все 8 probe-категорий (где применимы), включая Optional которые не выдуманы.
@@ -11,6 +11,7 @@
 > - Inline vs cell branches (F1 trivial branch без ID, остальные cells).
 > - Premortem findings absorbed.
 > - Open items at closure table.
+> - `Behavior Registry Changes` как compact change-set; старые signed specs остаются historical reasoning records.
 
 ---
 
@@ -108,6 +109,48 @@ Bot:   при твоём росте 170 см это даст ИМТ ~15.5 —
 - **Side effects:**
   - При принятии цели: расписание напоминаний (см. P-REMINDER-SCHEDULE).
   - При отказе по CC1/CC2: лог события для последующего мониторинга (анонимизированный).
+
+---
+
+## Behavior Registry Changes
+
+**Behavior Registry:** docs/behavior/registry.md
+
+### Reviewed existing contracts
+
+None found after registry + legacy signed spec scan.
+
+| Scenario ID | Relation | Classification | Reason |
+|-------------|----------|----------------|--------|
+| — | — | N/A | first goal-setting feature |
+
+### New
+
+| Scenario ID | Status | Summary | Given | When | Then | Observability | Source |
+|-------------|--------|---------|-------|------|------|---------------|--------|
+| BS-GOAL-001 | automated | бот принимает реалистичную цель по весу | профиль содержит текущий вес/рост/возраст/пол; цель имеет вес и срок в безопасном темпе | пользователь просит зафиксировать цель | цель записана как active, бот подтверждает нормализованные значения и темп | запись `goal`, ответ пользователю с target_weight/target_deadline/tempo | F1.3.1, happy path |
+| BS-GOAL-002 | automated | бот предлагает корректировку нереалистичной цели | профиль полный; целевой вес и срок дают темп выше безопасного | пользователь просит зафиксировать нереалистичную цель | бот не записывает исходную цель как active и предлагает допустимую корректировку | отсутствие active goal с исходными параметрами; ответ с вариантами корректировки | F1.3.2, corrected path |
+| BS-GOAL-003 | automated | бот отказывает медицински опасной цели | target_BMI ниже критической границы или medical_flags требуют специалиста | пользователь просит опасную цель | бот не активирует goal и рекомендует специалиста | отсутствие active goal; logged safety event; отказной ответ | CC1, CC2, refused path |
+
+**Semantic keys for New:** domain=goals; surface=fitness bot dialog; actor=user; trigger=sets weight goal; object=goal; observable=goal row / bot reply / safety event.
+
+### Updated
+
+| Scenario ID | Status | Previous expectation | New expectation | Observability change | Reason | Source |
+|-------------|--------|----------------------|-----------------|----------------------|--------|--------|
+| — | — | — | — | — | no existing registry entries in this example | — |
+
+### Obsoleted
+
+| Scenario ID | Replacement / removal reason | Source |
+|-------------|------------------------------|--------|
+| — | none | — |
+
+### Unchanged related
+
+| Scenario ID | Why unchanged |
+|-------------|---------------|
+| — | none |
 
 ---
 

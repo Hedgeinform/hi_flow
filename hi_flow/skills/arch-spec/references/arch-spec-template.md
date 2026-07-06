@@ -16,7 +16,8 @@ Section numbers below match SKILL.md exactly (10 sections). They map to analysis
 ## 1. Header
 
 **Feature-spec:** <path to the signed feature-spec.md>
-**Behavior Contract:** <scenario range / count, e.g. BS-001..BS-009; automated/manual/blocked counts>
+**Behavior Registry Changes:** <new / updated / obsoleted / unchanged-related count; automated/manual/blocked counts>
+**Behavior Registry:** <path or "missing — implementation-plan/bootstrap foundation required">
 **Audit snapshot:** <path to audit-report.json> · audit_sha=<...> · freshness: <fresh | N commits behind | none>
 <!-- Fullstack: one **Audit snapshot:** line PER touched tree, prefixed `(<tree>)` — e.g. `**Audit snapshot (api):** ...` and `**Audit snapshot (web):** ...` -->
 **Date:** YYYY-MM-DD
@@ -150,7 +151,8 @@ graph TD
 # <Feature name> — Architecture Gate Waiver
 
 **Feature-spec:** <path>
-**Behavior Contract:** <scenario IDs + automated/manual/blocked counts>
+**Behavior Registry Changes:** <scenario IDs + automated/manual/blocked counts>
+**Behavior Registry:** <path or "missing — implementation-plan/bootstrap foundation required">
 **Date:** YYYY-MM-DD
 **Status:** draft | signed
 **Gate result:** waived — no full arch-spec required
@@ -165,7 +167,7 @@ graph TD
 
 ## Handoff to implementation-plan
 
-- **Behavior scenarios:** <IDs>
+- **Behavior registry changes:** <IDs grouped by new / updated / obsoleted>
 - **Existing owners / surfaces:** <modules or public APIs>
 - **Constraints:** <anything implementation-plan must preserve>
 ```

@@ -6,7 +6,7 @@ This file is the family-level routing contract between hi_flow and general imple
 
 Use hi_flow for feature-and-above work. Use a general implementation workflow directly for small local changes.
 
-hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces a feature contract, carries architectural risk, or needs a durable behavior harness. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup, route directly to the implementation workflow.
+hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, or needs a durable behavior harness. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup, route directly to the implementation workflow.
 
 ## Skill priority
 
