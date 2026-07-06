@@ -49,16 +49,21 @@ and must be shipped to a non-local target.
 
 ## Packaging
 
-hi_flow is packaged for both Claude Code and Codex.
+hi_flow is packaged for Claude Code, Codex, and Cursor.
 
 - Claude Code metadata lives in `.claude-plugin/` files.
 - Codex metadata lives in `hi_flow/.codex-plugin/plugin.json`.
+- Cursor metadata lives in `hi_flow/.cursor-plugin/plugin.json`.
 - The Codex marketplace entry lives in `.agents/plugins/marketplace.json`
   and points at `./hi_flow`.
 
-The two packaging layers share the same `hi_flow/skills/` source. Do not fork
+The packaging layers share the same `hi_flow/skills/` source. Do not fork
 skill contents per host unless a host-specific runtime constraint makes it
 unavoidable.
+
+Cursor packaging currently declares the shared skills directory only. It does
+not declare hooks; add Cursor hooks only after a verified smoke test proves the
+runtime needs a session-start bootstrap.
 
 For Codex, add this repository as the `hi_flow-marketplace` marketplace, then
 install `hi_flow` from `hi_flow-marketplace`. During local development, use the
