@@ -55,8 +55,9 @@ and must be shipped to a non-local target.
 - `hi_flow:arch-spec` - architecture gate and per-feature architecture design.
 - `hi_flow:implementation-plan` - behavior-first implementation plan compatible
   with Superpowers execution skills.
-- `hi_flow:bootstrap` - project foundation: stack, scaffold, audit, CI/gates,
-  empty behavior-registry / behavior-gate rails, and initial Project State.
+- `hi_flow:bootstrap` - project foundation: plugin-internal stack baselines,
+  scaffold, audit, CI/gates, empty behavior-registry / behavior-gate rails, and
+  initial Project State.
 - `hi_flow:ops` - last-mile delivery profile, CD, deploy scaffold, and staging
   verification.
 
@@ -109,5 +110,10 @@ For solo/agent-first projects, the default is a project-native harness.
 - `hi_flow/references/workflow-routing.md`
 - `hi_flow/references/behavior-registry.md`
 - `hi_flow/references/behavior-harness.md`
+- `hi_flow/references/stacks/typescript.md`
+- `hi_flow/references/stacks/references/typescript-baseline.md`
+- `hi_flow/references/stacks/react.md`
+- `hi_flow/references/stacks/references/react-baseline.md`
 - `hi_flow/skills/project-state/references/project-state-template.md`
 - `hi_flow/skills/bootstrap/references/coverage-manifest.md`
+- `hi_flow/skills/bootstrap/references/architecture-template.md`

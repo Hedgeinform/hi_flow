@@ -51,7 +51,7 @@ The example imports go **strictly downward** — `ExampleCard` → `useExampleTo
 and demonstrates the allowed direction by example. `components/` + `hooks/` are two of the four
 frontend detection-signal dirs, so the scaffold activates the frontend audit profile (≥2).
 
-## Conventions demonstrated (from `~/.claude/architecture/stacks/react.md`)
+## Conventions demonstrated (from `hi_flow/references/stacks/react.md`)
 
 - **Naming split** — component file **PascalCase** (`ExampleCard.tsx`), hook file **camelCase**
   (`useExampleToggle.ts`), non-component module **kebab-case** (`clamp.ts`).
@@ -81,7 +81,7 @@ stack file itself mandates co-located, so it stands. The contrast is deliberate,
 These files rely on the target project's React harness — `package.json`, `tsconfig*.json`,
 `vite.config.ts`, `eslint.config.js`, `biome.json`, and the dev-deps (`react`, `vitest`,
 `@testing-library/react`, `@testing-library/user-event`, `jsdom`) — all produced by the React
-baseline rollout (`~/.claude/architecture/stacks/references/react-baseline.md` §1-8), **not** by
+baseline rollout (`hi_flow/references/stacks/references/react-baseline.md` §1-8), **not** by
 this template. After the baseline is wired and the placeholders are substituted, the example
 module compiles and `vitest run` passes — part of the done-criterion gates (the reference test
 passes).

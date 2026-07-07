@@ -17,7 +17,7 @@ axis → technology → { stack-file, baseline, audit-adapter, scaffold-template
 - **Covered criterion.** An axis/technology is **covered** when every field is *present* or *N/A*. Any **absent-pending** field → partial → NOT covered → coverage-honesty **loud signal** (principle 5: no silent fallback), never a silent proposal; the skill fixes the covered part and marks the rest `unmanaged`. N/A never traps an axis in permanent `partial` over a field that can never apply to it.
 - **Coverage-honesty on the manifest itself.** This file lists only technologies the plugin genuinely covers today. No invented "covered" rows.
 
-> **pending-Ф3a.** Paths marked `[pending-Ф3a]` currently live in the operator-personal area (`~/.claude/architecture/...`). Function 3a (relocation) will move baselines + CI + `stacks/` plugin-internal. Until that lands, these paths point outside the plugin and the rows are not yet self-contained.
+Stack files and baselines are plugin-internal references under `hi_flow/references/stacks/`.
 
 ---
 
@@ -30,8 +30,8 @@ axis → technology → { stack-file, baseline, audit-adapter, scaffold-template
 | Field | Value |
 |---|---|
 | technology | TypeScript / Node (also Bun runtime) |
-| stack-file | `~/.claude/architecture/stacks/typescript.md` **[pending-Ф3a]** |
-| baseline | `~/.claude/architecture/stacks/references/typescript-baseline.md` **[pending-Ф3a]** |
+| stack-file | `hi_flow/references/stacks/typescript.md` |
+| baseline | `hi_flow/references/stacks/references/typescript-baseline.md` |
 | audit-adapter | typescript-depcruise (dependency-cruiser adapter, in `hi_flow` arch-audit) |
 | scaffold-template | `references/scaffold-templates/typescript/` (owned by other bootstrap tasks) |
 | probe-class | buy-in (degenerate at coverage = 1 → informing confirmation) |
@@ -45,7 +45,7 @@ Toolchain components (linter = Biome, formatter = Biome, test-runner = bun test 
 | Field | Value |
 |---|---|
 | technology | Postgres |
-| stack-file | partial — no dedicated Postgres stack-file yet **[pending-Ф3a]** |
+| stack-file | absent (pending) — no dedicated Postgres stack-file yet |
 | baseline | partial / absent |
 | audit-adapter | absent |
 | scaffold-template | absent |
@@ -60,8 +60,8 @@ Partial coverage falls under coverage-honesty: "axis covered partially — fixin
 | Field | Value |
 |---|---|
 | technology | React (Vite SPA, React 19 / TypeScript) |
-| stack-file | `~/.claude/architecture/stacks/react.md` **[pending-Ф3a]** |
-| baseline | `~/.claude/architecture/stacks/references/react-baseline.md` **[pending-Ф3a]** |
+| stack-file | `hi_flow/references/stacks/react.md` |
+| baseline | `hi_flow/references/stacks/references/react-baseline.md` |
 | audit-adapter | **present** — typescript-depcruise (scan glob includes `.tsx`) + `frontend-layered-respect` (MEDIUM) / `frontend-layer-cycle` (CRITICAL) baseline conditional rules: layered governance (pages→features→components→hooks→data-access→lib), run-level frontend profile. **Активация:** объявленный `overrides.profile: frontend` **или** литеральная эвристика (горизонтальные раскладки) — feature-sliced раскладки требуют декларации (+ `layer_aliases`), иначе только универсалии. Feature isolation (vertical-slice) deferred — see active-issues. Render/hooks layer out of module-graph scope, covered by `eslint-plugin-react-hooks` (react.md). |
 | scaffold-template | **present** — `references/scaffold-templates/react/` (components/hooks/lib green skeleton, co-located tests, downward imports) |
 | probe-class | buy-in |
