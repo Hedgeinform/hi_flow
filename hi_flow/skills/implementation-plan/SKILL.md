@@ -52,8 +52,9 @@ Use the structure in `references/implementation-plan-template.md`. The plan must
 6. **Map concrete harness artifacts.** For every `automated` new/updated/non-obsolete scenario, name the exact mapping target and the exact test/harness file that will prove it. If no behavior registry/harness rail exists yet, add a first foundation task that creates Behavior Registry file/entry convention, runner command, folder convention, mapping convention, green smoke/self-check, and CI hook before product behavior tasks.
 7. **Map files and interfaces.** List files to create/modify and the interfaces between tasks.
 8. **Write tasks.** Each task is independently reviewable and contains concrete steps, commands, expected results, and scenario coverage.
-9. **Self-review.** Check registry application, behavior coverage, TDD order, scenario traceability, placeholders, and execution compatibility.
-10. **Offer execution.** Recommend Superpowers SDD if installed; otherwise say the plan is compatible with any task-by-task executor that preserves tests and verification.
+9. **Write completion protocol.** Add the mandatory implementation close-out: implementation report, verification, isolated review, arch-audit/audit-skip decision, and `PROJECT_STATE.md` update.
+10. **Self-review.** Check registry application, behavior coverage, TDD order, scenario traceability, placeholders, execution compatibility, and close-out coverage.
+11. **Offer execution.** Recommend Superpowers SDD if installed; otherwise say the plan is compatible with any task-by-task executor that preserves tests and verification.
 
 ## Behavior Harness Strategy
 
@@ -98,6 +99,21 @@ Do not leave intentionally failing foundation samples in CI. Real `BS-*` scenari
 
 Do not downgrade `automated` scenarios just because the registry or rail is missing. Missing project-wide registry/harness rail is a foundation task in the plan.
 
+## Completion Protocol
+
+Every plan must include a `## Completion Protocol` section after the task list. This section is the handoff back from the implementation executor to hi_flow.
+
+Required items:
+
+- implementation report path, preferably next to the feature-spec unless the project has a stronger convention;
+- final verification commands, including behavior gate when a Behavior Registry exists;
+- isolated review requirement before claiming completion;
+- architecture audit requirement after implementation review, or an explicit recorded skip reason when there is no architecture impact and no architecture contract changed;
+- `PROJECT_STATE.md` update requirement: current phase, last completed artifact, verification state, blockers/open items, and next hi_flow action;
+- rule that signed feature-specs are historical decision artifacts and are not rewritten just to match changed registry entries.
+
+If the project lacks `PROJECT_STATE.md`, the plan must include creating it from `hi_flow:project-state`'s template as part of close-out rather than silently skipping the update.
+
 ## Task Requirements
 
 Each task must include:
@@ -138,6 +154,7 @@ Before presenting the plan:
 - Every task with behavior impact has `Covers: BS-...`.
 - Harness/behavior runner command is named.
 - If the project has no Behavior Registry or behavior harness rail, the plan starts with a foundation task that creates registry/runner/mapping/files/CI hook and green smoke/self-check before product behavior tasks.
+- The plan contains a `## Completion Protocol` with report, verification, isolated review, arch-audit/audit-skip decision, and Project State update.
 - Architecture invariants from waiver/spec are represented in tasks or global constraints.
 - No TODO/TBD/placeholders remain.
 - Each task can be executed from its own task brief without reading the whole conversation.

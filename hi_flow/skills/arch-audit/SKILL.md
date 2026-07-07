@@ -26,7 +26,7 @@ Output is consumed downstream by `arch-redesign` (cluster-mode and triage-mode) 
 - Dependency hygiene (unresolvable imports, deprecated packages) — standalone `depcruise --validate` + `npm audit`.
 - Security scans, performance profiling, integration testing.
 - Authoring architectural principles — the D9 library is imported from industry; the skill reads it, does not create it.
-- Project-wide ARCHITECTURE.md management — separate `architecture` skill.
+- Project-wide ARCHITECTURE.md maintenance — outside this audit runtime. arch-audit produces reports/rules evidence; explicit document maintenance or the relevant Hi-Flow architecture phase consumes that evidence.
 - Onboarding tooling setup — separate family mechanism.
 
 ## Anti-triggers (do NOT auto-activate)
@@ -266,6 +266,18 @@ Full checklist — `references/self-review-checklist.md`. Seven groups:
 > Прочитай и дай знать, если хочешь правки или уточнения до перехода к arch-redesign / arch-spec.
 
 Wait for the response. On edits — apply via the safe-to-autofix category + lightweight verification pass through the subagent. Only after approval — close.
+
+### Project State at closure
+
+After the operator approves or closes the audit report, update `PROJECT_STATE.md` through `hi_flow:project-state`:
+
+- current phase: `arch-audit completed`;
+- last completed: `audit-report.json` and `audit-report.md` paths;
+- ready next: `hi_flow:arch-redesign`, `hi_flow:arch-spec`, or the operator-approved stop;
+- latest verification: audit command/result and self-review status;
+- blockers/open items: only current audit blockers, unapplied patches explicitly skipped, or follow-up choices.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template.
 
 ### Transition offer
 

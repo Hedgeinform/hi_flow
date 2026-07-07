@@ -94,6 +94,7 @@ At the end of a successful migration slice, the project has:
 - executable harness/test files for each `automated` migrated scenario;
 - visible reasons for `manual`, `blocked`, and `obsolete` rows;
 - a migration report.
+- `PROJECT_STATE.md` updated with migration scope, coverage state, latest verification, blockers, and the next hi_flow action.
 
 The registry is the living source of truth after migration. Old signed specs are historical evidence and are not rewritten.
 
@@ -116,6 +117,7 @@ Before presenting the result:
 - The registry self-check command was run or the failure is reported exactly.
 - The behavior runner command was run for the migrated slice or the blocker is reported exactly.
 - CI is wired or a named follow-up is recorded.
+- `PROJECT_STATE.md` was updated, or created from `hi_flow:project-state` template if missing.
 - No old signed feature spec is edited just to match the new registry.
 - No scenario is created from docs without checking code/tests/current harness state.
 

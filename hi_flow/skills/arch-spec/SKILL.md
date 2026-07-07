@@ -200,7 +200,7 @@ Floor + ceiling structure (arc42 "pick only what matters", ATAM "importance × r
 - **Derivability from the product** — gate "is this architecture or product?": non-domain design consideration **and** affects structure **and** critical for success (three-criteria filter, Richards & Ford). Cuts off re-opening product decisions the feature-spec already made. **UX/UI boundary instance (D25):** the UX-structure (layers 1-2) is itself a *product* input — it arrives from the feature-spec's «Поверхности (UX)» section and is consumed, not re-derived; **layer 3** (UI architecture — §5.11) is what arch-spec *adds* on top. This symmetrically closes the boundary: feature-spec emits the UX, arch-spec designs the UI architecture, neither re-opens the other's layer.
 - **Contradictions** — as in feature-spec.
 - **Inherited cross-cutting policies** — which system policies (logging/observability, error-handling, auth, secret-mgmt) the feature instantiates (arc42 §8). **observability** lives here — via global principle 5 (silent fallback forbidden → visible logging) it applies always, but as an inherited policy, not a separate structural floor category.
-- **Shared-capability lookahead** — fires when a floor-2 decision introduces a **port** — a boundary to an infrastructure capability, not a domain module. Ask: is this capability *cross-cutting* — consumed beyond this feature? Three signals, any one suffices: (a) the backlog / roadmap names other consumers of it; (b) `ARCHITECTURE.md` flags it as an infrastructure constant; (c) it is orthogonal to this feature's domain logic. **If any holds** → design the port's contract **one notch wider than single-consumer YAGNI** (a generic contract — e.g. generic key/payload for a storage port, a channel/recipient abstraction for a delivery port — not the first caller's narrow shape) and record it in §3 as a **platform port** (owner = this feature; consumers-per-roadmap listed), NOT as a module-of-this-feature. **If none holds** → narrow YAGNI is correct, leave it. The single thing this prevents: the *first* feature silently defining a shared port under itself, so the *second* consumer must re-open it (duplication → Known Drift → arch-redesign after the fact). **Awareness only** — no shared registry, no read in block A, no cross-skill write; arch-spec's decoupling (variant 2 / OQ6, see §living-architecture decoupling) is untouched. Domain features (vertical slices) almost never trigger this; the infra layer does. Cross-ref D26. **When a project backbone standard is in force:** a port recognized as public is added to the feature's narrow-public-entry `<public-surface-allowlist>` (see Fitness invariants → Narrow public entry, operational rule 11).
+- **Shared-capability lookahead** — fires when a floor-2 decision introduces a **port** — a boundary to an infrastructure capability, not a domain module. Ask: is this capability *cross-cutting* — consumed beyond this feature? Three signals, any one suffices: (a) the backlog / roadmap names other consumers of it; (b) `ARCHITECTURE.md` flags it as an infrastructure constant; (c) it is orthogonal to this feature's domain logic. **If any holds** → design the port's contract **one notch wider than single-consumer YAGNI** (a generic contract — e.g. generic key/payload for a storage port, a channel/recipient abstraction for a delivery port — not the first caller's narrow shape) and record it in §3 as a **platform port** (owner = this feature; consumers-per-roadmap listed), NOT as a module-of-this-feature. **If none holds** → narrow YAGNI is correct, leave it. The single thing this prevents: the *first* feature silently defining a shared port under itself, so the *second* consumer must re-open it (duplication → Known Drift → arch-redesign after the fact). **Awareness only** — no shared registry, no read in block A, no cross-skill write; arch-spec's ARCHITECTURE.md decoupling is untouched. Domain features (vertical slices) almost never trigger this; the infra layer does. Cross-ref D26. **When a project backbone standard is in force:** a port recognized as public is added to the feature's narrow-public-entry `<public-surface-allowlist>` (see Fitness invariants → Narrow public entry, operational rule 11).
 
 ### Derived
 
@@ -396,11 +396,11 @@ Escalation discipline — "when to bother the operator" — lives **in the sessi
 
 **Goal — minimize escalations through spec completeness.** An escalation during implementation is a signal that the spec failed to close something. Aim for zero (a quality metric of the spec).
 
-## living-architecture decoupling
+## ARCHITECTURE.md decoupling
 
-arch-spec is **decoupled** (variant 2, OQ6): it emits a spec with decisions as facts, **does not write to ARCHITECTURE.md**, and **does not know about** the `architecture` / living-architecture skill. The only link is the artifact (the spec) — weak coupling. If living-architecture is installed, it extracts decisions via its own event detection; if not (market-ready), the operator does so manually. There is no dependency on an unknown skill.
+arch-spec is **decoupled** (variant 2, OQ6): it emits a spec with decisions as facts and **does not depend on** any operator-personal `architecture` / `living-architecture` skill. The only link is the artifact (the spec) — weak coupling. If the project has explicit architecture-document maintenance, it can consume the signed spec; if not, the signed spec remains the stable architectural handoff to `hi_flow:implementation-plan`.
 
-The single obligation: provide a clear point **"spec signed = decisions are final"**, so any future consumer has a stable moment of pickup. Feature-level decisions go to the project's ARCHITECTURE.md (via living-architecture, not via this skill); decisions about hi_flow itself are a separate meta-session concern.
+The single obligation: provide a clear point **"spec signed = decisions are final"**, so any future consumer has a stable moment of pickup. Feature-level decisions are either consumed directly by implementation-plan or later reflected in the project's `ARCHITECTURE.md` through explicit architecture-document maintenance. Decisions about hi_flow itself are a separate meta-session concern.
 
 ## Closure backlog-sync
 
@@ -488,6 +488,18 @@ After self-review fixes, present the matching User Review Gate:
 - Full arch-spec: «Arch-spec written to `<path>`, rules-patch (not applied) to `<patch-path>`. Review and tell me if you want changes before we move to `hi_flow:implementation-plan`.»
 
 If changes - apply + re-run Self-Review. Only after approval - closure and the transition offer to `hi_flow:implementation-plan`.
+
+## Project State at closure
+
+After the operator approves the waiver or full arch-spec, update `PROJECT_STATE.md` through `hi_flow:project-state`:
+
+- current phase: `architecture gated` for a waiver, or `arch-spec signed` for a full spec;
+- last completed: waiver/spec path, rules-patch path if emitted, and any backlog-sync result;
+- ready next: `hi_flow:implementation-plan`;
+- latest verification: isolated review result and rules-patch validation status if applicable;
+- blockers/open items: only current blockers that affect planning or implementation.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template.
 
 ## Anti-patterns
 

@@ -4,7 +4,9 @@ hi_flow is a Codex/agent skill family for feature-and-above solo+AI development.
 It turns product intent into signed specs, architecture decisions, behavior
 registry changes, implementation plans, foundation wiring, and deployment rails.
 For existing projects, it can also migrate legacy specs/tests into a living
-Behavior Registry and behavior harness rail.
+Behavior Registry and behavior harness rail. It also maintains a lightweight
+project-state dashboard so paused projects can be resumed without a repo-wide
+rediscovery pass.
 
 ## Routing
 
@@ -12,6 +14,8 @@ Use hi_flow when the work is a feature, product slice, architecture change, new
 project foundation, behavior registry change, or delivery setup.
 Use `behavior-migration` when an existing project needs to be brought onto
 Behavior Registry / behavior harness rails before the next feature.
+Use `project-state` when returning to a project, asking what to do next, or
+refreshing the current operational state.
 
 Use a generic implementation workflow directly for small local bugfixes and
 isolated code changes. For implementation, hi_flow recommends Superpowers as the
@@ -45,13 +49,14 @@ and must be shipped to a non-local target.
 - `hi_flow:feature-spec` - feature-level product spec plus Behavior Registry Changes.
 - `hi_flow:behavior-migration` - existing-project migration onto Behavior
   Registry, scenario mapping, and harness runner rails.
+- `hi_flow:project-state` - current project dashboard and resume point.
 - `hi_flow:arch-audit` - architecture snapshot and rule validation.
 - `hi_flow:arch-redesign` - corrective refactor campaign planning.
 - `hi_flow:arch-spec` - architecture gate and per-feature architecture design.
 - `hi_flow:implementation-plan` - behavior-first implementation plan compatible
   with Superpowers execution skills.
 - `hi_flow:bootstrap` - project foundation: stack, scaffold, audit, CI/gates,
-  and empty behavior-registry / behavior-gate rails.
+  empty behavior-registry / behavior-gate rails, and initial Project State.
 - `hi_flow:ops` - last-mile delivery profile, CD, deploy scaffold, and staging
   verification.
 
@@ -62,7 +67,7 @@ hi_flow is packaged for Claude Code, Codex, and Cursor.
 - Claude Code metadata lives in `.claude-plugin/` files.
 - Codex metadata lives in `hi_flow/.codex-plugin/plugin.json`.
 - Cursor metadata lives in `hi_flow/.cursor-plugin/plugin.json`.
-- The Codex marketplace entry lives in `.agents/plugins/marketplace.json`
+- Marketplace entry metadata lives in `.claude-plugin/marketplace.json`
   and points at `./hi_flow`.
 
 The packaging layers share the same `hi_flow/skills/` source. Do not fork
@@ -104,4 +109,5 @@ For solo/agent-first projects, the default is a project-native harness.
 - `hi_flow/references/workflow-routing.md`
 - `hi_flow/references/behavior-registry.md`
 - `hi_flow/references/behavior-harness.md`
+- `hi_flow/skills/project-state/references/project-state-template.md`
 - `hi_flow/skills/bootstrap/references/coverage-manifest.md`
