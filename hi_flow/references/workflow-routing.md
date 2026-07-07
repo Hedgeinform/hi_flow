@@ -18,6 +18,7 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 |---|---|---|
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
 | migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |
+| new project needs empty Behavior Registry / behavior gate foundation | `hi_flow:bootstrap` | `hi_flow:behavior-migration` |
 | architecture spec or "do we need architecture?" for a signed feature-spec | `hi_flow:arch-spec` | ad-hoc technical brainstorming |
 | implementation plan from signed hi_flow specs | `hi_flow:implementation-plan` | `superpowers:writing-plans` |
 | execute an already-written plan | recommended: `superpowers:subagent-driven-development`; fallback: `superpowers:executing-plans` | rewriting the plan during execution |

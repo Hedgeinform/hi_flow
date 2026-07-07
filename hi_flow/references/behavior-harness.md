@@ -19,6 +19,8 @@ Hardness comes from the registry + executable mapping + CI gate. Cucumber is onl
 
 `hi_flow:feature-spec` owns the proposed `Behavior Registry Changes` and product rationale. `hi_flow:implementation-plan` owns planning how signed changes are applied to the registry and the first concrete handoff from registry scenarios to executable artifacts: mapping file, test/harness files, runner command, and CI hook. Downstream execution tools are expected to follow that plan, not infer this discipline themselves.
 
+`hi_flow:bootstrap` owns the empty behavior rail for new hi_flow projects: registry path, mapping convention, runner/self-check, and CI hook, but no product scenarios. `hi_flow:behavior-migration` owns retrofitting that rail into existing projects. `hi_flow:ops` consumes the existing behavior gate before delivery; it must not ship around a red or missing gate when a Behavior Registry exists.
+
 ## Default backend policy
 
 Default to a project-native harness:
