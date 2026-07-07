@@ -11,17 +11,19 @@ rediscovery pass.
 ## Routing
 
 Use hi_flow when the work is a feature, product slice, architecture change, new
-project foundation, behavior registry change, or delivery setup.
+project foundation, behavior registry change, accepted-contract bug fix, or
+delivery setup.
 Use `behavior-migration` when an existing project needs to be brought onto
 Behavior Registry / behavior harness rails before the next feature.
 Use `project-state` when returning to a project, asking what to do next, or
 refreshing the current operational state.
 
-Use a generic implementation workflow directly for small local bugfixes and
-isolated code changes. For implementation, hi_flow recommends Superpowers as the
-execution layer, especially `superpowers:subagent-driven-development`,
-`superpowers:test-driven-development`, and
-`superpowers:verification-before-completion`.
+Use `bug-fix` when an Active Issue or regression violates already accepted
+behavior or architecture. Use a generic implementation workflow directly for
+small local bugfixes and isolated code changes with no hi_flow contract impact.
+For implementation, hi_flow recommends Superpowers as the execution layer,
+especially `superpowers:subagent-driven-development`,
+`superpowers:test-driven-development`, and `superpowers:verification-before-completion`.
 
 Inside the hi_flow chain, do not route signed hi_flow specs directly to
 `superpowers:writing-plans`. Use `hi_flow:implementation-plan`; it produces a
@@ -50,6 +52,8 @@ and must be shipped to a non-local target.
 - `hi_flow:behavior-migration` - existing-project migration onto Behavior
   Registry, scenario mapping, and harness runner rails.
 - `hi_flow:project-state` - current project dashboard and resume point.
+- `hi_flow:bug-fix` - contract-preserving fix plan for Active Issues and
+  regressions.
 - `hi_flow:arch-audit` - architecture snapshot and rule validation.
 - `hi_flow:arch-redesign` - corrective refactor campaign planning.
 - `hi_flow:arch-spec` - architecture gate and per-feature architecture design.

@@ -4,9 +4,9 @@ This file is the family-level routing contract between hi_flow and general imple
 
 ## Core rule
 
-Use hi_flow for feature-and-above work. Use a general implementation workflow directly for small local changes.
+Use hi_flow for feature-and-above work and for fixes that restore an accepted hi_flow contract. Use a general implementation workflow directly for small local changes.
 
-hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, or needs a durable behavior harness. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup, route directly to the implementation workflow.
+hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, needs a durable behavior harness, or fixes a known violation of an accepted Behavior Registry / architecture contract. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup with no hi_flow contract impact, route directly to the implementation workflow.
 
 For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
 
@@ -21,13 +21,14 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
 | current project status, resume point, next action, project state refresh | `hi_flow:project-state` | `hi_flow:arch-spec` / `hi_flow:arch-audit` / `hi_flow:arch-redesign` |
 | migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |
+| Active Issue, regression, or bug in already accepted behavior/architecture | `hi_flow:bug-fix` | `hi_flow:feature-spec` unless expected behavior changes |
 | new project needs empty Behavior Registry / behavior gate foundation | `hi_flow:bootstrap` | `hi_flow:behavior-migration` |
 | architecture spec or "do we need architecture?" for a signed feature-spec | `hi_flow:arch-spec` | ad-hoc technical brainstorming |
 | implementation plan from signed hi_flow specs | `hi_flow:implementation-plan` | `superpowers:writing-plans` |
 | execute an already-written plan | recommended: `superpowers:subagent-driven-development`; fallback: `superpowers:executing-plans` | rewriting the plan during execution |
-| small bugfix / local technical change | Superpowers directly, if installed | hi_flow unless the operator asks for it |
+| small bugfix / local technical change with no accepted hi_flow contract impact | Superpowers directly, if installed | hi_flow unless the operator asks for it |
 
-Ambiguous "spec" or "plan" requests must be clarified in one short question: "hi_flow feature flow or a regular implementation flow?"
+Ambiguous "spec" or "plan" requests must be clarified in one short question: "hi_flow feature flow or a regular implementation flow?" Ambiguous bug requests must be clarified as: "accepted-contract bug or new behavior/change?"
 
 ## Superpowers relationship
 

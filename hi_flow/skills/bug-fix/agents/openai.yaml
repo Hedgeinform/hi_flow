@@ -1,0 +1,7 @@
+interface:
+  display_name: "Bug Fix"
+  short_description: "Plan contract-preserving fixes"
+  default_prompt: "Use $bug-fix to plan a contract-preserving fix for this Active Issue or regression."
+
+policy:
+  allow_implicit_invocation: true

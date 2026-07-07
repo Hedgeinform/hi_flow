@@ -1,6 +1,6 @@
 ---
 name: feature-spec
-description: "Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», Behavior Registry Changes, or English equivalents. Prefer this over generic brainstorming for feature-and-above hi_flow work; for small bugfixes/local changes, do not use hi_flow unless explicitly requested. Produces feature-spec.md."
+description: "Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», or new/changed Behavior Registry expectations. Prefer this over generic brainstorming for feature-and-above hi_flow work. For accepted-contract bugs or registry mapping/status fixes use hi_flow:bug-fix; for small local technical changes use generic implementation unless hi_flow is explicit."
 ---
 
 # `hi_flow:feature-spec` — Feature-Level Product Spec Skill
