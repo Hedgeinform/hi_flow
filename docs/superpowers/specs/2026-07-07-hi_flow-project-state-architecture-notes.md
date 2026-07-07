@@ -129,7 +129,7 @@ These artifacts have their own source of truth:
 
 - desired behavior -> Behavior Registry;
 - product scope / future behavior -> Product Backlog;
-- target architecture graph / boundary contract -> ArchAudit-owned contract format;
+- target architecture contract / boundary rules -> ArchAudit-owned contract format;
 - observed architecture graph -> ArchAudit generated output;
 - stack baselines -> Hi-Flow shared reference layer;
 - implementation truth -> implementation reports and code;
@@ -142,7 +142,7 @@ Do not copy standard Hi-Flow artifact paths into `ARCHITECTURE.md` unless the pr
 
 ## 5. Architecture Contract and ArchAudit
 
-The target architecture graph evolves through design skills:
+The target architecture contract evolves through design skills:
 
 - `hi_flow:bootstrap` creates the initial minimal contract / baseline wiring;
 - `hi_flow:arch-spec` adds or changes target boundaries for a feature;
@@ -177,6 +177,8 @@ Existing gap:
 
 - arch-audit baseline rules already live inside the plugin;
 - stack baseline references for TypeScript / React were relocated into `hi_flow/references/stacks/`.
+- target-contract ownership is now documented at `hi_flow/references/target-architecture-contract.md`;
+- `arch-audit`, `arch-spec`, and `arch-redesign` now describe rules-patches as explicit target-contract deltas and keep observed graph as generated evidence.
 
 ---
 
@@ -339,4 +341,4 @@ Implemented in the first Project State slice:
 
 Still needed:
 
-1. Update ArchAudit / ArchSpec / ArchRedesign responsibilities around target architecture contract and observed graph.
+1. Runtime expansion beyond the existing `.audit-rules.yaml` / rules-patch contract if Hi-Flow later needs a richer target-graph format.

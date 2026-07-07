@@ -1,7 +1,7 @@
 # Rules-patch template
 #
 # Шаблон второго output cluster-mode сессии скилла `hi_flow:arch-redesign`.
-# Patch — кандидат на расширение project rules. Не applied автоматически.
+# Patch — кандидат на расширение Target Architecture Contract / project rules. Не applied автоматически.
 # Apply — explicit operator action: `arch-audit apply-patch <path>` или
 # interactive prompt при следующем audit прогоне. См. D11 в ARCHITECTURE.md.
 #

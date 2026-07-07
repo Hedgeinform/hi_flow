@@ -1,10 +1,11 @@
 # Rules-patch template — arch-spec
 #
 # Same D11 format as arch-redesign (shared contract — do NOT invent a new one).
-# This patch is the graph-formalizable subset of an arch-spec's fitness invariants,
-# derived from the FEATURE DESIGN (per-feature prophylactic), not from a cluster refactor.
+# This patch is a candidate Target Architecture Contract delta: the graph-formalizable
+# subset of an arch-spec's fitness invariants, derived from the FEATURE DESIGN
+# (per-feature prophylactic), not from a cluster refactor.
 #
-# Patch is a CANDIDATE for the project rules file. Never applied automatically.
+# Patch is a CANDIDATE for the project rules file / target contract. Never applied automatically.
 # Apply = explicit operator action: `arch-audit apply-patch <path>` or interactive
 # prompt at the next audit run. See D11 in ARCHITECTURE.md.
 #
