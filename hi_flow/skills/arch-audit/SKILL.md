@@ -7,12 +7,12 @@ description: Use when operator says «запусти arch-audit / проведё
 
 ## Overview
 
-Help the operator obtain a deterministic map of the project's structural architectural problems. The skill is an analytical scanner: static dependency-graph analysis and connectivity metrics, with no semantic judgment.
+Help the operator obtain a deterministic map of the project's structural architectural problems. The skill is an analytical scanner: static dependency-graph analysis and connectivity metrics, with no semantic judgment. It compares the observed dependency graph from code against the Target Architecture Contract (stack baselines + project rules + applied rules-patches).
 
 Two modes:
 
 - **Full mode** (default) — full audit. Output: `audit-report.json` (D8-compliant — structured findings schema, see References) + `audit-report.md` (human-readable with Mermaid visualizations).
-- **Apply-patch mode** — explicit command. Validate + merge a rules-patch (from `arch-redesign` or `arch-spec`) into the project rules file. No audit is run.
+- **Apply-patch mode** — explicit command. Validate + merge a rules-patch (from `arch-redesign` or `arch-spec`) into the project rules file, i.e. into the current machine-checkable Target Architecture Contract. No audit is run.
 
 Output is consumed downstream by `arch-redesign` (cluster-mode and triage-mode) and `arch-spec`.
 
@@ -27,6 +27,7 @@ Output is consumed downstream by `arch-redesign` (cluster-mode and triage-mode) 
 - Security scans, performance profiling, integration testing.
 - Authoring architectural principles — the D9 library is imported from industry; the skill reads it, does not create it.
 - Project-wide ARCHITECTURE.md maintenance — outside this audit runtime. arch-audit produces reports/rules evidence; explicit document maintenance or the relevant Hi-Flow architecture phase consumes that evidence.
+- Making architecture decisions or silently promoting current code to target truth. The observed graph is evidence only; target-contract changes require an explicit rules-patch apply.
 - Onboarding tooling setup — separate family mechanism.
 
 ## Anti-triggers (do NOT auto-activate)
@@ -55,7 +56,8 @@ There is no auto-selection — both modes are signaled explicitly by the trigger
 |---|---|
 | «Я и так знаю где архитектурные проблемы, audit избыточен» | Code review misses structural problems. Within its scope arch-audit is exhaustive — if a structural problem exists, it's in the report. Run it. |
 | «Запущу arch-redesign напрямую, без audit» | arch-redesign cluster-mode without D8-compliant findings hallucinates clustering. Pre-condition is not bypassable. |
-| «Pending patches от прошлой сессии можно проигнорировать» | An audit without them shows state without rules already designed. Apply before audit, or skip explicitly with a warning in the report. |
+| «Pending patches от прошлой сессии можно проигнорировать» | An audit without them shows state without contract deltas already designed. Apply before audit, or skip explicitly with a warning in the report. |
+| «Раз текущий код так устроен, значит это и есть целевая архитектура» | Нет. Current code is the observed graph, not target truth. Violations become findings / Active Issues / Accepted Drift, never silent contract edits. |
 
 ---
 
@@ -63,7 +65,7 @@ There is no auto-selection — both modes are signaled explicitly by the trigger
 
 ### Session intro — pending patches
 
-Before the audit, check for unapplied rules-patches. Look for files matching `*-rules-patch.yaml` in `<project>/docs/superpowers/specs/` and exclude any already present in `<project>/audit-report/applied-patches/`.
+Before the audit, check for unapplied rules-patches. They are candidate Target Architecture Contract deltas. Look for files matching `*-rules-patch.yaml` in `<project>/docs/superpowers/specs/` and exclude any already present in `<project>/audit-report/applied-patches/`.
 
 If pending patches exist, show the operator:
 
@@ -125,7 +127,7 @@ After version is detected, run preflight check (`core/preflight.ts → checkDepc
 ### Generate config + run depcruise
 
 Helper `generate-depcruise-config.js`:
-- Reads baseline rules (Layer A — 3 built-ins) + project rules (`<project>/.audit-rules.yaml`, if present).
+- Reads the machine-checkable Target Architecture Contract: baseline rules (Layer A — 3 built-ins) + project rules (`<project>/.audit-rules.yaml`, if present).
 - Converts the wrapping YAML format into native depcruise CJS config.
 - Output: temporary `.dependency-cruiser.cjs` in the working directory.
 
@@ -144,7 +146,7 @@ node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --output-type j
 Helper `parse-depcruise-output.js`:
 - Parse JSON.
 - Map violations → D8 findings via `enrich-findings` (depcruise `error` → D8 `HIGH`, or `CRITICAL` if promoted; `warn` → `MEDIUM`; `info` → `LOW`).
-- Map modules → D8 `metrics.dep_graph` + `metrics.per_module`.
+- Map modules → D8 `metrics.dep_graph` + `metrics.per_module`. This is the observed graph generated from code for this audit run; never edit it by hand and never treat it as target architecture.
 
 Helper `compute-nccd.js` computes NCCD from dep_graph (depcruise does not emit it directly).
 
@@ -292,7 +294,7 @@ Do not chain automatically. Wait for the operator's choice.
 
 ## Apply-patch mode
 
-Validate + merge a rules-patch into the project rules file. No audit is run.
+Validate + merge a rules-patch into the project rules file. This is the only mode where `arch-audit` changes the machine-checkable Target Architecture Contract. No audit is run.
 
 Trigger: `arch-audit apply-patch <path>`, or invoked from full-mode Session intro on detection of unapplied patches.
 
@@ -329,7 +331,7 @@ On validation failure the patch is **not applied**. The error report contains ac
 On validation success — atomic ordering: **merge first, on success — archive**. If the merge fails on write, the patch stays in place and archive does not run.
 
 - Helper `helpers/cli-apply-patch.ts` orchestrates validate → merge → archive.
-- Merge writes to the project rules file (`<project>/.audit-rules.yaml`).
+- Merge writes to the project rules file (`<project>/.audit-rules.yaml`), the project-local contract layer.
 - On success — move the patch file into archive: `<project>/audit-report/applied-patches/<date>-<original-name>.yaml`. Not deleted — non-destructive default; git history holds the full audit trail.
 - Returns success report:
 
@@ -421,4 +423,5 @@ The `arch-audit` runtime is intentionally self-contained: it uses its own instal
 - `references/self-review-checklist.md` — seven-group checklist for the Self-Review subagent.
 - `references/audit-report-template.md` — markdown template for header + sections.
 - `hi_flow/references/architectural-principles.md` — D9 library (catalog of principles with typical fix alternatives; owned by this skill).
+- `hi_flow/references/target-architecture-contract.md` — family-level ownership and SSoT rules for target contract vs observed graph.
 - `examples/zhenka-audit-report-mock.md` — example of a complete `audit-report.md` for visual reference.

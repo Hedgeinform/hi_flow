@@ -1,7 +1,7 @@
 {
   "name": "hi_flow",
   "description": "Feature-and-above solo+AI development methodology: product specs, Project State, architecture gates, Behavior Registry, behavior migration, implementation plans, foundation wiring, and delivery rails.",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"

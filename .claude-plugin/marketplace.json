@@ -9,7 +9,7 @@
     {
       "name": "hi_flow",
       "description": "Feature-and-above solo+AI development methodology. Ten skills: product-spec (product decomposition + backlog), feature-spec (feature-level product spec + Behavior Registry change-set), project-state (current project dashboard and resume point), behavior-migration (existing-project migration onto Behavior Registry and harness rails), arch-audit (architecture analysis), arch-redesign (corrective refactor planning), arch-spec (architecture gate or full per-feature design), implementation-plan (behavior-first Superpowers-compatible plan with registry and harness artifact tasks), bootstrap (project foundation: plugin-internal stack baselines, scaffold, audit, CI/gates, empty behavior-gate rails, Project State), and ops (last-mile delivery: profile, CD workflow, compose/Dockerfile or static deploy, reverse-proxy wiring, first staging deploy). hi_flow owns the product/project-state/architecture/behavior/planning rails; Superpowers is recommended as the execution layer, not as a replacement for signed hi_flow specs.",
-      "version": "0.12.1",
+      "version": "0.12.2",
       "source": "./hi_flow",
       "author": {
         "name": "viessedo",

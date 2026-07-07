@@ -18,7 +18,7 @@ It does four jobs, none of which is the single defining one:
 
 Integration-check (3) is **one of four**, not the whole point. On a green field (first feature) job (3) may not apply, but the architecture gate still asks whether the feature changes structure, ownership, integration, or invariants enough to need a full spec.
 
-Output: either (a) an **architecture-gate waiver** appended to / emitted alongside the feature handoff, consumed directly by `hi_flow:implementation-plan`, or (b) an `arch-spec.md` design doc consumed by `hi_flow:implementation-plan`, plus a rules-patch consumed by `hi_flow:arch-audit` via explicit operator apply (D11), plus backlog candidates for `product-backlog`.
+Output: either (a) an **architecture-gate waiver** appended to / emitted alongside the feature handoff, consumed directly by `hi_flow:implementation-plan`, or (b) an `arch-spec.md` design doc consumed by `hi_flow:implementation-plan`, plus a rules-patch consumed by `hi_flow:arch-audit` via explicit operator apply (D11), plus backlog candidates for `product-backlog`. The rules-patch is a feature-level Target Architecture Contract delta, not a side document.
 
 ## When to use
 
@@ -375,7 +375,7 @@ Whether something is graph-formalizable is the LLM's call when formulating (abou
 
 ### rules-patch format = same as arch-redesign (D11)
 
-One consumer (`arch-audit apply-patch`), shared D11 contract. arch-spec **does not invent** its own format: YAML dependency rules, each with `name` / `severity` / `from`/`to` (or `required` invariant) / a mandatory `principle` reference to a D9 canonical id. Apply is an **explicit operator action**, not automatic. Reuse `references/rules-patch-template.yaml` (same as arch-redesign) — do not create a new format.
+One consumer (`arch-audit apply-patch`), shared D11 contract. arch-spec **does not invent** its own format: YAML dependency rules, each with `name` / `severity` / `from`/`to` (or `required` invariant) / a mandatory `principle` reference to a D9 canonical id. Apply is an **explicit operator action**, not automatic. Reuse `references/rules-patch-template.yaml` (same as arch-redesign) — do not create a new format. This is the current machine-checkable form of a target architecture delta.
 
 **Composition-root exemption (generation rule).** When generating type-1 "only X→Y" rules (the `from.path` allowlist via negative-lookahead), include composition-root paths in a **separate** `from.pathNot` so the wiring layer is legal. The composition-root path set (`src/main.ts` / `src/bootstrap/` / `src/composition/`) is a project-level baseline constant — reference the baseline definition if present, else use the default list; do not invent it per-feature (P8). `from.pathNot` is orthogonal to the `from.path` allowlist (AND-combined by depcruise), NOT folded into the lookahead. Without the exemption depcruise flags the composition-root — which by nature imports many modules — as a violator.
 
@@ -385,7 +385,7 @@ One consumer (`arch-audit apply-patch`), shared D11 contract. arch-spec **does n
 
 ### Source
 
-CC (cross-cutting policies) and P- (reusable sub-policies) from the feature-spec are ready candidates for fitness invariants; arch-spec formalizes them. Plus block B decisions. Each feature adds its graph rules to the cumulative rules file → future arch-spec (block C, "violation of a known rule") and arch-audit runs honour them. Each feature hardens the next one's defense (D11 cumulative cycle).
+CC (cross-cutting policies) and P- (reusable sub-policies) from the feature-spec are ready candidates for fitness invariants; arch-spec formalizes them. Plus block B decisions. Each feature adds its graph rules to the cumulative Target Architecture Contract after explicit apply → future arch-spec (block C, "violation of a known rule") and arch-audit runs honour them. Each feature hardens the next one's defense (D11 cumulative cycle).
 
 ## Escalation (session mechanics, not a document section)
 
@@ -398,9 +398,9 @@ Escalation discipline — "when to bother the operator" — lives **in the sessi
 
 ## ARCHITECTURE.md decoupling
 
-arch-spec is **decoupled** (variant 2, OQ6): it emits a spec with decisions as facts and **does not depend on** any operator-personal `architecture` / `living-architecture` skill. The only link is the artifact (the spec) — weak coupling. If the project has explicit architecture-document maintenance, it can consume the signed spec; if not, the signed spec remains the stable architectural handoff to `hi_flow:implementation-plan`.
+arch-spec is **decoupled** (variant 2, OQ6): it emits a spec with decisions as facts and **does not depend on** any operator-personal `architecture` / `living-architecture` skill. The signed spec remains the human-readable design handoff to `hi_flow:implementation-plan`; the rules-patch is the machine-checkable Target Architecture Contract delta consumed by `hi_flow:arch-audit`.
 
-The single obligation: provide a clear point **"spec signed = decisions are final"**, so any future consumer has a stable moment of pickup. Feature-level decisions are either consumed directly by implementation-plan or later reflected in the project's `ARCHITECTURE.md` through explicit architecture-document maintenance. Decisions about hi_flow itself are a separate meta-session concern.
+The single obligation: provide a clear point **"spec signed = decisions are final"**, so any future consumer has a stable moment of pickup. Feature-level decisions are consumed directly by implementation-plan, graph-formalizable deltas are exported as rules-patches, and selected human-readable topology/domain updates may later be reflected in the project's `ARCHITECTURE.md` through explicit architecture-document maintenance. Decisions about hi_flow itself are a separate meta-session concern.
 
 ## Closure backlog-sync
 
@@ -440,7 +440,7 @@ The feature-spec "Open items at closure" table mixes severities. Sort each row d
 6. **Derivability gate on every decision.** Each architectural decision passes the three-criteria filter; product decisions belong in feature-spec, not here.
 7. **Deferred goes to backlog, not the spec.** No "open questions" section; deferred items go to product-backlog via the backlog-integration mechanism.
 8. **Escalation, not restart.** When ambiguity cannot be resolved from data, escalate to the operator — do not restart an upstream skill. Minimize escalations through completeness.
-9. **rules-patch is a candidate, never auto-applied.** Apply is an explicit operator action via `arch-audit apply-patch` (D11).
+9. **rules-patch is a candidate Target Architecture Contract delta, never auto-applied.** Apply is an explicit operator action via `arch-audit apply-patch` (D11).
 10. **Shared-capability lookahead on every port.** When a floor-2 decision introduces a port / adapter boundary, run the cross-cutting shared-capability check (roadmap / backlog / ARCHITECTURE-infra-constant / orthogonality signals). Cross-cutting → contract one notch wider than YAGNI + record in §3 as a platform port. Awareness only — no registry, no cross-skill write (D26).
 11. **Honor the project backbone standard (if declared).** When `ARCHITECTURE.md`'s `## Project-specific принципы` declares a per-feature backbone / module-shape standard, the module breakdown conforms to it, the spec declares the feature's public surface, and arch-spec emits `<feature>-narrow-public-entry` (Fitness invariants). Read it from `ARCHITECTURE.md` (a **read** — decoupling D21 is about not *writing*); project-specific, not invented per-feature (P8). Absent the standard — inert (derive from responsibilities, emit nothing backbone-specific). See `hi_flow/references/feature-backbone-convention.md`.
 
@@ -520,6 +520,7 @@ If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` tem
 - `references/self-review-checklist.md` — checklist for the isolated review subagent.
 - `references/rules-patch-template.yaml` — rules-patch output structure (reused from arch-redesign / D11 — same format, do not invent a new one).
 - `hi_flow/references/architectural-principles.md` — shared D9 library (principle catalog; owner — arch-audit). Source of `principle` ids for invariants and rules-patch.
+- `hi_flow/references/target-architecture-contract.md` — family-level ownership and SSoT rules for target contract vs observed graph.
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). arch-spec reads the project's declared standard (operational rule 11) and emits `<feature>-narrow-public-entry` when it mandates a public surface. Read for the canonical form + the narrow-entry machine template.
 - `hi_flow/skills/arch-audit/references/d8-schema.md` — D8 snapshot schema (audit-report format consumed for block C).
 - **Shared graph-core** — `hi_flow/skills/arch-audit/core/graph-core.ts` (BUILT, owner arch-audit per D7). Pure metric formulas (`computeNCCD`, `computeCoupling` for Ca/Ce, `instability` for I) + declarative-graph traversal (`reachableFrom`, `findCycles`). Block C imports these for its live delta computation; this skill does not reimplement them.

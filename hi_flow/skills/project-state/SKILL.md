@@ -20,7 +20,7 @@ project-state is not architecture design, behavior design, product backlog manag
 | `ARCHITECTURE.md` | Architecture snapshot: technical topology, domain ownership / SSoT, Active Issues, Accepted Drift. |
 | Behavior Registry | Living source of behavior contracts and scenario status. |
 | Product Backlog | Desired future behavior and product scope. |
-| ArchAudit | Audit reports, project rules evidence, observed dependency graph, and architecture violations. |
+| ArchAudit | Target Architecture Contract validation/apply, audit reports, observed dependency graph, and architecture violations. |
 | Superpowers | Execution layer for implementation and fixes. |
 
 Do not duplicate these sources in `PROJECT_STATE.md`. Store only the operational summary and pointers needed to resume work.

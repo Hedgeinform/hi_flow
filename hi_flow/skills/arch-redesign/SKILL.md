@@ -7,7 +7,7 @@ description: Use when operator says «давай сделаем редизайн
 
 ## Overview
 
-Help the operator turn accumulated architectural debt into an actionable refactor plan. Two modes: triage (transforms all audit findings into a campaign roadmap with priorities and dependencies) and cluster-mode (for one cluster, produces a refactor plan with architectural choice, target state, fitness checkpoints, plus a rules-patch — candidate project rules to harden the architecture).
+Help the operator turn accumulated architectural debt into an actionable refactor plan. Two modes: triage (transforms all audit findings into a campaign roadmap with priorities and dependencies) and cluster-mode (for one cluster, produces a refactor plan with architectural choice, target state, fitness checkpoints, plus a rules-patch — candidate Target Architecture Contract delta to harden the architecture).
 
 Corrective design skill of the hi_flow family. Refactor plan is consumed downstream by the implementation handoff: feature-bound redesign goes through `hi_flow:implementation-plan`; standalone debt campaigns go directly to an execution workflow with characterization tests. Rules-patch is consumed by `hi_flow:arch-audit` via explicit operator apply.
 
@@ -120,7 +120,7 @@ After this step, the cluster shape is settled.
 For each cluster, three mutually exclusive options:
 
 - **In campaign** (default).
-- **Accept as drift** — record as Accepted Drift in `ARCHITECTURE.md` through explicit architecture-document maintenance. Do not route to an operator-personal `architecture` skill.
+- **Accept as drift** — record as Accepted Drift in `ARCHITECTURE.md` through explicit architecture-document maintenance. This does not change the Target Architecture Contract. Do not route to an operator-personal `architecture` skill.
 - **Defer** — to the next campaign.
 
 Recommend based on severity + size + cascade effect; operator confirms or overrides.
@@ -237,7 +237,7 @@ List of fitness checkpoints — ordered architectural invariants in audit's lang
 
 **Checkpoints are scoped to this cluster only.** If there is overlap with another cluster — note in step 4 (dependencies), not in checkpoints.
 
-**Rules-patch generation.** After checkpoints are settled, deterministically convert each one into a depcruise rule (provisional format — see `references/rules-patch-template.yaml`). Patch is a separate YAML file alongside the refactor plan, one patch per cluster. Each rule MUST have a `principle` field referencing a canonical id from the D9 library — this is the D8 contract applied to rules. Rule names match checkpoint names for traceability.
+**Rules-patch generation.** After checkpoints are settled, deterministically convert each one into a depcruise rule (provisional format — see `references/rules-patch-template.yaml`). Patch is a separate YAML file alongside the refactor plan, one patch per cluster. Each rule MUST have a `principle` field referencing a canonical id from the D9 library — this is the D8 contract applied to rules. Rule names match checkpoint names for traceability. The patch is the machine-checkable Target Architecture Contract delta for the chosen target state.
 
 **Patch is not applied automatically.** It is a candidate output. Apply is an explicit operator action via `arch-audit apply-patch <path>` or via interactive prompt at the next audit run (per D11).
 
@@ -271,7 +271,7 @@ Cluster-mode produces **two artifacts**:
 - **Tech Stack line** — project's stack.
 - **Refactor framing note** — type=refactor, behavior preservation critical.
 - Cluster scope, fork cells, target state, success criteria (fitness checkpoints), stop conditions (bail for class A), hidden deps, cluster-cluster relations.
-- **Rules-patch reference** — path to patch file, list of rules in it, apply instructions.
+- **Rules-patch reference** — path to patch file, list of target-contract rules in it, apply instructions.
 
 **Rules-patch** — `docs/superpowers/specs/<date>-arch-redesign-<cluster-name>-rules-patch.yaml`. Exact structure — in `references/rules-patch-template.yaml`. Contains:
 
@@ -360,6 +360,7 @@ Do not chain automatically. Do not auto-invoke `arch-audit apply-patch` — appl
 
 - `references/refactor-plan-template.md` — refactor plan output structure.
 - `references/rules-patch-template.yaml` — rules-patch output structure (cluster-mode second artifact, per D11).
+- `hi_flow/references/target-architecture-contract.md` — family-level ownership and SSoT rules for target contract vs observed graph.
 - `references/campaign-roadmap-template.md` — campaign roadmap output structure.
 - `references/d8-schema.md` — pointer stub → canonical location: `hi_flow/skills/arch-audit/references/d8-schema.md` (markdown spec) + `hi_flow/skills/arch-audit/references/d8-schema.json` (JSON Schema for validators).
 - `hi_flow/references/architectural-principles.md` — shared D9 library (catalog of principles with typical fix alternatives; owner — arch-audit).
