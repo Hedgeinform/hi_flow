@@ -1,6 +1,6 @@
 ---
 name: bootstrap
-description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, optional behavior-registry / behavior-gate foundation) plus a created ARCHITECTURE.md with a projected `## Stack`. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
+description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, behavior-registry / behavior-gate foundation for hi_flow projects) plus a created ARCHITECTURE.md with a projected `## Stack`. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
 ---
 
 # bootstrap
@@ -23,7 +23,7 @@ It does six jobs, one atom (probe -> scaffold -> wire) reused by two modes (init
 
 ## When to use
 
-The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md created (init), and, where covered, a behavior-registry / behavior-gate foundation exists - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
+The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md created (init), and the empty behavior-registry / behavior-gate foundation exists for a hi_flow project - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
 
 ## Anti-triggers (do NOT auto-activate)
 
@@ -41,7 +41,7 @@ bootstrap owns:
 3. **Scaffolding** — a green skeleton + one convention reference pattern (generic, non-domain).
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
 5. **Wiring the L3-hygiene harness (Function 3a)** — laying the CI workflow + linter/formatter baseline + gates aggregate **delivered by Function 3a** into the project. bootstrap is the **consumer** of these templates, not the owner of their design (ownership stays with Function 3a).
-6. **Wiring the behavior-registry / behavior-gate foundation when covered/requested** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the registry and rail.
+6. **Wiring the behavior-registry / behavior-gate foundation for hi_flow projects** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the empty registry and rail. If the operator explicitly declines behavior-gated development, record the opt-out loudly; do not silently omit the rail.
 
 **Out of scope:** hooks / enforcement (Function 3b) — deferred to a research-trigger (decision 2026-06-01: a quality CI is enough; revisit hooks only if CI proves insufficient).
 
@@ -120,6 +120,18 @@ product-spec is **optional** (an enrichment, not a base): init can run before a 
 6. **CI / gates wiring.**
 7. **Done** (see Output & done).
 
+### Behavior rail foundation (new-project default)
+
+For a new hi_flow project, bootstrap creates the **empty behavior rail** by default. This is not product behavior and does not require a feature-spec:
+
+- `docs/behavior/registry.md` (or the configured equivalent) with the registry convention and no invented scenarios.
+- `docs/behavior/mappings/` with the mapping convention or a project-native equivalent.
+- One self-check/runner smoke that proves the rail executes.
+- One project command (`behavior:test`, `bun run behavior:test`, `npm run behavior:test`, `pytest -m behavior`, or stack-native equivalent).
+- A CI step that runs the self-check/runner smoke.
+
+The first real `BS-*` scenarios arrive later from `hi_flow:feature-spec` and are mapped by `hi_flow:implementation-plan`. Do not leave intentionally failing sample scenarios in CI.
+
 ### Feature-backbone seeding (backend-service / fullstack)
 
 For project class `backend-service` or `fullstack`, the Create flow seeds the project's `## Project-specific принципы` with the **feature-backbone convention** — the verbatim canonical principle from `hi_flow/references/feature-backbone-convention.md`. This is the **forward carrier**: a new project inherits the module-monolith convention by default, with no precedent in code yet (the first arch-spec instantiates it; arch-spec consumes the declared standard).
@@ -164,7 +176,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 
 - repo compiles, AND
 - gates green for the **managed (covered) axes** — typecheck + lint + arch-audit no-violations + the reference test passes, AND
-- if the behavior-registry / behavior-gate foundation is covered/requested, the Behavior Registry path exists, the behavior mapping convention exists, the behavior runner command runs a green smoke/self-check and is included in CI, AND
+- for a hi_flow project, the Behavior Registry path exists, the behavior mapping convention exists, the behavior runner command runs a green smoke/self-check and is included in CI, unless the operator explicitly opted out and that opt-out is recorded, AND
 - CI present, AND
 - ARCHITECTURE.md exists with a `## Stack` section.
 
@@ -188,6 +200,8 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - **Faking a choice at coverage = 1.** When an axis has one covered technology, buy-in is an informing confirmation, not a fake menu.
 - **Auto-launching incremental.** An upstream signal is not a launch. The operator decides to fix an axis (P6).
 - **Writing the stack as source of truth.** `## Stack` is a projection of the configs; the configs are truth (KD2).
+- **Omitting the behavior rail silently.** A new hi_flow project needs an empty registry/runner rail before feature implementation. If the operator declines it, record the opt-out; otherwise create the rail.
+- **Inventing behavior scenarios.** bootstrap creates the empty rail only. Product behavior belongs to feature-spec and implementation-plan, not bootstrap.
 - **"Fixing" neighbour mechanisms confirmed by the live run.** Do not invent problems in already-confirmed mechanisms: extract-before-probing, density-factor, ACL anti-trigger, sync-in-txn rationale, green-field block-C skip. The lesson of the false finding: do not manufacture a problem where the mechanism already exists.
 - **Seeding the backbone as a hardcoded enforcement form.** bootstrap seeds the layout-agnostic *stance* (default form = "typical, not a mandate"); the concrete narrow-entry regex is per-feature (arch-spec, P8). Never write a `^src/<feature>-` rule into the project's ARCHITECTURE.md.
 - **Seeding the backbone for frontend / CLI / library.** Only backend-service / fullstack get it (module-monolith canon). Frontend feature-isolation is a separate track; declining (an other style) is legitimate — degrade `unmanaged`, never silent.

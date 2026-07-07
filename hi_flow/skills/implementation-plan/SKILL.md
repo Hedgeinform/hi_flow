@@ -1,6 +1,6 @@
 ---
 name: implementation-plan
-description: Use when the operator asks for a hi_flow implementation plan, impl-plan, or plan from signed hi_flow artifacts: feature-spec with Behavior Registry Changes plus architecture-gate waiver or arch-spec. Prefer this over superpowers:writing-plans inside the hi_flow pipeline. Produces a Superpowers-compatible, behavior-first implementation plan for execution by subagent-driven-development or equivalent workflows.
+description: "Use when the operator asks for a hi_flow implementation plan, impl-plan, or plan from signed hi_flow artifacts: feature-spec with Behavior Registry Changes plus architecture-gate waiver or arch-spec. Prefer this over superpowers:writing-plans inside the hi_flow pipeline. Produces a Superpowers-compatible, behavior-first implementation plan for execution by subagent-driven-development or equivalent workflows."
 ---
 
 # implementation-plan

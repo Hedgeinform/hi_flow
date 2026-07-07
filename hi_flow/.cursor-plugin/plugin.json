@@ -2,7 +2,7 @@
   "name": "hi_flow",
   "displayName": "hi_flow",
   "description": "Behavior-first feature and architecture workflow for agentic development.",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"

@@ -1,6 +1,6 @@
 ---
 name: arch-audit
-description: Use when operator says «запусти arch-audit / проведём аудит архитектуры / проверь архитектуру проекта / arch-audit apply-patch <path>» or English equivalents. Produces audit-report.{json,md} for full mode, or merges a rules-patch in apply-patch mode.
+description: Use when operator says «запусти arch-audit / проведём аудит архитектуры / проверь архитектуру проекта / arch-audit apply-patch PATH» or English equivalents. Produces audit-report.{json,md} for full mode, or merges a rules-patch in apply-patch mode.
 ---
 
 # arch-audit

@@ -1,6 +1,6 @@
 ---
 name: ops
-description: Use when operator says «настрой доставку проекта X», «выкати X на VPS», «подключи проект к серверу», «настрой CD для X», «зафиксируй мой сервер», «настрой deployment-профиль», «опиши таргет доставки», or English equivalents («set up delivery for X», «deploy X to VPS», «set up CD for X», «fix my server profile»). Input — a ready project that already works on your machine (project class / `## Stack` fixed by bootstrap) + a delivery profile; output — a CD workflow (deploy + configure-env) plus compose/Dockerfile (container form) or build+rsync (static form), a `docs/ops` deployment record, and a first green staging deploy. ops is the last mile: it ships a built product onto a machine that is not yours.
+description: "Use when operator says «настрой доставку проекта X», «выкати X на VPS», «подключи проект к серверу», «настрой CD для X», «зафиксируй мой сервер», «настрой deployment-профиль», «опиши таргет доставки», or English equivalents («set up delivery for X», «deploy X to VPS», «set up CD for X», «fix my server profile»). Input — a ready project that already works on your machine (project class / `## Stack` fixed by bootstrap) + a delivery profile; output — a CD workflow (deploy + configure-env) plus compose/Dockerfile (container form) or build+rsync (static form), a `docs/ops` deployment record, and a first green staging deploy. ops is the last mile: it ships a built product onto a machine that is not yours."
 ---
 
 # ops
@@ -53,6 +53,8 @@ The profile is read **dynamically** (adding a target = adding a profile file, ne
    - **Secrets ordering:** before the first deploy, ops runs the `configure-env` workflow (or asks the operator when the values are not yet set). **"Secrets present on the box" is a precondition** of the staging deploy — configure-env precedes the first deploy, never trails it.
 
 4. **verify** — the first staging deploy is **green** + the healthcheck passes (the done criterion — see the **Done criterion** section). **prod is never automatic.** On a red deploy → abort / rollback so the box is never left half-wired — the abort/rollback details live in the **Failure / abort / rollback** section; this step only references them.
+
+   If the project has `docs/behavior/registry.md` (or a configured equivalent) and a behavior runner command, the behavior gate is part of this verify step. ops consumes the existing gate; it does not create new product scenarios, rewrite the registry, or downgrade automated scenarios to manual. A red automated behavior scenario blocks onboarding just like a red CI gate.
 
 **R6 boundary (for the wire step):** ops owns the deploy / CD templates and the wiring; `superpowers` is the methodology for implementing **new project code**. The standard Dockerfile rendered from a template is an **ops render**, not a superpowers artifact.
 
@@ -200,7 +202,7 @@ Done is an **enumerable set of gates**, like bootstrap's. The two coverage level
 
 **Covered onboarding — the gates, in order:**
 
-1. **CI gate green** (including `behavior:test` / the behavior gate when the project has Behavior Registry harness rails).
+1. **CI gate green** (including `behavior:test` / the behavior gate when the project has Behavior Registry harness rails). If a Behavior Registry exists but no runner command exists, stop and route back to `hi_flow:bootstrap` / `hi_flow:behavior-migration` for the missing rail instead of shipping around it.
 2. **Secrets present on the box** (`configure-env` has run) — this is a **precondition** of the next gate, not an afterthought (secrets ordering, the "wire" step).
 3. **First staging deploy succeeded** — the image built + pushed and the service is up (container form), or the static build is built + rsync'd (static form).
 4. **Healthcheck green** — `GET /health` returns `200` (container), or the static `index.html` is served (static). The `/health` contract is an obligation of the *project* toward ops, consumed here (see **Five delivery concerns → The `/health` contract**).
@@ -242,6 +244,7 @@ The done gates run **in order**. On **red at any gate**, ops **aborts and rolls 
 - **Touching neighbours.** No port clobber, no neighbour's vhost edited, no co-tenant service torn down — every `onboard` and every rollback respects the co-tenants on the box (R7).
 - **Hardcoding box facts.** The runtime, reverse-proxy, transports, and ports live in the **profile** (read dynamically), never baked into the skill or a template. Adding a target = adding a profile file.
 - **Faking a probing choice.** The profile is known and the only one — there is no infrastructure menu. `onboard` **confirms the form** and collects project-local parameters; it does **not** stage a fake choice that does not exist (the ops analogue of bootstrap's buy-in at coverage = 1).
+- **Bypassing the behavior gate.** If the project has a Behavior Registry and runner, ops must run/require it before delivery. If the registry exists but the rail is incomplete, stop and route back to foundation/migration instead of treating delivery healthcheck as enough.
 
 ## References
 

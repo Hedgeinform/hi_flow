@@ -51,7 +51,7 @@ and must be shipped to a non-local target.
 - `hi_flow:implementation-plan` - behavior-first implementation plan compatible
   with Superpowers execution skills.
 - `hi_flow:bootstrap` - project foundation: stack, scaffold, audit, CI/gates,
-  and optional behavior-registry / behavior-gate rails.
+  and empty behavior-registry / behavior-gate rails.
 - `hi_flow:ops` - last-mile delivery profile, CD, deploy scaffold, and staging
   verification.
 
