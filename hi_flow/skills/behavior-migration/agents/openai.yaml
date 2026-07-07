@@ -1,0 +1,7 @@
+interface:
+  display_name: "Behavior Migration"
+  short_description: "Migrate projects onto behavior rails"
+  default_prompt: "Use $behavior-migration to migrate this existing project to hi_flow Behavior Registry."
+
+policy:
+  allow_implicit_invocation: true
