@@ -8,8 +8,8 @@ matches the technology chosen for the axis.
 
 Currently shipped:
 
-- `typescript/` — the TypeScript / Node convention pattern (the only fully covered runtime
-  today, per the coverage-manifest).
+- `typescript/` — the TypeScript / Node convention pattern.
+- `react/` — the React / Vite convention pattern.
 
 ## Form: hybrid (template files + this instruction)
 
@@ -48,7 +48,7 @@ wrong.
 ## Test-location convention demonstrated
 
 The TypeScript stack convention is **tests live in `tests/` mirroring `src/`** (see
-`~/.claude/architecture/stacks/typescript.md` → Testing: "test location"), not literally
+`hi_flow/references/stacks/typescript.md` -> Testing: "test location"), not literally
 co-located in the same directory as the source. The design spec (§7) says "co-located test"
 loosely; the authoritative convention is the stack file, so the template follows the `tests/`
 mirror form:

@@ -176,7 +176,7 @@ Target ownership:
 Existing gap:
 
 - arch-audit baseline rules already live inside the plugin;
-- stack baseline references for TypeScript / React still point to the operator-personal architecture area and need relocation into the plugin.
+- stack baseline references for TypeScript / React were relocated into `hi_flow/references/stacks/`.
 
 ---
 
@@ -333,9 +333,10 @@ Implemented in the first Project State slice:
 5. Phase skills require Project State updates at closure.
 6. Implementation-plan writes a Completion Protocol for executor close-out.
 7. Hi-Flow skills no longer route generic architecture/document updates to an operator-personal `architecture` / `living-architecture` skill.
+8. TypeScript and React stack files/baselines live inside `hi_flow/references/stacks/`.
+9. Bootstrap no longer depends on the old Topic Index / full Module Map architecture-document shape.
+10. A compact bootstrap-owned `ARCHITECTURE.md` template lives at `hi_flow/skills/bootstrap/references/architecture-template.md`.
 
 Still needed:
 
-1. Slim the `ARCHITECTURE.md` template.
-2. Relocate stack baselines from operator-personal paths into the plugin.
-3. Update ArchAudit / ArchSpec / ArchRedesign responsibilities around target architecture contract and observed graph.
+1. Update ArchAudit / ArchSpec / ArchRedesign responsibilities around target architecture contract and observed graph.

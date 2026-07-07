@@ -37,11 +37,11 @@ The operator wants the project's technical foundation fixed before implementatio
 
 bootstrap owns:
 
-1. **Create flow for `ARCHITECTURE.md`** — a self-contained port of Function 1 of the operator-personal `architecture` skill: create the document from template, format-validate, init the Topic Index, lay a minimal Module Map skeleton, project `## Stack` from the configs, **create the `## Project-specific принципы` section and — for backend-service/fullstack — seed the feature-backbone principle** (forward carrier; see *Feature-backbone seeding*).
+1. **Create flow for `ARCHITECTURE.md`** — create a compact architecture snapshot, format-validate it, project `## Stack` from the configs, and create the project-specific architecture sections bootstrap owns. For backend-service/fullstack, seed the feature-backbone principle (forward carrier; see *Feature-backbone seeding*).
 2. **App-stack fixation** — probing + fixing technologies per infrastructure axis (the atom, below).
 3. **Scaffolding** — a green skeleton + one convention reference pattern (generic, non-domain).
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
-5. **Wiring the L3-hygiene harness (Function 3a)** — laying the CI workflow + linter/formatter baseline + gates aggregate **delivered by Function 3a** into the project. bootstrap is the **consumer** of these templates, not the owner of their design (ownership stays with Function 3a).
+5. **Wiring the L3-hygiene harness** — applying the plugin's stack baselines: linter/formatter, test runner, audit config, gates aggregate, and CI workflow.
 6. **Wiring the behavior-registry / behavior-gate foundation for hi_flow projects** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the empty registry and rail. If the operator explicitly declines behavior-gated development, record the opt-out loudly; do not silently omit the rail.
 7. **Creating the initial `PROJECT_STATE.md`** - a compact operational dashboard using `hi_flow:project-state`'s template. bootstrap records only the foundation status and next hi_flow action; ongoing state refresh happens at phase exits, not through bootstrap.
 
@@ -76,13 +76,13 @@ Do **not** restate the taxonomy here — read `references/axis-taxonomy.md` for 
 
 **Coverage-gated probing (coverage-honesty).** bootstrap proposes only what the plugin can **deliver end-to-end** (baseline + audit + gates + scaffold). The whole of hi_flow is tied to concrete stacks (L3 baselines, the deterministic depcruise graph, stack-files are all technology-specific). Proposing an uncovered component = promising turnkey hygiene that will not exist.
 
-The `references/coverage-manifest.md` is the **SSoT of coverage** (principle 4). bootstrap reads it dynamically — nothing about coverage is hardcoded. Do **not** restate the rows here; read the manifest for what is currently covered (today: only `language & runtime` = TypeScript/Node is fully covered).
+The `references/coverage-manifest.md` is the **SSoT of coverage** (principle 4). bootstrap reads it dynamically — nothing about coverage is hardcoded. Do **not** restate the rows here; read the manifest for the current covered technologies.
 
 **Behavior on uncovered (principle 5 — no silent fallback):**
 
 - **Default:** do not propose an uncovered technology.
 - **If the operator insists:** do not block (the operator owns it) — but **degrade with a loud warning**: "axis outside plugin coverage — hygiene/audit/gates won't wire, marking unmanaged". No silent promises.
-- **Partially covered axis = NOT covered.** Each of the 5 fields (`stack-file`, `baseline`, `audit-adapter`, `scaffold-template`, `probe-class`) is **present**, **absent (pending)** — applicable but not yet built — or **N/A by design** — conceptually inapplicable to the axis. An axis is **covered** when every field is *present or N/A*; any **absent-pending** field falls under coverage-honesty → a loud signal: "axis X covered partially — have Y, missing Z; fixing the covered part, the rest is `unmanaged`". An **N/A** field does NOT count as missing (it must never trap an axis in permanent partial — see the manifest's field-states rule). (Postgres and the frontend axis are absent-pending cases today — frontend reaches `covered` once boundary-rules + scaffold-template are built, neither is N/A; the grounding case REH ERP frontend exposes this live.)
+- **Partially covered axis = NOT covered.** Each of the 5 fields (`stack-file`, `baseline`, `audit-adapter`, `scaffold-template`, `probe-class`) is **present**, **absent (pending)** — applicable but not yet built — or **N/A by design** — conceptually inapplicable to the axis. An axis is **covered** when every field is *present or N/A*; any **absent-pending** field falls under coverage-honesty → a loud signal: "axis X covered partially — have Y, missing Z; fixing the covered part, the rest is `unmanaged`". An **N/A** field does NOT count as missing (it must never trap an axis in permanent partial — see the manifest's field-states rule). Postgres is the current partial example; covered frontend behavior is described in the manifest.
 
 **A `forced-now` axis that is uncovered / partial — the resolution.** A product-forced axis can be uncovered (e.g. the frontend in the grounding case): the product needs it, but the plugin cannot deliver it turnkey. Do **not** let "forced-now → run the atom" and "uncovered → loud signal" contradict each other. The rule:
 
@@ -109,15 +109,14 @@ The `references/coverage-manifest.md` is the **SSoT of coverage** (principle 4).
 
 product-spec is **optional** (an enrichment, not a base): init can run before a product-spec exists. The minimal required input is the **project class** — backend-service / frontend / CLI / library / **fullstack**. For `fullstack`, the runtime splits into **multiple runtime axes** (front + back), each its own atom with its own scaffold; "one question → one runtime" applies to single-runtime classes.
 
-**Fullstack layout convention (soft — recommend + warn, never block; same posture as P7).** A fullstack project uses **separate packages**, each its own package + `src/` (e.g. `apps/web` + `apps/api`), **NOT one mixed `src/`** — the whole hygiene/audit toolchain is per-package; a mixed `src/` degrades arch-audit to best-effort and breaks the fullstack audit sub-flow (arch-spec audits per package). Recommend the separate-packages layout; if the operator insists on a mixed `src/`, proceed with a loud warning (unmanaged-style), not a block. Record the convention in the project's `ARCHITECTURE.md` (Create flow already owns that write, step 4) so future project agents keep the separation. This is guidance only — bootstrap does not build the multi-package layout here.
+**Fullstack layout convention (soft — recommend + warn, never block; same posture as P7).** A fullstack project uses **separate packages**, each its own package + `src/` (e.g. `apps/web` + `apps/api`), **NOT one mixed `src/`** — the whole hygiene/audit toolchain is per-package; a mixed `src/` degrades arch-audit to best-effort and breaks the fullstack audit sub-flow (arch-spec audits per package). Recommend the separate-packages layout; if the operator insists on a mixed `src/`, proceed with a loud warning (unmanaged-style), not a block. Record the convention in the project's `ARCHITECTURE.md` so future project agents keep the separation. This is guidance only — bootstrap does not build the multi-package layout here.
 
 7-step flow:
 
 1. **Macro-probing of the profile** (extract-before-probing — the family pattern): if a product-spec exists, extract hints about product-dependent axes and close gaps with questions. The project class is a **hard prerequisite** (one probing question, needed to pick runtime + scaffold form) — if it is unknown, ask the operator before any axis work; do not infer it from the repo.
 2. **Classify axes** by the taxonomy — `forced-now` / `delegated` / `not-touched`, explicitly per axis (no padding, no silence).
 3. **For each `forced-now` axis → the atom** (probe → scaffold → wire).
-4. **Create flow for ARCHITECTURE.md** (port of Function 1): create the document, project `## Stack` from the configs, init the Topic Index, lay a **minimal Module Map skeleton** (section headers only, filled later by feature arch-specs — features ≠ code-modules, D19), and **create the `## Project-specific принципы` section** (then seed the feature-backbone principle for backend-service/fullstack — see *Feature-backbone seeding* below).
-   **Section ownership note (no silent dependency, principle 5).** The ARCHITECTURE.md template currently comes from the operator-personal `architecture` skill (pre-existing self-containedness gap — OQ6 / Function 3a relocation, not solved here). Until the template is relocated inside the plugin, the Create flow **guarantees the `## Project-specific принципы` section exists by building it explicitly** (alongside Stack / Topic Index / Module Map), not by silently relying on an external template.
+4. **Create flow for ARCHITECTURE.md:** create the compact architecture snapshot from `references/architecture-template.md`, project `## Stack` from configs and coverage-manifest choices, fill the project-specific sections bootstrap owns, and seed the feature-backbone principle for backend-service/fullstack (see *Feature-backbone seeding* below). Do not create Topic Index or a full Module Map: those were part of the old overloaded architecture-document model and are no longer bootstrap output.
 5. **Create initial PROJECT_STATE.md.** Use `hi_flow:project-state`'s template. Set `Phase` to `bootstrap`, `Last Completed` to the foundation run once done, `Ready Next` to the next hi_flow phase (usually product-spec, feature-spec, or implementation-plan depending on inputs), and `Latest Verification` to the foundation gates.
 6. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
 7. **CI / gates wiring.**
@@ -157,7 +156,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 1. **Trigger:** the operator explicitly («зафиксируй фронтенд-стек») OR an upstream signal (feature-spec/arch-spec: "feature forces axis X, not fixed"). **Detection ≠ decision ≠ auto-launch:** the upstream skill only *signals*; **the OPERATOR launches bootstrap** (detection is deterministic, but the decision to fix an axis is a product call, P6). bootstrap never auto-launches itself.
 2. **The one missing axis** (usually one).
 3. **The atom for that axis** (probe coverage-gated → scaffold → wire). This is where the real coverage-gap surfaces (REH ERP frontend → the `interface / frontend` axis). If the axis is uncovered/partial, apply the forced-now ∩ uncovered resolution (see Coverage): loud signal + `unmanaged`, and the "If the operator insists" branch governs whether to proceed unmanaged or stop after the signal.
-4. **Append to `## Stack`** (a projection) + the Module Map if needed, then create/update `PROJECT_STATE.md` with the incremental foundation result and next action.
+4. **Append to `## Stack`** (a projection), then create/update `PROJECT_STATE.md` with the incremental foundation result and next action.
 5. **Done:** the repo still compiles + gates green with the new axis + CI updated + Project State current.
 
 **The same atom is reused by both modes.** init runs it N times + Create flow + macro-probing; incremental runs it once + appends `## Stack`. No duplicated atom logic.
@@ -192,7 +191,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 
 ## Decoupling / market-ready & ARCHITECTURE.md ownership
 
-**Self-contained.** The Create flow is ported **inside** the plugin (Function 1) — it does not depend on the operator-personal `architecture` skill. A market-ready user may have no separate architecture-document skill: bootstrap creates the initial document, and later Hi-Flow architecture work or explicit maintenance keeps it current. The coverage-manifest, baselines, and adapters all live inside the plugin (dependency on Function 3a relocation).
+**Self-contained.** The Create flow lives **inside** the plugin — it does not depend on the operator-personal `architecture` skill. A market-ready user may have no separate architecture-document skill: bootstrap creates the initial document, and later Hi-Flow architecture work or explicit maintenance keeps it current. The coverage-manifest, stack baselines, and adapters live inside the plugin.
 
 **ARCHITECTURE.md ownership — life-phase ownership.** bootstrap **creates** ARCHITECTURE.md (the Create flow) and owns stack/foundation projections during bootstrap. Later architecture changes are owned by the Hi-Flow architecture phase that creates them, not by bootstrap.
 
@@ -200,7 +199,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 
 ## Anti-patterns
 
-- **Predicting feature modules.** bootstrap lays a generic convention pattern and a Module Map *skeleton* (headers). It does not create domain modules or decide which modules a feature has — that is arch-spec territory (the altitude boundary, P8).
+- **Predicting feature modules.** bootstrap lays a generic convention pattern only. It does not create domain modules, Module Map placeholders, or decide which modules a feature has — that is arch-spec territory (the altitude boundary, P8).
 - **Guessing product axes without a product-spec.** Without a product-spec, product-dependent axes are explicitly `not-touched now`, not invented. No "probably needs a DB" (principle 5).
 - **Proposing uncovered tech silently.** Uncovered / partially-covered axes get a loud signal + `unmanaged` degrade, never a silent proposal (principle 5, coverage-honesty).
 - **Faking a choice at coverage = 1.** When an axis has one covered technology, buy-in is an informing confirmation, not a fake menu.
@@ -216,6 +215,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 
 - `references/axis-taxonomy.md` — the working vocabulary: the fixed set of 8 infrastructure axes, the slicing criterion, axes ≠ toolchain components, and the per-axis probe-class. Pointer, not duplicated here.
 - `references/coverage-manifest.md` — the SSoT of coverage (`axis → technology → { stack-file, baseline, audit-adapter, scaffold-template, probe-class }`). Read dynamically; coverage-gated probing reads it. Pointer, not duplicated here.
+- `references/architecture-template.md` - compact `ARCHITECTURE.md` template created by bootstrap.
 - `references/scaffold-templates/` — the green-skeleton + convention reference patterns per technology (owned by other bootstrap tasks). The atom's scaffold step lays the template named for the chosen technology in the coverage-manifest.
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
 - `hi_flow/references/behavior-registry.md` - behavior registry source-of-truth and entry convention. bootstrap owns only the empty registry path/convention; feature-spec proposes changes and implementation-plan maps scenario-specific registry/harness/code tasks.
