@@ -8,6 +8,8 @@ Use hi_flow for feature-and-above work. Use a general implementation workflow di
 
 hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, or needs a durable behavior harness. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup, route directly to the implementation workflow.
 
+For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
+
 ## Skill priority
 
 When the operator explicitly asks for a hi_flow artifact, hi_flow wins over competing generic skills:
@@ -15,6 +17,7 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 | Operator intent | Use | Do not use as the primary step |
 |---|---|---|
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
+| migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |
 | architecture spec or "do we need architecture?" for a signed feature-spec | `hi_flow:arch-spec` | ad-hoc technical brainstorming |
 | implementation plan from signed hi_flow specs | `hi_flow:implementation-plan` | `superpowers:writing-plans` |
 | execute an already-written plan | recommended: `superpowers:subagent-driven-development`; fallback: `superpowers:executing-plans` | rewriting the plan during execution |

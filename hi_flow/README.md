@@ -3,11 +3,15 @@
 hi_flow is a Codex/agent skill family for feature-and-above solo+AI development.
 It turns product intent into signed specs, architecture decisions, behavior
 registry changes, implementation plans, foundation wiring, and deployment rails.
+For existing projects, it can also migrate legacy specs/tests into a living
+Behavior Registry and behavior harness rail.
 
 ## Routing
 
 Use hi_flow when the work is a feature, product slice, architecture change, new
 project foundation, behavior registry change, or delivery setup.
+Use `behavior-migration` when an existing project needs to be brought onto
+Behavior Registry / behavior harness rails before the next feature.
 
 Use a generic implementation workflow directly for small local bugfixes and
 isolated code changes. For implementation, hi_flow recommends Superpowers as the
@@ -22,6 +26,8 @@ Superpowers-compatible plan.
 ## Main Chain
 
 ```text
+legacy project prep (optional): behavior-migration
+
 product-spec
   -> feature-spec (Behavior Registry Changes)
   -> arch-spec (architecture gate or full arch-spec)
@@ -37,6 +43,8 @@ and must be shipped to a non-local target.
 
 - `hi_flow:product-spec` - product decomposition and backlog.
 - `hi_flow:feature-spec` - feature-level product spec plus Behavior Registry Changes.
+- `hi_flow:behavior-migration` - existing-project migration onto Behavior
+  Registry, scenario mapping, and harness runner rails.
 - `hi_flow:arch-audit` - architecture snapshot and rule validation.
 - `hi_flow:arch-redesign` - corrective refactor campaign planning.
 - `hi_flow:arch-spec` - architecture gate and per-feature architecture design.
@@ -82,6 +90,10 @@ The required guarantee is:
 4. One behavior runner command, such as `npm run behavior:test` or a
    stack-native equivalent.
 5. A CI gate that fails when automated behavior scenarios fail.
+
+`behavior-migration` creates or extends these rails for existing projects. It
+should label partial coverage instead of pretending a legacy project is fully
+registered after one slice.
 
 Cucumber/Gherkin is useful when cross-role, business-readable executable
 scenarios are more valuable than the extra parser and step-definition layer.
