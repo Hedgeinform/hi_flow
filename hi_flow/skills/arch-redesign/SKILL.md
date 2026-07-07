@@ -120,7 +120,7 @@ After this step, the cluster shape is settled.
 For each cluster, three mutually exclusive options:
 
 - **In campaign** (default).
-- **Accept as drift** — goes into Known Drift via the `architecture` skill.
+- **Accept as drift** — record as Accepted Drift in `ARCHITECTURE.md` through explicit architecture-document maintenance. Do not route to an operator-personal `architecture` skill.
 - **Defer** — to the next campaign.
 
 Recommend based on severity + size + cascade effect; operator confirms or overrides.
@@ -179,6 +179,18 @@ Show operator:
 > Campaign roadmap записан в `<path>`. Прочитай и дай знать, если хочешь правки до cluster-mode сессий.
 
 Wait for response. If changes — apply + re-run Self-Review. Only after approval — closure.
+
+### Project State at triage closure
+
+After the operator approves the campaign roadmap, update `PROJECT_STATE.md` through `hi_flow:project-state`:
+
+- current phase: `arch-redesign triage completed`;
+- last completed: campaign roadmap path;
+- ready next: selected cluster-mode run, standalone execution handoff, or operator-approved stop;
+- latest verification: isolated roadmap review result;
+- blockers/open items: only current campaign blockers or deferred clusters.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template.
 
 ### Transition offer (after approval)
 
@@ -293,6 +305,18 @@ Show operator:
 > Прочитай и дай знать, если хочешь правки до передачи в implementation handoff.
 
 Wait for response. If changes — apply + re-run Self-Review. Only after approval — closure.
+
+### Project State at cluster closure
+
+After the operator approves the refactor plan/rules-patch, update `PROJECT_STATE.md` through `hi_flow:project-state`:
+
+- current phase: `arch-redesign cluster plan completed`;
+- last completed: refactor plan path and rules-patch path;
+- ready next: `hi_flow:implementation-plan` for feature-bound redesign, or the selected execution workflow for standalone debt;
+- latest verification: isolated plan review result and rules-patch validation status;
+- blockers/open items: only current blockers that affect implementation handoff.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template.
 
 ### Transition offer (after approval)
 

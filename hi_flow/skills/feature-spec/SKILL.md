@@ -231,6 +231,18 @@ For each harvested item, supply the mechanism's harvest contract (`local_ref`, `
 
 **No separate register section** in the spec — deferred items stay in their natural places (the fork / out-of-scope / premortem), marked structurally; the backlog is the only aggregation home (SSoT, principle 4). The decision detail stays in the fork; the backlog gets the `Originating analysis` pointer-with-summary. This is a different axis from "Open items at closure" (unresolved items, kept in the spec) — the two lists do not merge.
 
+### Project State at closure
+
+After the operator approves the feature-spec and backlog-sync is complete, update `PROJECT_STATE.md` through `hi_flow:project-state`:
+
+- current phase: `feature-spec signed`;
+- last completed: feature-spec path and any backlog patch/result;
+- ready next: `hi_flow:arch-spec` for this feature;
+- latest verification: isolated spec review result and backlog-sync result;
+- blockers/open items: only current blockers that affect the next phase.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template. Do not copy Behavior Registry scenario details into Project State; point to the feature-spec and registry change-set.
+
 ### Coverage-based closure criterion
 
 Move to Closure only when all hold:

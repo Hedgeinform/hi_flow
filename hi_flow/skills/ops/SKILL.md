@@ -26,7 +26,7 @@ ops is the **owner of the last mile** in the hi_flow family — making a built p
 
 - «напиши план фичи», «implementation plan» — that is `hi_flow:implementation-plan`: the implementation plan for a **feature** over a ready codebase. ops is the last mile, orthogonal to feature planning.
 - «настрой фундамент», «зафиксируй стек» — that is `hi_flow:bootstrap`: the project's technical **foundation** (stack, scaffold, CI gates). bootstrap builds; ops delivers. (Note: «зафиксируй **сервер** / профиль» → ops; «зафиксируй **стек** / фундамент» → bootstrap — the object noun disambiguates.)
-- «обнови архитектуру» — that is `living-architecture`: maintaining the living **document**. ops does not write ARCHITECTURE.md (decoupled); a deployment may be recorded there by living-architecture's own event, not by ops.
+- «обнови архитектуру» — not ops. Use `hi_flow:arch-audit`, `hi_flow:arch-spec`, or `hi_flow:arch-redesign` depending on the architecture intent. ops does not write ARCHITECTURE.md; deployment state is recorded in `docs/ops/` and summarized in `PROJECT_STATE.md`.
 - «посмотреть фронт локально», local preview — **not ops** ("your machine"). Local preview is outside the scope line, already covered by the bootstrap scaffold.
 
 ## Two operations
@@ -141,7 +141,7 @@ Do **not** restate the template registry here — `references/template-manifest.
 
 The server-side `.env` is a **projection** of GH secrets, never an independent source — the same SSoT-as-projection discipline bootstrap applies to `## Stack` (a projection of the configs).
 
-**ops does NOT write ARCHITECTURE.md (R5).** ops is **decoupled** from the living document — exactly like `arch-spec` (D21). This matters for **distributable / market-ready** (OQ6): a market-ready user may have no living-architecture skill, and the document must not depend on ops to stay correct. If a `## Deployment` pointer is wanted in ARCHITECTURE.md, that is **living-architecture's** work via its own event — not ops's. ops is the **second** owner (after arch-spec) that deliberately does not write the document; we **avoid a third writer** of ARCHITECTURE.md, so KD2 (the accepted two-owner break: bootstrap creates, living-architecture maintains) is **not extended** by ops.
+**ops does NOT write ARCHITECTURE.md (R5).** ops is **decoupled** from architecture document maintenance — exactly like `arch-spec` (D21). This matters for **distributable / market-ready** (OQ6): a market-ready user may have no separate architecture-document skill, and the document must not depend on ops to stay correct. ops writes the deploy-binding record in `docs/ops/` and updates `PROJECT_STATE.md`; a deployment pointer in ARCHITECTURE.md, if wanted, is explicit architecture-document maintenance, not ops.
 
 ## Boundaries (what ops does NOT do)
 
@@ -150,7 +150,7 @@ The server-side `.env` is a **projection** of GH secrets, never an independent s
 | **bootstrap** | "envelope early, machinery late" — see below. bootstrap fixes the code-abstraction + read-convention + CI-gates + the `delegated`-axis classification early (the foundation); ops fixes the concrete deploy / CD machinery + profile binding late (at shipping). |
 | **D14 (R6)** | ops owns the deploy / CD templates + wiring; `superpowers` is the methodology for implementing **new project code**. A Dockerfile/CD for a covered form is **template instantiation owned by ops**, not free-hand execution. |
 | **implementation-plan** | plans a feature over a ready codebase; ops is the **last mile**, orthogonal. ops does **not** need implementation-plan for its own work on the covered path (render + wire is deterministic, like a bootstrap scaffold). |
-| **living-architecture** | decoupled (R5). A deployment may be documented by living-architecture's own event; ops does not touch the document. |
+| **ARCHITECTURE.md maintenance** | decoupled (R5). ops does not touch the architecture document; it writes `docs/ops/` and updates `PROJECT_STATE.md`. |
 
 **ops ↔ bootstrap — "envelope early, machinery late."**
 
@@ -193,7 +193,7 @@ The **profile is the distributable seam**: the same core consumes a profile whet
 
 - «напиши план фичи» / "implementation plan" → `hi_flow:implementation-plan`.
 - «настрой фундамент», «зафиксируй стек» / "set up the foundation", "fix the stack" → `hi_flow:bootstrap`.
-- «обнови архитектуру» / "update the architecture" → `living-architecture`.
+- «обнови архитектуру» / "update the architecture" → not ops; choose `hi_flow:arch-audit`, `hi_flow:arch-spec`, `hi_flow:arch-redesign`, or explicit document maintenance by intent.
 - «посмотреть фронт локально» / local preview → **not ops** ("your machine") — outside the scope line, already covered by the bootstrap scaffold.
 
 ## Done criterion
@@ -209,6 +209,7 @@ Done is an **enumerable set of gates**, like bootstrap's. The two coverage level
 5. **Reverse-proxy serves the (sub)domain over TLS** — `nginx -t` clean **and** the LE cert in place.
 6. **Co-tenant safety verified** — no port collision, the nginx config is valid, neighbours untouched (R7).
 7. **The deploy is recorded in `docs/ops/`** — the deploy-binding record (profile, domain, port, form, env-keys, URL).
+8. **`PROJECT_STATE.md` is updated** — current phase, staging URL/status, deploy record path, latest verification, and next operator action.
 
 **prod is a separate, gated step — never automatic.** prod sits behind a GitHub Environment approval and is rolled out by the operator. **Done for covered onboarding = staging provably alive + prod wired-and-gated.** An actual prod deploy is **not** required for done — the wiring and the approval gate being in place is the deliverable.
 
@@ -216,7 +217,10 @@ Done is an **enumerable set of gates**, like bootstrap's. The two coverage level
 
 - the path is **configured in place**, AND
 - a **loud signal** is raised — *"best-effort, not from a proven template; recovery / secrets / observability may be weaker, check X / Y / Z"* (principle 5), AND
-- a **promotion proposal** is offered (promote-to-covered → a template + a manifest row, growth axis #2).
+- a **promotion proposal** is offered (promote-to-covered → a template + a manifest row, growth axis #2), AND
+- `PROJECT_STATE.md` is updated with the best-effort label and next operator action.
+
+If `PROJECT_STATE.md` is missing, create it from the `hi_flow:project-state` template during close-out.
 
 Best-effort is not failure — it is a weaker, honestly-labelled guarantee. It is simply not measured against gates it was never meant to meet.
 
@@ -240,7 +244,7 @@ The done gates run **in order**. On **red at any gate**, ops **aborts and rolls 
 
 - **Auto-launching ops.** An upstream signal is **not** a launch. The operator decides to ship onto the shared box (P6).
 - **Passing best-effort off as turnkey.** A best-effort setup is **always** labelled best-effort, loudly, where the operator hears it — never presented silently as a proven template (principle 5).
-- **Writing ARCHITECTURE.md.** ops is decoupled from the living document (R5). A `## Deployment` pointer, if wanted, is **living-architecture's** work via its own event — never ops's.
+- **Writing ARCHITECTURE.md.** ops is decoupled from architecture document maintenance (R5). A `## Deployment` pointer, if wanted, is explicit architecture-document maintenance — never ops's.
 - **Touching neighbours.** No port clobber, no neighbour's vhost edited, no co-tenant service torn down — every `onboard` and every rollback respects the co-tenants on the box (R7).
 - **Hardcoding box facts.** The runtime, reverse-proxy, transports, and ports live in the **profile** (read dynamically), never baked into the skill or a template. Adding a target = adding a profile file.
 - **Faking a probing choice.** The profile is known and the only one — there is no infrastructure menu. `onboard` **confirms the form** and collects project-local parameters; it does **not** stage a fake choice that does not exist (the ops analogue of bootstrap's buy-in at coverage = 1).

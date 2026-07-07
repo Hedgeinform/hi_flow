@@ -172,6 +172,50 @@ Mark the scenario obsolete, add the replacement/removal reason, and remove or re
 
 Run: `<behavior:test command or mapping validation>`
 Expected: obsolete scenario is not enforced as active behavior; replacement scenario is enforced if automated.
+
+---
+
+## Completion Protocol
+
+- [ ] **Implementation report created**
+
+Write: `<feature-spec path>-report.md` or the project-configured implementation report path.
+
+Report must include: what was done, deviations from spec, issues discovered, open items, and final status (`completed` / `partial` / `blocked`).
+
+- [ ] **Final verification passed or blockers recorded**
+
+Run:
+
+```bash
+<focused verification command>
+<behavior:test command if registry exists>
+<typecheck/lint/test command required by project gates>
+```
+
+Expected: PASS. If any command cannot run or fails for an external reason, record the exact command and blocker in the implementation report.
+
+- [ ] **Isolated review completed**
+
+Run an isolated review of the implementation against this plan, the signed feature-spec, Behavior Registry changes, and architecture gate/spec. Fix blocking findings before completion, or record accepted follow-ups explicitly.
+
+- [ ] **Architecture audit completed or explicitly skipped**
+
+Run `hi_flow:arch-audit` after implementation review when architecture changed, an arch-spec/rules-patch exists, or the project requires post-implementation architecture verification.
+
+If skipped, record the reason in the implementation report and `PROJECT_STATE.md`.
+
+- [ ] **Project State updated**
+
+Update `PROJECT_STATE.md` (create from `hi_flow:project-state` template if missing) with:
+
+- current phase after implementation;
+- last completed artifact/report;
+- final verification state;
+- current blockers/open items;
+- next hi_flow action.
+
+Do not rewrite signed feature-specs just to match updated Behavior Registry entries; signed specs are historical decision artifacts, while the registry is the living behavior source.
 ````
 
 ## Filling notes
@@ -183,3 +227,4 @@ Expected: obsolete scenario is not enforced as active behavior; replacement scen
 - Each behavior-impact task must name its registry actions.
 - Each `automated` scenario must name a mapping target and executable file in the Behavior Harness Strategy table.
 - Foundation-only tasks may say `Covers: none - foundation task`.
+- Keep the Completion Protocol in the final plan. It is not optional boilerplate; it closes the hi_flow loop after execution.

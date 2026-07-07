@@ -1,6 +1,6 @@
 ---
 name: bootstrap
-description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, behavior-registry / behavior-gate foundation for hi_flow projects) plus a created ARCHITECTURE.md with a projected `## Stack`. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
+description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, behavior-registry / behavior-gate foundation for hi_flow projects) plus created ARCHITECTURE.md and PROJECT_STATE.md. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
 ---
 
 # bootstrap
@@ -19,18 +19,19 @@ product-spec -> feature-spec -> arch-spec -> [ bootstrap: foundation ready ] -> 
                                   └─ signals "axis X not fixed → bootstrap"  (operator launches; see incremental)
 ```
 
-It does six jobs, one atom (probe -> scaffold -> wire) reused by two modes (init / incremental).
+It does seven jobs, one atom (probe -> scaffold -> wire) reused by two modes (init / incremental).
 
 ## When to use
 
-The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md created (init), and the empty behavior-registry / behavior-gate foundation exists for a hi_flow project - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
+The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md and PROJECT_STATE.md created (init), and the empty behavior-registry / behavior-gate foundation exists for a hi_flow project - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
 
 ## Anti-triggers (do NOT auto-activate)
 
 - «arch-spec для фичи X», «спроектируй архитектуру фичи X» — that is `hi_flow:arch-spec`: **which** modules a feature has, contracts, fitness invariants (feature-level). bootstrap fixes only **how** a module is built in this project (project-level convention).
 - «продуктовая спека», «давай продумаем фичу X» — product/feature behavior is `hi_flow:feature-spec` / `hi_flow:product-spec`. bootstrap does not touch behavior.
 - «напиши план», «implementation plan» - that is `hi_flow:implementation-plan` inside the hi_flow chain. bootstrap stops at "repo is ready to accept a plan".
-- «обнови архитектуру», «найди drift» — maintaining the living ARCHITECTURE.md after creation is `living-architecture`. bootstrap **creates** the document and fixes the stack; maintenance is downstream (see Boundary with living-architecture, KD2).
+- «что сейчас по проекту», «где мы остановились», «обнови состояние проекта» - that is `hi_flow:project-state`. bootstrap creates the initial state file during init, but does not own ongoing state refresh.
+- «обнови архитектуру», «найди drift» — not bootstrap. Use `hi_flow:arch-audit` for current-state audit, `hi_flow:arch-spec` for feature architecture, or `hi_flow:arch-redesign` for corrective redesign. Bootstrap creates the initial `ARCHITECTURE.md` and fixes stack/foundation; document-only maintenance is outside bootstrap.
 
 ## Scope
 
@@ -42,6 +43,7 @@ bootstrap owns:
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
 5. **Wiring the L3-hygiene harness (Function 3a)** — laying the CI workflow + linter/formatter baseline + gates aggregate **delivered by Function 3a** into the project. bootstrap is the **consumer** of these templates, not the owner of their design (ownership stays with Function 3a).
 6. **Wiring the behavior-registry / behavior-gate foundation for hi_flow projects** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the empty registry and rail. If the operator explicitly declines behavior-gated development, record the opt-out loudly; do not silently omit the rail.
+7. **Creating the initial `PROJECT_STATE.md`** - a compact operational dashboard using `hi_flow:project-state`'s template. bootstrap records only the foundation status and next hi_flow action; ongoing state refresh happens at phase exits, not through bootstrap.
 
 **Out of scope:** hooks / enforcement (Function 3b) — deferred to a research-trigger (decision 2026-06-01: a quality CI is enough; revisit hooks only if CI proves insufficient).
 
@@ -51,7 +53,7 @@ bootstrap owns:
 |---|---|
 | **arch-spec** | module breakdown of a feature, contracts, fitness invariants — feature-level "WHICH modules". bootstrap sets only "HOW a module is built in this project" (project-level convention). |
 | **feature-spec / product-spec** | what belongs to the product and the feature (behavior). bootstrap does not touch behavior. |
-| **living-architecture** | *maintains* the living ARCHITECTURE.md after creation (events, drift, audit). bootstrap *creates* the document and fixes the stack; maintenance is downstream. See Boundary with living-architecture + KD2. |
+| **ARCHITECTURE.md maintenance** | bootstrap creates the initial snapshot and writes stack/foundation projections it owns. Later architecture design/audit/redesign work is handled by the relevant `hi_flow:*` skill or explicit document maintenance, not by bootstrap. |
 | **implementation-plan** | the feature's behavior-first implementation plan. bootstrap stops at "repo is ready to accept a plan". |
 
 **Altitude principle (P8, cross-cutting).** bootstrap = project-level (HOW a module is built in this project: toolchain, conventions, scaffold-convention). arch-spec = feature-level (WHICH modules a feature has). project-foundation does not predict feature structure; feature-design does not fix the project stack. This is the systemic resolution of the A↔C boundary: the infrastructure-axis taxonomy (finding C) lives in bootstrap as its working vocabulary, while arch-spec only **signals** "axis not fixed → bootstrap" and does not decide it.
@@ -116,9 +118,10 @@ product-spec is **optional** (an enrichment, not a base): init can run before a 
 3. **For each `forced-now` axis → the atom** (probe → scaffold → wire).
 4. **Create flow for ARCHITECTURE.md** (port of Function 1): create the document, project `## Stack` from the configs, init the Topic Index, lay a **minimal Module Map skeleton** (section headers only, filled later by feature arch-specs — features ≠ code-modules, D19), and **create the `## Project-specific принципы` section** (then seed the feature-backbone principle for backend-service/fullstack — see *Feature-backbone seeding* below).
    **Section ownership note (no silent dependency, principle 5).** The ARCHITECTURE.md template currently comes from the operator-personal `architecture` skill (pre-existing self-containedness gap — OQ6 / Function 3a relocation, not solved here). Until the template is relocated inside the plugin, the Create flow **guarantees the `## Project-specific принципы` section exists by building it explicitly** (alongside Stack / Topic Index / Module Map), not by silently relying on an external template.
-5. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
-6. **CI / gates wiring.**
-7. **Done** (see Output & done).
+5. **Create initial PROJECT_STATE.md.** Use `hi_flow:project-state`'s template. Set `Phase` to `bootstrap`, `Last Completed` to the foundation run once done, `Ready Next` to the next hi_flow phase (usually product-spec, feature-spec, or implementation-plan depending on inputs), and `Latest Verification` to the foundation gates.
+6. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
+7. **CI / gates wiring.**
+8. **Done** (see Output & done).
 
 ### Behavior rail foundation (new-project default)
 
@@ -154,16 +157,17 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 1. **Trigger:** the operator explicitly («зафиксируй фронтенд-стек») OR an upstream signal (feature-spec/arch-spec: "feature forces axis X, not fixed"). **Detection ≠ decision ≠ auto-launch:** the upstream skill only *signals*; **the OPERATOR launches bootstrap** (detection is deterministic, but the decision to fix an axis is a product call, P6). bootstrap never auto-launches itself.
 2. **The one missing axis** (usually one).
 3. **The atom for that axis** (probe coverage-gated → scaffold → wire). This is where the real coverage-gap surfaces (REH ERP frontend → the `interface / frontend` axis). If the axis is uncovered/partial, apply the forced-now ∩ uncovered resolution (see Coverage): loud signal + `unmanaged`, and the "If the operator insists" branch governs whether to proceed unmanaged or stop after the signal.
-4. **Append to `## Stack`** (a projection) + the Module Map if needed.
-5. **Done:** the repo still compiles + gates green with the new axis + CI updated.
+4. **Append to `## Stack`** (a projection) + the Module Map if needed, then create/update `PROJECT_STATE.md` with the incremental foundation result and next action.
+5. **Done:** the repo still compiles + gates green with the new axis + CI updated + Project State current.
 
 **The same atom is reused by both modes.** init runs it N times + Create flow + macro-probing; incremental runs it once + appends `## Stack`. No duplicated atom logic.
 
-## Boundary with living-architecture
+## ARCHITECTURE.md lifecycle boundary
 
 - **bootstrap incremental** = actively **choose (probe) + scaffold + fix** an axis. Active foundation-building; bootstrap itself writes `## Stack` (Variant 1, see Ownership / KD2).
-- **living-architecture event cat-10 ("Stack changed")** = passively **document an already-accepted stack change spotted in conversation** outside bootstrap (e.g. the operator changed a config by hand). Passive detect + record.
-- Different triggers → no duplication. The double-touch of `## Stack` is the accepted KD2 gap: in a bootstrap episode, bootstrap owns the write; living-architecture does not duplicate it.
+- **arch-audit / arch-spec / arch-redesign** = inspect, design, or redesign architecture around the current project state. They do not re-bootstrap the stack.
+- **document-only architecture maintenance** = outside bootstrap. Do not route it to an operator-personal `architecture` / `living-architecture` skill from this plugin.
+- Different triggers → no duplication. In a bootstrap episode, bootstrap owns stack/foundation projection writes.
 
 ## Output & done
 
@@ -171,6 +175,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 
 - **Physical foundation:** `package.json` / configs / lockfile (the stack = truth), scaffold (green skeleton + convention reference pattern), arch-audit-config, CI / gates.
 - **ARCHITECTURE.md** — init creates it; incremental appends `## Stack`.
+- **PROJECT_STATE.md** — init creates it as the current operational dashboard; incremental creates it if missing and updates it with the foundation result.
 
 **Done criterion (enumerable gates):**
 
@@ -178,7 +183,8 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 - gates green for the **managed (covered) axes** — typecheck + lint + arch-audit no-violations + the reference test passes, AND
 - for a hi_flow project, the Behavior Registry path exists, the behavior mapping convention exists, the behavior runner command runs a green smoke/self-check and is included in CI, unless the operator explicitly opted out and that opt-out is recorded, AND
 - CI present, AND
-- ARCHITECTURE.md exists with a `## Stack` section.
+- ARCHITECTURE.md exists with a `## Stack` section, AND
+- PROJECT_STATE.md exists with a current focus, phase, ready-next action, and latest verification summary. In incremental mode, create it if missing or update it if present.
 
 An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has no gates and is **excluded** from this criterion: its deliverable is the loud coverage-honesty signal recorded in `## Stack`, not green gates. "Gates green with the new axis" (incremental step 5) means green for the axis's covered part; a fully `unmanaged` axis does not block done.
 
@@ -186,9 +192,9 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 
 ## Decoupling / market-ready & ARCHITECTURE.md ownership
 
-**Self-contained.** The Create flow is ported **inside** the plugin (Function 1) — it does not depend on the operator-personal `architecture` skill. living-architecture (Function 2) may be absent for a market-ready user → bootstrap creates the document, and the operator maintains it manually thereafter (the same decoupled logic arch-spec uses). The coverage-manifest, baselines, and adapters all live inside the plugin (dependency on Function 3a relocation).
+**Self-contained.** The Create flow is ported **inside** the plugin (Function 1) — it does not depend on the operator-personal `architecture` skill. A market-ready user may have no separate architecture-document skill: bootstrap creates the initial document, and later Hi-Flow architecture work or explicit maintenance keeps it current. The coverage-manifest, baselines, and adapters all live inside the plugin (dependency on Function 3a relocation).
 
-**ARCHITECTURE.md ownership — Variant 1 + accepted break (KD2).** bootstrap **creates** ARCHITECTURE.md (the Create flow). The single-ownership break is accepted: one document, two owners across life phases (bootstrap creates; living-architecture maintains).
+**ARCHITECTURE.md ownership — life-phase ownership.** bootstrap **creates** ARCHITECTURE.md (the Create flow) and owns stack/foundation projections during bootstrap. Later architecture changes are owned by the Hi-Flow architecture phase that creates them, not by bootstrap.
 
 **The break does not touch code-is-truth.** The stack truth lives in the configs (`package.json` / `tsconfig` / lockfile); `## Stack` is a **projection** of those configs. bootstrap writes Stack as a projection of the real repo, never as the source of truth. The break concerns only ownership of the projection document — see **KD2**.
 
@@ -214,6 +220,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
 - `hi_flow/references/behavior-registry.md` - behavior registry source-of-truth and entry convention. bootstrap owns only the empty registry path/convention; feature-spec proposes changes and implementation-plan maps scenario-specific registry/harness/code tasks.
 - `hi_flow/references/behavior-harness.md` - behavior-gate foundation policy. bootstrap owns the empty registry path/convention, runner/folder/CI rail, mapping convention, and green smoke/self-check; implementation-plan owns scenario-specific mapping and executable cases.
+- `hi_flow/skills/project-state/references/project-state-template.md` - initial PROJECT_STATE.md shape. bootstrap creates the file; later phase exits keep it current.
 - `hi_flow/references/workflow-routing.md` - hi_flow vs generic workflow routing.
 - `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` — the design spec this skill implements (D20 Function 1, extended by finding A).
 - `docs/superpowers/specs/2026-06-08-hi_flow-backbone-propagation-design.md` — the backbone-propagation design (forward carrier = this skill's seeding step; consumer = arch-spec).
