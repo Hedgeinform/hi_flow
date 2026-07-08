@@ -5,7 +5,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** <one-line current focus>
-- **Phase:** product-spec | feature-spec | arch-spec | bootstrap | implementation-plan | implementation | review | arch-audit | ops | maintenance | paused
+- **Phase:** product-spec | feature-spec | arch-spec | bootstrap | implementation-plan | bug-fix | implementation | review | arch-audit | ops | maintenance | paused
 - **Owner/session:** <optional current owner or session pointer>
 
 ## Last Completed

@@ -321,7 +321,24 @@ Closing Active Issues or Accepted Drift does not need a separate event log. The 
 
 ---
 
-## 11. Implementation Tracking
+## 11. Active Issue Fix Flow
+
+Active Issues are not feature requests. They are known violations of already accepted contracts.
+
+Target workflow:
+
+- if the desired behavior is new or changed -> `hi_flow:feature-spec`;
+- if the project lacks broad behavior rails and the work requires durable registry/harness retrofitting -> `hi_flow:behavior-migration`;
+- if a small local bug has no hi_flow contract impact -> generic implementation workflow;
+- if an accepted Behavior Registry / architecture contract is violated -> `hi_flow:bug-fix`.
+
+`hi_flow:bug-fix` produces a contract-preserving Superpowers-compatible plan. It must name the accepted contract, reproduce the failure, preserve TDD, update only living artifacts that represent current truth, and close/update Active Issues after verification. It may use focused regression proof for one issue, but it must not create broad Behavior Registry / harness foundation; that remains `hi_flow:behavior-migration`.
+
+It must not rewrite signed feature specs just because a bug was fixed. Signed specs are historical decision artifacts; Behavior Registry, Active Issues, implementation reports, and Project State carry current operational truth.
+
+---
+
+## 12. Implementation Tracking
 
 This note records the design decisions. The living behavior and operational
 rules must be enforced by the plugin skills, not by this note.
@@ -338,6 +355,7 @@ Implemented in the first Project State slice:
 8. TypeScript and React stack files/baselines live inside `hi_flow/references/stacks/`.
 9. Bootstrap no longer depends on the old Topic Index / full Module Map architecture-document shape.
 10. A compact bootstrap-owned `ARCHITECTURE.md` template lives at `hi_flow/skills/bootstrap/references/architecture-template.md`.
+11. Contract-preserving bug fixes route through `hi_flow:bug-fix`, not feature-spec.
 
 Still needed:
 
