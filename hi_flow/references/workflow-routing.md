@@ -4,11 +4,13 @@ This file is the family-level routing contract between hi_flow and general imple
 
 ## Core rule
 
-Use hi_flow for feature-and-above work and for fixes that restore an accepted hi_flow contract. Use a general implementation workflow directly for small local changes.
+Use hi_flow for feature-and-above work, human-originated raw project-signal intake, and fixes that restore an accepted hi_flow contract. Use a general implementation workflow directly for small local changes.
 
 hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, needs a durable behavior harness, or fixes a known violation of an accepted Behavior Registry / architecture contract. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup with no hi_flow contract impact, route directly to the implementation workflow.
 
 For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
+
+For human-originated raw capture requests like "зафиксируй проблему", "зафиксируй ошибку", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Also route "посмотри intake", "разбери intake", "что брать в работу", or similar work-selection requests to `hi_flow:intake`. Intake records or classifies the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, implementation, or code work by itself. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues, then removes the processed intake entry. Agent-originated findings go to formal artifacts or the current report unless the operator explicitly asks to park them in intake.
 
 For "where are we?", "what should I do next?", "resume this project", "update project state", or Russian equivalents like «где мы остановились» / «что сейчас по проекту» / «обнови состояние проекта», route to `hi_flow:project-state`. Do not route these requests to architecture design/audit/redesign skills.
 
@@ -18,17 +20,18 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 
 | Operator intent | Use | Do not use as the primary step |
 |---|---|---|
+| human-originated raw observed problem, parked idea, or intake work-selection request | `hi_flow:intake` | `hi_flow:feature-spec` / `hi_flow:bug-fix` / `hi_flow:arch-audit` |
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
 | current project status, resume point, next action, project state refresh | `hi_flow:project-state` | `hi_flow:arch-spec` / `hi_flow:arch-audit` / `hi_flow:arch-redesign` |
 | migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |
-| Active Issue, regression, or bug in already accepted behavior/architecture | `hi_flow:bug-fix` | `hi_flow:feature-spec` unless expected behavior changes |
+| Active Issue, regression, or bug in already accepted behavior/architecture with fix planning requested | `hi_flow:bug-fix` | `hi_flow:feature-spec` unless expected behavior changes; `hi_flow:intake` unless the operator only wants capture |
 | new project needs empty Behavior Registry / behavior gate foundation | `hi_flow:bootstrap` | `hi_flow:behavior-migration` |
 | architecture spec or "do we need architecture?" for a signed feature-spec | `hi_flow:arch-spec` | ad-hoc technical brainstorming |
 | implementation plan from signed hi_flow specs | `hi_flow:implementation-plan` | `superpowers:writing-plans` |
 | execute an already-written plan | recommended: `superpowers:subagent-driven-development`; fallback: `superpowers:executing-plans` | rewriting the plan during execution |
 | small bugfix / local technical change with no accepted hi_flow contract impact | Superpowers directly, if installed | hi_flow unless the operator asks for it |
 
-Ambiguous "spec" or "plan" requests must be clarified in one short question: "hi_flow feature flow or a regular implementation flow?" Ambiguous bug requests must be clarified as: "accepted-contract bug or new behavior/change?"
+Ambiguous "spec" or "plan" requests must be clarified in one short question: "hi_flow feature flow or a regular implementation flow?" Ambiguous bug requests must be clarified as: "capture only, accepted-contract bug fix, or new behavior/change?"
 
 ## Superpowers relationship
 

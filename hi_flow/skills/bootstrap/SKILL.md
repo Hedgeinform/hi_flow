@@ -1,6 +1,6 @@
 ---
 name: bootstrap
-description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, behavior-registry / behavior-gate foundation for hi_flow projects) plus created ARCHITECTURE.md and PROJECT_STATE.md. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
+description: Use when operator says «init проекта», «заведи проект», «зафиксируй стек», «зафиксируй фронтенд-стек», «настрой фундамент проекта», or English equivalents («project bootstrap», «setup project foundation», «fix the stack»). Input - project class (backend-service / frontend / CLI / library / fullstack) + an optional product-spec; output - a ready technical foundation (configs, scaffold, arch-audit-config, CI/gates, behavior-registry / behavior-gate foundation for hi_flow projects) plus created ARCHITECTURE.md, INTAKE.md, and PROJECT_STATE.md. Brings the repo to the state where patterns are already established, then `hi_flow:implementation-plan` can plan feature implementation.
 ---
 
 # bootstrap
@@ -19,11 +19,11 @@ product-spec -> feature-spec -> arch-spec -> [ bootstrap: foundation ready ] -> 
                                   └─ signals "axis X not fixed → bootstrap"  (operator launches; see incremental)
 ```
 
-It does seven jobs, one atom (probe -> scaffold -> wire) reused by two modes (init / incremental).
+It does eight jobs, one atom (probe -> scaffold -> wire) reused by two modes (init / incremental).
 
 ## When to use
 
-The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md and PROJECT_STATE.md created (init), and the empty behavior-registry / behavior-gate foundation exists for a hi_flow project - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
+The operator wants the project's technical foundation fixed before implementation - the stack chosen and scaffolded, hygiene/audit/CI wired, ARCHITECTURE.md, INTAKE.md, and PROJECT_STATE.md created (init), and the empty behavior-registry / behavior-gate foundation exists for a hi_flow project - or wants one new infrastructure axis fixed because a feature forces it (incremental). After bootstrap, `hi_flow:implementation-plan` can produce an implementation plan over an established codebase.
 
 ## Anti-triggers (do NOT auto-activate)
 
@@ -43,7 +43,8 @@ bootstrap owns:
 4. **Wiring the arch-audit tooling** — depcruise-config, rules baseline.
 5. **Wiring the L3-hygiene harness** — applying the plugin's stack baselines: linter/formatter, test runner, audit config, gates aggregate, and CI workflow.
 6. **Wiring the behavior-registry / behavior-gate foundation for hi_flow projects** - creating the Behavior Registry path/convention, project-native runner slot (`behavior:test` or stack-native equivalent), folder convention, mapping convention, green smoke/self-check, and CI hook that future Behavior Registry scenarios can attach to. bootstrap does not invent product scenarios; it only prepares the empty registry and rail. If the operator explicitly declines behavior-gated development, record the opt-out loudly; do not silently omit the rail.
-7. **Creating the initial `PROJECT_STATE.md`** - a compact operational dashboard using `hi_flow:project-state`'s template. bootstrap records only the foundation status and next hi_flow action; ongoing state refresh happens at phase exits, not through bootstrap.
+7. **Creating the initial `INTAKE.md`** - a human-readable empty inbox using `hi_flow:intake`'s template. bootstrap creates the place where raw problems and parked ideas can be captured later; it does not invent entries.
+8. **Creating the initial `PROJECT_STATE.md`** - a compact operational dashboard using `hi_flow:project-state`'s template. bootstrap records only the foundation status and next hi_flow action; ongoing state refresh happens at phase exits, not through bootstrap.
 
 **Out of scope:** hooks / enforcement (Function 3b) — deferred to a research-trigger (decision 2026-06-01: a quality CI is enough; revisit hooks only if CI proves insufficient).
 
@@ -111,16 +112,17 @@ product-spec is **optional** (an enrichment, not a base): init can run before a 
 
 **Fullstack layout convention (soft — recommend + warn, never block; same posture as P7).** A fullstack project uses **separate packages**, each its own package + `src/` (e.g. `apps/web` + `apps/api`), **NOT one mixed `src/`** — the whole hygiene/audit toolchain is per-package; a mixed `src/` degrades arch-audit to best-effort and breaks the fullstack audit sub-flow (arch-spec audits per package). Recommend the separate-packages layout; if the operator insists on a mixed `src/`, proceed with a loud warning (unmanaged-style), not a block. Record the convention in the project's `ARCHITECTURE.md` so future project agents keep the separation. This is guidance only — bootstrap does not build the multi-package layout here.
 
-7-step flow:
+9-step flow:
 
 1. **Macro-probing of the profile** (extract-before-probing — the family pattern): if a product-spec exists, extract hints about product-dependent axes and close gaps with questions. The project class is a **hard prerequisite** (one probing question, needed to pick runtime + scaffold form) — if it is unknown, ask the operator before any axis work; do not infer it from the repo.
 2. **Classify axes** by the taxonomy — `forced-now` / `delegated` / `not-touched`, explicitly per axis (no padding, no silence).
 3. **For each `forced-now` axis → the atom** (probe → scaffold → wire).
 4. **Create flow for ARCHITECTURE.md:** create the compact architecture snapshot from `references/architecture-template.md`, project `## Stack` from configs and coverage-manifest choices, fill the project-specific sections bootstrap owns, and seed the feature-backbone principle for backend-service/fullstack (see *Feature-backbone seeding* below). Do not create Topic Index or a full Module Map: those were part of the old overloaded architecture-document model and are no longer bootstrap output.
-5. **Create initial PROJECT_STATE.md.** Use `hi_flow:project-state`'s template. Set `Phase` to `bootstrap`, `Last Completed` to the foundation run once done, `Ready Next` to the next hi_flow phase (usually product-spec, feature-spec, or implementation-plan depending on inputs), and `Latest Verification` to the foundation gates.
-6. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
-7. **CI / gates wiring.**
-8. **Done** (see Output & done).
+5. **Create initial INTAKE.md.** Use `hi_flow:intake`'s template. Leave `Observed Problems` and `Parked Ideas` empty.
+6. **Create initial PROJECT_STATE.md.** Use `hi_flow:project-state`'s template. Set `Phase` to `bootstrap`, `Last Completed` to the foundation run once done, `Ready Next` to the next hi_flow phase (usually product-spec, feature-spec, or implementation-plan depending on inputs), `Active Artifacts` to include `INTAKE.md`, and `Latest Verification` to the foundation gates.
+7. **Green skeleton + one convention reference pattern.** One module of the form `src/<example>/` (index + one unit test) demonstrating the project convention — layout, naming, test co-location, import/export form. **No domain logic.** Test of "convention, not feature": the pattern shows *how any module is built* and can be removed without losing the project's meaning. Anti-example: do **not** create a domain module (`src/users/`, `src/audit/`) — that is "WHICH modules", arch-spec territory.
+8. **CI / gates wiring.**
+9. **Done** (see Output & done).
 
 ### Behavior rail foundation (new-project default)
 
@@ -174,6 +176,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 
 - **Physical foundation:** `package.json` / configs / lockfile (the stack = truth), scaffold (green skeleton + convention reference pattern), arch-audit-config, CI / gates.
 - **ARCHITECTURE.md** — init creates it; incremental appends `## Stack`.
+- **INTAKE.md** — init creates the empty raw-signal inbox. Incremental creates it if missing but does not invent entries.
 - **PROJECT_STATE.md** — init creates it as the current operational dashboard; incremental creates it if missing and updates it with the foundation result.
 
 **Done criterion (enumerable gates):**
@@ -183,6 +186,7 @@ init-without-product-spec + later incremental runs = the same result as init-wit
 - for a hi_flow project, the Behavior Registry path exists, the behavior mapping convention exists, the behavior runner command runs a green smoke/self-check and is included in CI, unless the operator explicitly opted out and that opt-out is recorded, AND
 - CI present, AND
 - ARCHITECTURE.md exists with a `## Stack` section, AND
+- INTAKE.md exists with `Observed Problems` and `Parked Ideas`, AND
 - PROJECT_STATE.md exists with a current focus, phase, ready-next action, and latest verification summary. In incremental mode, create it if missing or update it if present.
 
 An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has no gates and is **excluded** from this criterion: its deliverable is the loud coverage-honesty signal recorded in `## Stack`, not green gates. "Gates green with the new axis" (incremental step 5) means green for the axis's covered part; a fully `unmanaged` axis does not block done.
@@ -206,6 +210,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - **Auto-launching incremental.** An upstream signal is not a launch. The operator decides to fix an axis (P6).
 - **Writing the stack as source of truth.** `## Stack` is a projection of the configs; the configs are truth (KD2).
 - **Omitting the behavior rail silently.** A new hi_flow project needs an empty registry/runner rail before feature implementation. If the operator declines it, record the opt-out; otherwise create the rail.
+- **Turning intake into backlog/issues.** bootstrap creates the empty `INTAKE.md` inbox only. Raw signal capture and triage belong to `hi_flow:intake`.
 - **Inventing behavior scenarios.** bootstrap creates the empty rail only. Product behavior belongs to feature-spec and implementation-plan, not bootstrap.
 - **"Fixing" neighbour mechanisms confirmed by the live run.** Do not invent problems in already-confirmed mechanisms: extract-before-probing, density-factor, ACL anti-trigger, sync-in-txn rationale, green-field block-C skip. The lesson of the false finding: do not manufacture a problem where the mechanism already exists.
 - **Seeding the backbone as a hardcoded enforcement form.** bootstrap seeds the layout-agnostic *stance* (default form = "typical, not a mandate"); the concrete narrow-entry regex is per-feature (arch-spec, P8). Never write a `^src/<feature>-` rule into the project's ARCHITECTURE.md.
@@ -220,6 +225,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
 - `hi_flow/references/behavior-registry.md` - behavior registry source-of-truth and entry convention. bootstrap owns only the empty registry path/convention; feature-spec proposes changes and implementation-plan maps scenario-specific registry/harness/code tasks.
 - `hi_flow/references/behavior-harness.md` - behavior-gate foundation policy. bootstrap owns the empty registry path/convention, runner/folder/CI rail, mapping convention, and green smoke/self-check; implementation-plan owns scenario-specific mapping and executable cases.
+- `hi_flow/skills/intake/references/intake-template.md` - initial INTAKE.md shape. bootstrap creates the empty inbox; `hi_flow:intake` owns capture and triage.
 - `hi_flow/skills/project-state/references/project-state-template.md` - initial PROJECT_STATE.md shape. bootstrap creates the file; later phase exits keep it current.
 - `hi_flow/references/workflow-routing.md` - hi_flow vs generic workflow routing.
 - `docs/superpowers/specs/2026-06-01-hi_flow-bootstrap-design.md` — the design spec this skill implements (D20 Function 1, extended by finding A).

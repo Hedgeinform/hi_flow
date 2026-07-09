@@ -1,0 +1,4 @@
+interface:
+  display_name: "Intake"
+  short_description: "Capture and triage human-originated intake"
+  default_prompt: "Use $intake to capture or triage a human-originated problem or parked idea."

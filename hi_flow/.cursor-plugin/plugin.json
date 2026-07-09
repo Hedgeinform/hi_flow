@@ -1,8 +1,8 @@
 {
   "name": "hi_flow",
   "displayName": "hi_flow",
-  "description": "Behavior-first feature, project-state, bug-fix, and architecture workflow for agentic development.",
-  "version": "0.13.0",
+  "description": "Behavior-first human-originated intake, feature, project-state, bug-fix, and architecture workflow for agentic development.",
+  "version": "0.14.0",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"
@@ -14,6 +14,7 @@
     "methodology",
     "spec",
     "product",
+    "intake",
     "architecture",
     "project-state",
     "behavior-registry",
