@@ -10,7 +10,7 @@ hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool 
 
 For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
 
-For raw capture requests like "зафиксируй проёб", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Intake records the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, or implementation. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues.
+For raw capture requests like "зафиксируй проблему", "зафиксируй ошибку", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Intake records the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, or implementation. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues.
 
 For "where are we?", "what should I do next?", "resume this project", "update project state", or Russian equivalents like «где мы остановились» / «что сейчас по проекту» / «обнови состояние проекта», route to `hi_flow:project-state`. Do not route these requests to architecture design/audit/redesign skills.
 

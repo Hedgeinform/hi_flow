@@ -1,6 +1,6 @@
 ---
 name: intake
-description: "Use when the operator wants to quickly capture a raw project signal without starting feature-spec, bug-fix, arch-audit, or implementation: «зафиксируй проёб», «запаркуй идею», «не забыть фичу», «добавь в intake», «потом сделать», or English equivalents."
+description: "Use when the operator wants to quickly capture a raw project signal without starting feature-spec, bug-fix, arch-audit, or implementation: «зафиксируй проблему», «зафиксируй ошибку», «запаркуй идею», «не забыть фичу», «добавь в intake», «потом сделать», or English equivalents."
 ---
 
 # intake

@@ -38,7 +38,7 @@ If no accepted-contract source exists:
 ## Anti-triggers
 
 - New user-visible behavior, UX decision, or policy change -> `hi_flow:feature-spec`.
-- Raw "зафиксируй проёб / note this bug" capture with no immediate fix planning -> `hi_flow:intake`.
+- Raw "зафиксируй проблему / зафиксируй ошибку / note this bug" capture with no immediate fix planning -> `hi_flow:intake`.
 - Architecture debt campaign -> `hi_flow:arch-redesign`.
 - Unknown current state / resume question -> `hi_flow:project-state`.
 - Small local bugfix with no accepted behavior/architecture contract -> Superpowers directly.
