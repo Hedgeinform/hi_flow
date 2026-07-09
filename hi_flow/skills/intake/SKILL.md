@@ -98,12 +98,6 @@ Every promotion or closure requires an explicit operator-approved patch. After p
 | `duplicate` | Duplicate of another intake or formal entry. |
 | `closed` | Deliberately discarded or no longer relevant. |
 
-## Project State
-
-Do not update `PROJECT_STATE.md` for ordinary capture.
-
-Update `PROJECT_STATE.md` only when triage changes the current next action, blocker state, or active artifact pointers. In that case, store only a pointer to `INTAKE.md` or the formal target, not the raw note.
-
 ## Completion Rule
 
 Capture is complete when:
@@ -125,7 +119,7 @@ Triage is complete when:
 - **Intake as SSoT.** Never treat `INTAKE.md` as the final backlog or issue register.
 - **Silent promotion.** Do not mutate Product Backlog or `ARCHITECTURE.md` without showing the patch.
 - **Heavy workflow on capture.** Recording a signal is not permission to run feature-spec, bug-fix, arch-audit, or implementation.
-- **Duplicate Project State.** Do not copy raw intake into `PROJECT_STATE.md`.
+- **Updating Project State.** Intake capture and triage do not update `PROJECT_STATE.md`; the downstream semantic phase updates it when that phase completes.
 - **Over-structuring.** Preserve the operator's freeform wording; add only minimal routing metadata.
 
 ## References

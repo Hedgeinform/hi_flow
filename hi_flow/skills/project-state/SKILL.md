@@ -71,7 +71,6 @@ Phase boundaries include:
 - implementation-plan creation;
 - behavior-migration completion;
 - bootstrap completion;
-- intake triage completion when it changes the next action, blocker state, or active artifact pointers;
 - ops completion;
 - arch-audit completion;
 - arch-redesign completion;
