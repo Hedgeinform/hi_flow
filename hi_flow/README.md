@@ -6,7 +6,8 @@ registry changes, implementation plans, foundation wiring, and deployment rails.
 For existing projects, it can also migrate legacy specs/tests into a living
 Behavior Registry and behavior harness rail. It also maintains a lightweight
 project-state dashboard so paused projects can be resumed without a repo-wide
-rediscovery pass.
+rediscovery pass, plus a raw intake inbox for problems and parked ideas that
+are not ready for formal planning yet.
 
 ## Routing
 
@@ -17,6 +18,8 @@ Use `behavior-migration` when an existing project needs to be brought onto
 Behavior Registry / behavior harness rails before the next feature.
 Use `project-state` when returning to a project, asking what to do next, or
 refreshing the current operational state.
+Use `intake` when the operator wants to quickly capture a raw observed problem
+or parked idea without launching a spec, audit, fix plan, or implementation.
 
 Use `bug-fix` when an Active Issue or regression violates already accepted
 behavior or architecture. Use a generic implementation workflow directly for
@@ -33,6 +36,7 @@ Superpowers-compatible plan.
 
 ```text
 legacy project prep (optional): behavior-migration
+raw signal capture (optional): intake
 
 product-spec
   -> feature-spec (Behavior Registry Changes)
@@ -49,6 +53,7 @@ and must be shipped to a non-local target.
 
 - `hi_flow:product-spec` - product decomposition and backlog.
 - `hi_flow:feature-spec` - feature-level product spec plus Behavior Registry Changes.
+- `hi_flow:intake` - raw problem and parked-idea inbox before formal triage.
 - `hi_flow:behavior-migration` - existing-project migration onto Behavior
   Registry, scenario mapping, and harness runner rails.
 - `hi_flow:project-state` - current project dashboard and resume point.
@@ -60,8 +65,8 @@ and must be shipped to a non-local target.
 - `hi_flow:implementation-plan` - behavior-first implementation plan compatible
   with Superpowers execution skills.
 - `hi_flow:bootstrap` - project foundation: plugin-internal stack baselines,
-  scaffold, audit, CI/gates, empty behavior-registry / behavior-gate rails, and
-  initial Project State.
+  scaffold, audit, CI/gates, empty intake, empty behavior-registry /
+  behavior-gate rails, and initial Project State.
 - `hi_flow:ops` - last-mile delivery profile, CD, deploy scaffold, and staging
   verification.
 
@@ -119,5 +124,6 @@ For solo/agent-first projects, the default is a project-native harness.
 - `hi_flow/references/stacks/react.md`
 - `hi_flow/references/stacks/references/react-baseline.md`
 - `hi_flow/skills/project-state/references/project-state-template.md`
+- `hi_flow/skills/intake/references/intake-template.md`
 - `hi_flow/skills/bootstrap/references/coverage-manifest.md`
 - `hi_flow/skills/bootstrap/references/architecture-template.md`

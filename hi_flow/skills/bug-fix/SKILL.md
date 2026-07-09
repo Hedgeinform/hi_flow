@@ -20,6 +20,7 @@ If the second case is true, stop and route to `hi_flow:feature-spec` or product 
 
 At least one accepted-contract source is required:
 
+- promoted `INTAKE.md` problem entry that also points to an accepted-contract source;
 - Behavior Registry scenario(s), mapping, or harness case;
 - `ARCHITECTURE.md` Active Issue row with a violated contract;
 - Target Architecture Contract rule / arch-audit finding;
@@ -28,6 +29,7 @@ At least one accepted-contract source is required:
 
 If no accepted-contract source exists:
 
+- for raw capture only -> route to `hi_flow:intake`;
 - for a product expectation or behavior change -> route to `hi_flow:feature-spec`;
 - for a desired future improvement -> route to product backlog;
 - for an old project with missing behavior rails and broad undocumented expectations -> route to `hi_flow:behavior-migration`;
@@ -36,6 +38,7 @@ If no accepted-contract source exists:
 ## Anti-triggers
 
 - New user-visible behavior, UX decision, or policy change -> `hi_flow:feature-spec`.
+- Raw "зафиксируй проёб / note this bug" capture with no immediate fix planning -> `hi_flow:intake`.
 - Architecture debt campaign -> `hi_flow:arch-redesign`.
 - Unknown current state / resume question -> `hi_flow:project-state`.
 - Small local bugfix with no accepted behavior/architecture contract -> Superpowers directly.

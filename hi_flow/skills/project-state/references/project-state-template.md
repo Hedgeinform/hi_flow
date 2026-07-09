@@ -1,11 +1,11 @@
 # Project State
 
-This document is the current operational dashboard for the project. It is not a history log, backlog, behavior registry, architecture contract, or implementation report.
+This document is the current operational dashboard for the project. It is not a history log, intake, backlog, behavior registry, architecture contract, or implementation report.
 
 ## Current Focus
 
 - **Focus:** <one-line current focus>
-- **Phase:** product-spec | feature-spec | arch-spec | bootstrap | implementation-plan | bug-fix | implementation | review | arch-audit | ops | maintenance | paused
+- **Phase:** intake | product-spec | feature-spec | arch-spec | bootstrap | implementation-plan | bug-fix | implementation | review | arch-audit | ops | maintenance | paused
 - **Owner/session:** <optional current owner or session pointer>
 
 ## Last Completed
@@ -27,6 +27,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Active Artifacts
 
 - Product backlog: <path or standard location>
+- Intake: `INTAKE.md`
 - Behavior Registry: <path or standard location>
 - Current spec/plan/report: <path>
 - Architecture snapshot: `ARCHITECTURE.md`
@@ -34,6 +35,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Update Notes
 
 - Keep this file current-state only.
+- Move raw untriaged problems and ideas to `INTAKE.md`.
 - Move desired future behavior to backlog.
 - Move accepted behavior details to Behavior Registry.
 - Move architecture defects to `ARCHITECTURE.md` Active Issues.

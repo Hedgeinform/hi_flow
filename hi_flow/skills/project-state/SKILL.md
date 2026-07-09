@@ -13,11 +13,12 @@ Its job is to help the operator and future agents resume work without rediscover
 
 ## Boundaries
 
-project-state is not architecture design, behavior design, product backlog management, or implementation execution.
+project-state is not architecture design, behavior design, product backlog management, raw intake capture, or implementation execution.
 
 | Neighbor | Boundary |
 |---|---|
 | `ARCHITECTURE.md` | Architecture snapshot: technical topology, domain ownership / SSoT, Active Issues, Accepted Drift. |
+| `INTAKE.md` | Human-readable transient inbox for raw observed problems and parked ideas before triage. |
 | Behavior Registry | Living source of behavior contracts and scenario status. |
 | Product Backlog | Desired future behavior and product scope. |
 | ArchAudit | Target Architecture Contract validation/apply, audit reports, observed dependency graph, and architecture violations. |
@@ -38,6 +39,7 @@ If the file is missing and the operator asks for project state, create it from `
 Do not create a long historical log. If an item is no longer current, remove it or move it to the right source of truth:
 
 - future desired behavior -> Product Backlog;
+- raw untriaged problems or ideas -> `INTAKE.md`;
 - accepted behavior -> Behavior Registry;
 - architecture / contract defect to fix -> `ARCHITECTURE.md` Active Issues;
 - accepted architecture exception -> `ARCHITECTURE.md` Accepted Drift;
@@ -69,6 +71,7 @@ Phase boundaries include:
 - implementation-plan creation;
 - behavior-migration completion;
 - bootstrap completion;
+- intake triage completion when it changes the next action, blocker state, or active artifact pointers;
 - ops completion;
 - arch-audit completion;
 - arch-redesign completion;
@@ -94,6 +97,7 @@ When the operator asks to update or refresh project state:
 2. Read the current git/repo state.
 3. Read only relevant hi_flow artifacts:
    - latest product backlog if product scope is in question;
+   - `INTAKE.md` if raw untriaged signals are in question;
    - Behavior Registry if behavior state is in question;
    - latest implementation reports and plans if delivery state is in question;
    - `ARCHITECTURE.md` Active Issues / Accepted Drift if blockers or debt are in question.
@@ -107,7 +111,7 @@ A state update is complete when:
 - `PROJECT_STATE.md` describes the current phase and next action;
 - stale completed items were removed or reduced to pointers;
 - no behavior/backlog/architecture contract content was copied into the state file;
-- blockers are either current blockers, Active Issues, Accepted Drift, or backlog items;
+- blockers are either current blockers, Active Issues, Accepted Drift, intake entries, or backlog items;
 - the operator can resume work from the state file without a repo-wide archaeology pass.
 
 ## Anti-patterns
@@ -115,6 +119,7 @@ A state update is complete when:
 - **Event-detection chatter.** Never say "project-state event detected". Update at explicit phase exits or on request.
 - **History pile.** Do not append every completed event. Keep only current state.
 - **Duplicate backlog.** New desired behavior belongs in Product Backlog.
+- **Duplicate intake.** Raw untriaged problems and ideas belong in `INTAKE.md`.
 - **Duplicate registry.** Behavior scenario details belong in Behavior Registry.
 - **Duplicate architecture.** Topology, domain ownership, Active Issues, and Accepted Drift belong in `ARCHITECTURE.md`.
 - **Guessing completion.** If reports, tests, or audit evidence conflict, mark the state as `blocked` or `needs review`.

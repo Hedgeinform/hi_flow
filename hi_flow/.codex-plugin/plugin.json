@@ -1,7 +1,7 @@
 {
   "name": "hi_flow",
-  "version": "0.13.0",
-  "description": "Feature-and-above solo+AI development methodology with product specs, project state, architecture gates, Behavior Registry, behavior migration, contract-preserving bug fixes, implementation plans, foundation wiring, and delivery rails.",
+  "version": "0.14.0",
+  "description": "Feature-and-above solo+AI development methodology with raw intake, product specs, project state, architecture gates, Behavior Registry, behavior migration, contract-preserving bug fixes, implementation plans, foundation wiring, and delivery rails.",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"
@@ -11,6 +11,7 @@
     "methodology",
     "spec",
     "product",
+    "intake",
     "architecture",
     "project-state",
     "behavior-registry",
@@ -24,7 +25,7 @@
   "interface": {
     "displayName": "hi_flow",
     "shortDescription": "Behavior-first feature and architecture workflow for agentic development.",
-    "longDescription": "hi_flow guides feature-and-above solo+AI development from product intent through feature specs, Project State, Behavior Registry changes, behavior migration for existing projects, contract-preserving bug fixes, architecture gates, behavior-first implementation plans, plugin-internal stack baselines for project foundation wiring, and delivery setup. It is designed to coexist with Claude Code and Codex surfaces while keeping Superpowers as the recommended execution discipline.",
+    "longDescription": "hi_flow guides feature-and-above solo+AI development from raw project-signal intake through product intent, feature specs, Project State, Behavior Registry changes, behavior migration for existing projects, contract-preserving bug fixes, architecture gates, behavior-first implementation plans, plugin-internal stack baselines for project foundation wiring, and delivery setup. It is designed to coexist with Claude Code and Codex surfaces while keeping Superpowers as the recommended execution discipline.",
     "developerName": "viessedo",
     "category": "Productivity",
     "capabilities": [
@@ -33,6 +34,7 @@
     ],
     "defaultPrompt": [
       "Create a hi_flow feature spec",
+      "Capture a raw problem or parked idea in hi_flow intake",
       "Show current hi_flow project state",
       "Migrate an existing project to Behavior Registry",
       "Plan a hi_flow bug fix for an Active Issue",

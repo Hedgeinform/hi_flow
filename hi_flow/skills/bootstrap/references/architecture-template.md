@@ -53,5 +53,5 @@ Known violations or exceptions consciously accepted for now.
 | AD-001 | <exception> | <reason> | <trigger> |
 ```
 
-Do not add Topic Index, decision history, full generated module graph, backlog,
-Behavior Registry entries, implementation reports, or Project State content.
+Do not add Topic Index, decision history, full generated module graph, intake,
+backlog, Behavior Registry entries, implementation reports, or Project State content.

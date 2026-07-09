@@ -1,6 +1,6 @@
 ---
 name: feature-spec
-description: "Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», or new/changed Behavior Registry expectations. Prefer this over generic brainstorming for feature-and-above hi_flow work. For accepted-contract bugs or registry mapping/status fixes use hi_flow:bug-fix; for small local technical changes use generic implementation unless hi_flow is explicit."
+description: "Use when the operator asks for a hi_flow product/feature spec: «продуктовая спека», «спека на фичу X», «фича-спека», «продуктовый дизайн фичи X», «давай продумаем фичу X», or new/changed Behavior Registry expectations. Prefer this over generic brainstorming for feature-and-above hi_flow work. For raw capture use hi_flow:intake; for accepted-contract bugs or registry mapping/status fixes use hi_flow:bug-fix; for small local technical changes use generic implementation unless hi_flow is explicit."
 ---
 
 # `hi_flow:feature-spec` — Feature-Level Product Spec Skill
@@ -44,6 +44,8 @@ feature-spec runs in either mode; **both** must support backlog-sync at closure.
 
 - **After product-spec** — the operator attaches a `bundle-<feature-slug>.md` file (product-spec decomposition phase output, v0.6.0+). The bundle describes the whole feature — feature-spec works with it as a single scope. A product-backlog almost certainly already exists (product-spec created it).
 - **Standalone** — the operator arrives with a ready feature idea for an **existing** product, without a product-spec and without a bundle. A backlog may exist (accumulated by earlier feature-spec sessions or by hand) or may be absent.
+
+An `INTAKE.md` parked idea can be a starting signal, but feature-spec must still do normal feature design. Do not treat a raw intake note as an accepted feature contract.
 
 Either way, the output is one `feature-spec.md` for the whole feature with hierarchical forks (F1 / F1.3 / F1.3.2 Cockburn-style per capability area).
 
