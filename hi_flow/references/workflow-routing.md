@@ -20,7 +20,7 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 
 | Operator intent | Use | Do not use as the primary step |
 |---|---|---|
-| raw observed problem or parked idea, no immediate design/fix requested | `hi_flow:intake` | `hi_flow:feature-spec` / `hi_flow:bug-fix` / `hi_flow:arch-audit` |
+| human-originated raw observed problem, parked idea, or intake work-selection request | `hi_flow:intake` | `hi_flow:feature-spec` / `hi_flow:bug-fix` / `hi_flow:arch-audit` |
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
 | current project status, resume point, next action, project state refresh | `hi_flow:project-state` | `hi_flow:arch-spec` / `hi_flow:arch-audit` / `hi_flow:arch-redesign` |
 | migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |

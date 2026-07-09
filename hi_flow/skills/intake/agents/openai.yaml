@@ -1,4 +1,4 @@
 interface:
   display_name: "Intake"
-  short_description: "Capture raw project signals"
-  default_prompt: "Use $intake to capture this raw problem or parked idea in the hi_flow intake."
+  short_description: "Capture and triage human-originated intake"
+  default_prompt: "Use $intake to capture or triage a human-originated problem or parked idea."

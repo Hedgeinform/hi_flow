@@ -35,6 +35,7 @@
     "defaultPrompt": [
       "Create a hi_flow feature spec",
       "Capture a human-originated problem or parked idea in hi_flow intake",
+      "Review hi_flow intake and recommend the next work route",
       "Show current hi_flow project state",
       "Migrate an existing project to Behavior Registry",
       "Plan a hi_flow bug fix for an Active Issue",

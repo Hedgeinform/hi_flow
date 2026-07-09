@@ -6,7 +6,7 @@ registry changes, implementation plans, foundation wiring, and deployment rails.
 For existing projects, it can also migrate legacy specs/tests into a living
 Behavior Registry and behavior harness rail. It also maintains a lightweight
 project-state dashboard so paused projects can be resumed without a repo-wide
-rediscovery pass, plus a raw intake inbox for problems and parked ideas that
+rediscovery pass, plus a human-originated intake inbox for problems and parked ideas that
 come from human-originated signals and are not ready for formal planning yet.
 
 ## Routing
@@ -18,8 +18,9 @@ Use `behavior-migration` when an existing project needs to be brought onto
 Behavior Registry / behavior harness rails before the next feature.
 Use `project-state` when returning to a project, asking what to do next, or
 refreshing the current operational state.
-Use `intake` when the operator wants to quickly capture a raw observed problem
-or parked idea without launching a spec, audit, fix plan, or implementation.
+Use `intake` when the operator wants to quickly capture, triage, or select work
+from a human-originated observed problem or parked idea without launching a spec,
+audit, fix plan, or implementation.
 
 Use `bug-fix` when an Active Issue or regression violates already accepted
 behavior or architecture. Use a generic implementation workflow directly for
