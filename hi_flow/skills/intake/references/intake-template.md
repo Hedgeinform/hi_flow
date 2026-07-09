@@ -13,7 +13,7 @@ Entry format:
 
 ### IN-YYYY-MM-DD-NNN - <short title>
 **Date:** YYYY-MM-DD
-**Priority:** P0 | P1 | P2 | P3
+**Priority:** P0 Critical | P1 High | P2 Medium | P3 Low
 **Status:** inbox | promoted | duplicate | closed
 **Source:** operator | implementation-report | review | audit | support | other
 **Target:** <empty while inbox; later path/ID or duplicate pointer>
@@ -30,7 +30,7 @@ Entry format:
 
 ### IN-YYYY-MM-DD-NNN - <short title>
 **Date:** YYYY-MM-DD
-**Priority:** P0 | P1 | P2 | P3
+**Priority:** P0 Critical | P1 High | P2 Medium | P3 Low
 **Status:** inbox | promoted | duplicate | closed
 **Source:** operator | customer | research | implementation | other
 **Target:** <empty while inbox; later path/ID or duplicate pointer>

@@ -50,19 +50,30 @@ Use capture mode when the operator wants to record something quickly.
 4. Add a new entry with:
    - stable ID `IN-YYYY-MM-DD-NNN`;
    - current date;
-   - priority `P0` / `P1` / `P2` / `P3`;
+   - priority `P0 Critical` / `P1 High` / `P2 Medium` / `P3 Low`;
    - status `inbox`;
    - source;
    - optional target if obvious;
    - the operator's wording preserved as raw note.
 5. Do not start a spec, audit, bug-fix, implementation plan, or code change during capture.
 
-Priority defaults:
+Priority is section-relative. The same label orders triage inside a section, but `Observed Problems` and `Parked Ideas` interpret it differently.
 
-- `P0` - blocks current work or production use.
-- `P1` - materially important soon.
-- `P2` - normal candidate; default when the operator gives no priority.
-- `P3` - someday / low confidence.
+Canonical priority values use both numeric and verbal labels. If the operator gives only one form (`P1` or `High`), normalize to the paired form.
+
+For `Observed Problems`:
+
+- `P0 Critical` - blocks current work, production use, or a key accepted scenario. It may still be captured briefly before immediate fix work so it does not get lost.
+- `P1 High` - serious defect, risk, or debt, but the system is not stopped.
+- `P2 Medium` - normal defect or debt signal; default when the operator gives no priority.
+- `P3 Low` - weak signal, suspicion, informational note, small rough edge, or low-impact cleanup.
+
+For `Parked Ideas`:
+
+- `P0 Critical` - exceptional. Ask whether this is really a parked idea or should start `hi_flow:product-spec` / `hi_flow:feature-spec` now.
+- `P1 High` - strong candidate for the next product/design triage.
+- `P2 Medium` - normal parked idea; default when the operator gives no priority.
+- `P3 Low` - someday, low-confidence, or speculative idea kept only so it is not forgotten.
 
 ## Triage Mode
 
