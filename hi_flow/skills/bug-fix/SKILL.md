@@ -20,7 +20,6 @@ If the second case is true, stop and route to `hi_flow:feature-spec` or product 
 
 At least one accepted-contract source is required:
 
-- promoted `INTAKE.md` problem entry that also points to an accepted-contract source;
 - Behavior Registry scenario(s), mapping, or harness case;
 - `ARCHITECTURE.md` Active Issue row with a violated contract;
 - Target Architecture Contract rule / arch-audit finding;

@@ -2,7 +2,9 @@
 
 This document is a human-readable transient inbox for raw project signals. It is not the Product Backlog, not `ARCHITECTURE.md` Active Issues, not the Behavior Registry, and not Project State.
 
-Use it to capture signals quickly. Promote or close them later through `hi_flow:intake`.
+Use it to capture human-originated signals quickly. Promote, merge, or delete them later through `hi_flow:intake`.
+
+Keep only live, untriaged entries here. After an entry is promoted to a formal artifact, merged into another entry, rejected, or discarded as noise, remove it from this file. Do not keep processed-history sections.
 
 ## Observed Problems
 
@@ -14,9 +16,7 @@ Entry format:
 ### IN-YYYY-MM-DD-NNN - <short title>
 **Date:** YYYY-MM-DD
 **Priority:** P0 Critical | P1 High | P2 Medium | P3 Low
-**Status:** inbox | promoted | duplicate | closed
-**Source:** operator | implementation-report | review | audit | support | other
-**Target:** <empty while inbox; later path/ID or duplicate pointer>
+**Source:** <optional; omit for operator-originated entries, use only for customer/support/research/etc.>
 
 <freeform raw note, preserving the operator's wording>
 -->
@@ -31,9 +31,7 @@ Entry format:
 ### IN-YYYY-MM-DD-NNN - <short title>
 **Date:** YYYY-MM-DD
 **Priority:** P0 Critical | P1 High | P2 Medium | P3 Low
-**Status:** inbox | promoted | duplicate | closed
-**Source:** operator | customer | research | implementation | other
-**Target:** <empty while inbox; later path/ID or duplicate pointer>
+**Source:** <optional; omit for operator-originated entries, use only for customer/support/research/etc.>
 
 <freeform raw note, preserving the operator's wording>
 -->

@@ -1,7 +1,7 @@
 {
   "name": "hi_flow",
   "displayName": "hi_flow",
-  "description": "Behavior-first intake, feature, project-state, bug-fix, and architecture workflow for agentic development.",
+  "description": "Behavior-first human-originated intake, feature, project-state, bug-fix, and architecture workflow for agentic development.",
   "version": "0.14.0",
   "author": {
     "name": "viessedo",

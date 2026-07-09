@@ -4,13 +4,13 @@ This file is the family-level routing contract between hi_flow and general imple
 
 ## Core rule
 
-Use hi_flow for feature-and-above work, raw project-signal intake, and fixes that restore an accepted hi_flow contract. Use a general implementation workflow directly for small local changes.
+Use hi_flow for feature-and-above work, human-originated raw project-signal intake, and fixes that restore an accepted hi_flow contract. Use a general implementation workflow directly for small local changes.
 
 hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, needs a durable behavior harness, or fixes a known violation of an accepted Behavior Registry / architecture contract. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup with no hi_flow contract impact, route directly to the implementation workflow.
 
 For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
 
-For raw capture requests like "зафиксируй проблему", "зафиксируй ошибку", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Intake records the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, or implementation. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues.
+For human-originated raw capture requests like "зафиксируй проблему", "зафиксируй ошибку", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Also route "посмотри intake", "разбери intake", "что брать в работу", or similar work-selection requests to `hi_flow:intake`. Intake records or classifies the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, implementation, or code work by itself. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues, then removes the processed intake entry. Agent-originated findings go to formal artifacts or the current report unless the operator explicitly asks to park them in intake.
 
 For "where are we?", "what should I do next?", "resume this project", "update project state", or Russian equivalents like «где мы остановились» / «что сейчас по проекту» / «обнови состояние проекта», route to `hi_flow:project-state`. Do not route these requests to architecture design/audit/redesign skills.
 

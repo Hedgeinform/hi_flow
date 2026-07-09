@@ -7,7 +7,7 @@ For existing projects, it can also migrate legacy specs/tests into a living
 Behavior Registry and behavior harness rail. It also maintains a lightweight
 project-state dashboard so paused projects can be resumed without a repo-wide
 rediscovery pass, plus a raw intake inbox for problems and parked ideas that
-are not ready for formal planning yet.
+come from human-originated signals and are not ready for formal planning yet.
 
 ## Routing
 
@@ -36,7 +36,7 @@ Superpowers-compatible plan.
 
 ```text
 legacy project prep (optional): behavior-migration
-raw signal capture (optional): intake
+human-originated raw signal capture (optional): intake
 
 product-spec
   -> feature-spec (Behavior Registry Changes)
@@ -53,7 +53,7 @@ and must be shipped to a non-local target.
 
 - `hi_flow:product-spec` - product decomposition and backlog.
 - `hi_flow:feature-spec` - feature-level product spec plus Behavior Registry Changes.
-- `hi_flow:intake` - raw problem and parked-idea inbox before formal triage.
+- `hi_flow:intake` - human-originated raw problem and parked-idea inbox before formal triage.
 - `hi_flow:behavior-migration` - existing-project migration onto Behavior
   Registry, scenario mapping, and harness runner rails.
 - `hi_flow:project-state` - current project dashboard and resume point.
