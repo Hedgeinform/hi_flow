@@ -5,8 +5,8 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** JavaScript/ESM support and the four ArchAudit harness/runtime regressions are fixed and verified.
-- **Phase:** review
-- **Owner/session:** branch `codex/arch-audit-js-esm`
+- **Phase:** released to local `master`
+- **Owner/session:** `master`
 
 ## Last Completed
 
@@ -14,7 +14,7 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Ready Next
 
-- Review and integrate commit from `codex/arch-audit-js-esm`.
+- Refresh the installed hi_flow plugin to `0.15.0`, then select the next Active Issue or intake item.
 
 ## Waiting / Blocked
 
@@ -27,6 +27,7 @@ This document is the current operational dashboard for the project. It is not a 
 - Six tracked Markdown fixtures -> index LF with `text eol=lf` on 2026-07-17.
 - `tsc --noEmit` and `git diff --check` -> passed on 2026-07-17.
 - CWS hash-identical smoke from the preceding JS/ESM fix -> valid D8, 7 modules and 10 edges on 2026-07-17.
+- Plugin manifests for Claude, Codex, Cursor, and marketplace -> synchronized at `0.15.0` on 2026-07-17.
 
 ## Active Artifacts
 
