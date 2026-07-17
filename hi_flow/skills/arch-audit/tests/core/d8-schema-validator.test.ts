@@ -25,6 +25,25 @@ describe('d8-schema-validator', () => {
     expect(result.errors).toEqual([])
   })
 
+  it('rejects a non-date audit timestamp with a format error', () => {
+    const report = {
+      ...validReport,
+      metadata: {
+        ...validReport.metadata,
+        audit_timestamp: 'not-a-date',
+      },
+    }
+
+    const result = validateD8Report(report)
+
+    expect(result.valid).toBe(false)
+    expect(result.errors).toContainEqual({
+      path: '/metadata/audit_timestamp',
+      keyword: 'format',
+      message: expect.stringContaining('date-time'),
+    })
+  })
+
   it('rejects missing required field', () => {
     const bad: any = { ...validReport }
     delete bad.findings
