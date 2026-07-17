@@ -1,0 +1,5 @@
+{
+  "name": "arch-audit-js-esm-fixture",
+  "private": true,
+  "type": "module"
+}

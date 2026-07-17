@@ -50,6 +50,29 @@ describe('typescript-depcruise adapter — identifyModules', () => {
     await expect(a.identifyModules(dir)).rejects.toThrow(/src\//)
     await rm(dir, { recursive: true })
   })
+
+  it('lists production modules below a configured JavaScript root', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tda-js-'))
+    await mkdir(join(dir, 'pipeline-runtime/a'), { recursive: true })
+    await mkdir(join(dir, 'pipeline-runtime/b'), { recursive: true })
+    await writeFile(join(dir, 'pipeline-runtime/a/index.mjs'), 'export const a = 1\n')
+    await writeFile(join(dir, 'pipeline-runtime/b/index.cjs'), 'exports.b = 2\n')
+
+    const a = createTypescriptDepcruiseAdapter()
+    const modules = await a.identifyModules(dir, 'pipeline-runtime')
+    expect(modules.map(m => m.name).sort()).toEqual(['a', 'b'])
+    await rm(dir, { recursive: true })
+  })
+
+  it('hard-fails when a configured root has no production modules', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tda-empty-'))
+    await mkdir(join(dir, 'pipeline-runtime/a'), { recursive: true })
+    await writeFile(join(dir, 'pipeline-runtime/a/README.md'), 'not production code\n')
+
+    const a = createTypescriptDepcruiseAdapter()
+    await expect(a.identifyModules(dir, 'pipeline-runtime')).rejects.toThrow(/production modules/i)
+    await rm(dir, { recursive: true })
+  })
 })
 
 describe('typescript-depcruise adapter — detect', () => {
@@ -57,6 +80,14 @@ describe('typescript-depcruise adapter — detect', () => {
     const dir = await mkdtemp(join(tmpdir(), 'tda-'))
     await writeFile(join(dir, 'package.json'), '{}')
     await writeFile(join(dir, 'tsconfig.json'), '{}')
+    const a = createTypescriptDepcruiseAdapter()
+    expect(await a.detect(dir)).toBe(true)
+    await rm(dir, { recursive: true })
+  })
+
+  it('returns true for a JavaScript project with package.json and no tsconfig.json', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tda-js-'))
+    await writeFile(join(dir, 'package.json'), '{ "type": "module" }')
     const a = createTypescriptDepcruiseAdapter()
     expect(await a.detect(dir)).toBe(true)
     await rm(dir, { recursive: true })

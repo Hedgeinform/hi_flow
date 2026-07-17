@@ -4,12 +4,13 @@ import type { RawFinding } from '../core/types.ts'
 
 interface DetectBarrelsArgs {
   projectPath: string
+  moduleRoot?: string
   modulesList: string[]
   barrelImports: { from: string; to: string; targetFile: string }[]
   threshold?: number
 }
 
-const INDEX_FILES = ['index.ts', 'index.tsx', 'index.js', 'index.jsx']
+const INDEX_FILES = ['index.ts', 'index.tsx', 'index.js', 'index.jsx', 'index.mjs', 'index.cjs']
 
 function stripComments(src: string): string {
   return src
@@ -72,7 +73,7 @@ export async function detectBarrels(args: DetectBarrelsArgs): Promise<RawFinding
   const findings: RawFinding[] = []
 
   for (const moduleName of args.modulesList) {
-    const modulePath = join(args.projectPath, 'src', moduleName)
+    const modulePath = join(args.projectPath, ...(args.moduleRoot ?? 'src').split('/'), moduleName)
     const indexPath = await findIndexFile(modulePath)
     if (!indexPath) continue
 

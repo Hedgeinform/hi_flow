@@ -1,4 +1,5 @@
 import type { Finding } from './types.ts'
+import { fileToModule } from './source-scope.ts'
 
 const SUPPRESSIBLE_RULE_ID = 'baseline:cross-module-import-info'
 const NO_ORPHANS_RULE_ID = 'baseline:no-orphans'
@@ -12,16 +13,6 @@ const SEVERITY_RANK: Record<Finding['severity'], number> = {
 interface SuppressionContext {
   parsing_errors?: { file: string; error: string }[]
   modulePattern?: string
-}
-
-// Extract top-level module name from a file path under <pattern>/<module>/...
-// Mirrors fileToModule in parse-depcruise-output.ts but tolerant: returns null if not resolvable.
-function fileToModuleSafe(filePath: string, modulePattern: string): string | null {
-  if (!filePath) return null
-  const parts = filePath.split('/')
-  const idx = parts.indexOf(modulePattern)
-  if (idx === -1 || idx + 2 >= parts.length) return null
-  return parts[idx + 1]!
 }
 
 export function applySuppression(findings: Finding[], ctx: SuppressionContext = {}): Finding[] {
@@ -38,7 +29,7 @@ export function applySuppression(findings: Finding[], ctx: SuppressionContext = 
   const parseErrorModules = new Set<string>()
   const modulePattern = ctx.modulePattern ?? 'src'
   for (const e of ctx.parsing_errors ?? []) {
-    const m = fileToModuleSafe(e.file, modulePattern)
+    const m = fileToModule(e.file, modulePattern)
     if (m) parseErrorModules.add(m)
   }
 

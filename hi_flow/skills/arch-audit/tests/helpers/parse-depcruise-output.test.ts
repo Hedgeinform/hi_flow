@@ -93,6 +93,26 @@ describe('parse-depcruise-output', () => {
     expect(edge!.targetFile).toBe('src/foo/index.ts')
   })
 
+  it('builds a configured-root graph and recognizes an imported index.mjs barrel', () => {
+    const raw = JSON.stringify({
+      summary: { violations: [] },
+      modules: [
+        {
+          source: 'pipeline-runtime/a/index.mjs',
+          dependencies: [
+            { resolved: 'pipeline-runtime/b/index.mjs', module: '../b/index.mjs' },
+          ],
+        },
+        { source: 'pipeline-runtime/b/index.mjs', dependencies: [] },
+      ],
+    })
+    const result = parseDepcruiseOutput(raw, 'pipeline-runtime')
+    expect(result.dep_graph).toEqual({ a: ['b'], b: [] })
+    expect(result.barrel_imports).toEqual([
+      { from: 'a', to: 'b', targetFile: 'pipeline-runtime/b/index.mjs' },
+    ])
+  })
+
   it('does NOT surface barrel_imports for non-index targets', async () => {
     const raw = JSON.stringify({
       summary: { violations: [] },

@@ -99,6 +99,25 @@ describe('detect-barrels', () => {
     await rm(dir, { recursive: true })
   })
 
+  it('flags an index.mjs barrel below a configured module root', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'barrel-mjs-'))
+    await mkdir(join(dir, 'pipeline-runtime/foo'), { recursive: true })
+    await mkdir(join(dir, 'pipeline-runtime/bar'), { recursive: true })
+    await writeFile(join(dir, 'pipeline-runtime/foo/index.mjs'), `export * from './a.mjs'\n`)
+    await writeFile(join(dir, 'pipeline-runtime/foo/a.mjs'), 'export const A = 1\n')
+
+    const findings = await detectBarrels({
+      projectPath: dir,
+      moduleRoot: 'pipeline-runtime',
+      modulesList: ['foo', 'bar'],
+      barrelImports: [{ from: 'bar', to: 'foo', targetFile: 'pipeline-runtime/foo/index.mjs' }],
+    })
+
+    expect(findings).toHaveLength(1)
+    expect(findings[0]!.extras?.barrel_file).toMatch(/index\.mjs$/)
+    await rm(dir, { recursive: true })
+  })
+
   it('aggregates multiple importers into extras.importing_modules', async () => {
     const dir = await makeProject()
     await mkdir(join(dir, 'src/baz'), { recursive: true })

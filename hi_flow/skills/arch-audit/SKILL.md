@@ -91,8 +91,8 @@ If there are no pending patches, this step is silent — proceed to stack detect
 
 Auto-detect by structural project signals, in priority order:
 
-- `package.json` + `tsconfig.json` → typescript-depcruise adapter.
-- `package.json` without tsconfig → javascript-depcruise (same adapter, separate flag).
+- `package.json` + `tsconfig.json` → dependency-cruiser adapter with TypeScript options.
+- `package.json` without `tsconfig.json` → the same dependency-cruiser adapter without TypeScript-only options.
 - `pyproject.toml` / `requirements.txt` → python adapter (not implemented in v1).
 - `pom.xml` / `build.gradle` → java adapter (not implemented in v1).
 
@@ -126,16 +126,19 @@ After version is detected, run preflight check (`core/preflight.ts → checkDepc
 
 ### Generate config + run depcruise
 
-Helper `generate-depcruise-config.js`:
+Helper `generate-depcruise-config.ts`:
 - Reads the machine-checkable Target Architecture Contract: baseline rules (Layer A — 3 built-ins) + project rules (`<project>/.audit-rules.yaml`, if present).
 - Converts the wrapping YAML format into native depcruise CJS config.
-- Output: temporary `.dependency-cruiser.cjs` in the working directory.
+- Includes `tsConfig` and `tsPreCompilationDeps` only when the audited project has `tsconfig.json`.
+- Output: temporary dependency-cruiser CJS config in the OS temp directory.
+
+**`overrides.module_pattern` — optional production module root.** Default: `src`. The value names the directory whose immediate child directories are architecture modules, for example `pipeline-runtime`. Legacy trailing `/*` / `/*/` notation is accepted and normalized to the same root. The runtime derives one dependency-cruiser scan glob from this root for `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, and `.cjs`; the same normalized root is used for module discovery, file-to-module mapping, structural checks, suppression, metrics, and barrel detection. Absolute paths, parent traversal, and other glob syntax fail closed. A missing root, a root with no supported production modules, or an empty parsed graph aborts the audit instead of producing an empty successful D8 snapshot.
 
 **`overrides.profile` (frontend | backend) — optional.** Явно объявляет тип дерева для слоевого governance. `frontend` → активирует frontend layered-правила (`frontend-layered-respect` / `frontend-layer-cycle`), backend layered + port-adapter пропускаются. `backend` → принудительно backend-профиль даже при наличии папок `components`/`hooks` (escape hatch). Не указано → fallback на литеральную эвристику (≥2 из `components/hooks/pages/features`). Для feature-sliced раскладок с кастомными именами слоёв декларация обязательна (+ `overrides.layer_aliases` для маппинга имён на слои). Авто-детект раскладки сознательно не делается — «слой или слайс» статически неоднозначно. См. `docs/superpowers/specs/2026-06-06-hi_flow-frontend-slice-governance-amendment-design.md`.
 
 The full audit command invokes this internally through the bundled runtime dependency:
 ```
-node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --output-type json --config <temp-config> src/
+node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --output-type json --config <temp-config> '<module-root>/**/*.{ts,tsx,js,jsx,mjs,cjs}'
 ```
 - Capture stdout (JSON) + stderr.
 - Timeout: 60s default, tunable via project rules.
@@ -354,7 +357,7 @@ Defaults: `project-root` = current working directory; `d9-md-path` resolves to t
 
 ## Stack adapter pattern (overview)
 
-The skill is split into a **stack-agnostic core** (reads D9 + baseline rules, validation, detection algorithms, suppression, artifact assembly) and a **stack-specific adapter** (per-language tooling integration). v1 ships a single adapter, `typescript-depcruise.ts`.
+The skill is split into a **stack-agnostic core** (reads D9 + baseline rules, validation, detection algorithms, suppression, artifact assembly) and a **stack-specific adapter** (tooling integration). v1 ships a single shared TypeScript/JavaScript dependency-cruiser adapter in the legacy-named file `typescript-depcruise.ts`.
 
 **The boundary (important):** detection algorithms live in core. The adapter only supplies stack-specific data (testFilePatterns, channelSdkList, layerNamingMap, defaultModulePattern) and tooling-specific methods (buildDepGraph, computeMetrics, validatePatch, mergePatch). The adapter does not own detection algorithms.
 

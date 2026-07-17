@@ -15,6 +15,7 @@ import { generateMermaid } from '../helpers/generate-mermaid.ts'
 import { checkDepcruiseVersion } from './preflight.ts'
 import { resolveAuditSha } from './audit-sha.ts'
 import { resolveRuntimeRoot, runBundledDepcruise } from './depcruise-runtime.ts'
+import { buildSourceScanGlob, normalizeModuleRoot } from './source-scope.ts'
 
 export interface BuildOpts {
   auditSha?: string
@@ -54,6 +55,8 @@ export async function buildReportData(
   const baselineRules = getBaselineRules()
   const projectRules = await loadProjectRules(projectRoot)
   const d9 = opts.d9MdPath ? await loadD9(opts.d9MdPath) : { principles: {}, fix_alternatives: {} }
+  const moduleRoot = normalizeModuleRoot(projectRules.overrides?.module_pattern ?? 'src')
+  const modulesList = (await adapter.identifyModules(projectRoot, moduleRoot)).map(module => module.name)
 
   checkDepcruiseVersion(opts.depcruiseVersion, adapter.requiredTooling[0]!)
 
@@ -62,19 +65,16 @@ export async function buildReportData(
   const runtimeRoot = resolveRuntimeRoot(import.meta.url)
   const runner = opts.runDepcruise ?? ((cfg: string, src: string) =>
     runBundledDepcruise(runtimeRoot, projectRoot, cfg, src))
-  // Glob includes .tsx so the frontend import-graph is scanned (depcruise globs the arg
-  // internally with brace support, so this is cross-platform). Without .tsx a React SPA
-  // (components are .tsx, entry main.tsx) is not scanned at all.
-  const depcruiseOut = runner(configPath, 'src/**/*.{ts,tsx}')
+  const depcruiseOut = runner(configPath, buildSourceScanGlob(moduleRoot))
 
-  const parsed = parseDepcruiseOutput(depcruiseOut)
-
-  let modulesList: string[]
-  try {
-    modulesList = (await adapter.identifyModules(projectRoot)).map(m => m.name)
-  } catch {
-    modulesList = []
+  const parsed = parseDepcruiseOutput(depcruiseOut, moduleRoot)
+  if (Object.keys(parsed.per_module_raw).length === 0) {
+    throw new Error(
+      `Dependency-cruiser returned no production modules for '${moduleRoot}/'. ` +
+      'Audit aborted to prevent an empty successful D8 snapshot.',
+    )
   }
+
   const structural = await adapter.detectStructural({
     projectPath: projectRoot,
     depGraph: parsed.dep_graph,
@@ -83,6 +83,7 @@ export async function buildReportData(
     sdkEdges: parsed.sdk_edges,
     barrelImports: parsed.barrel_imports,
     modulesList,
+    moduleRoot,
   })
 
   const nccd = computeNCCD(parsed.dep_graph)
@@ -108,7 +109,7 @@ export async function buildReportData(
 
   findings = applySuppression(findings, {
     parsing_errors: parsed.parsing_errors,
-    modulePattern: projectRules.overrides?.module_pattern ?? 'src',
+    modulePattern: moduleRoot,
   })
 
   const clusters = new Map<string, Finding[]>()

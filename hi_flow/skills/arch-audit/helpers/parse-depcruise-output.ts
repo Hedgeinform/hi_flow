@@ -1,5 +1,6 @@
 import type { RawFinding, DepGraph, DepcruiseSeverity } from '../core/types.ts'
 import { computeCoupling } from '../core/graph-core.ts'
+import { fileToModule } from '../core/source-scope.ts'
 
 interface PerModuleRaw {
   ca: number
@@ -25,21 +26,6 @@ function normalizeViolationType(raw: string | undefined | null): 'boundary' | 'c
     case 'module': return 'coupling'
     default: return 'coupling'
   }
-}
-
-// Default module pattern: top-level subdir of src/
-// Returns null for paths that are not real project modules (node_modules, builtins, top-level src/*.ts)
-function fileToModule(filePath: string, modulePattern = 'src'): string | null {
-  if (!filePath) return null
-  if (filePath.startsWith('node_modules/') || filePath.includes('/node_modules/')) return null
-  if (/^[a-z]+:/.test(filePath)) return null
-  if (!filePath.includes('/') && !filePath.includes('.')) return null
-  const parts = filePath.split('/')
-  const srcIdx = parts.indexOf(modulePattern)
-  if (srcIdx === -1) return null
-  if (srcIdx + 1 >= parts.length) return null
-  if (srcIdx + 2 >= parts.length) return null  // must have subdir level
-  return parts[srcIdx + 1]!
 }
 
 export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'): ParseResult {
@@ -88,7 +74,7 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
   const per_module_raw: Record<string, PerModuleRaw> = {}
   const sdk_edges: { from: string; sdk: string }[] = []
   const barrel_imports: { from: string; to: string; targetFile: string }[] = []
-  const INDEX_FILENAME_RE = /\/index\.(ts|tsx|js|jsx)$/
+  const INDEX_FILENAME_RE = /\/index\.(ts|tsx|js|jsx|mjs|cjs)$/
   const modules = data?.modules ?? []
 
   for (const m of modules) {

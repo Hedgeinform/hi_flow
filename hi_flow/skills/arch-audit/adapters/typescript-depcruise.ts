@@ -1,7 +1,8 @@
-import { access, readdir, stat } from 'node:fs/promises'
+import { access } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ToolingRequirement, DepGraph, RawFinding, ProjectRules } from '../core/types.ts'
 import { detectBarrels } from '../helpers/detect-barrels.ts'
+import { discoverProductionModules, normalizeModuleRoot } from '../core/source-scope.ts'
 
 export interface ModuleInfo {
   name: string
@@ -20,8 +21,8 @@ export interface TypescriptDepcruiseAdapter {
 
   // Detection
   detect(projectPath: string): Promise<boolean>
-  identifyModules(projectPath: string): Promise<ModuleInfo[]>
-  identifyEntryPoints(projectPath: string): Promise<string[]>
+  identifyModules(projectPath: string, moduleRoot?: string): Promise<ModuleInfo[]>
+  identifyEntryPoints(projectPath: string, moduleRoot?: string): Promise<string[]>
 
   // Structural detection
   detectStructural(args: {
@@ -32,6 +33,7 @@ export interface TypescriptDepcruiseAdapter {
     sdkEdges?: { from: string; sdk: string }[]
     barrelImports?: { from: string; to: string; targetFile: string }[]
     modulesList?: string[]
+    moduleRoot?: string
   }): Promise<RawFinding[]>
 
   // Tooling reporting
@@ -83,7 +85,12 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
     name: 'typescript-depcruise',
     version: '1.0.0',
     requiredTooling: [{ name: 'dependency-cruiser', min: '16.0.0', max: '18.0.0' }],
-    testFilePatterns: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx', '__tests__/**/*'],
+    testFilePatterns: [
+      '*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx',
+      '*.test.js', '*.test.jsx', '*.test.mjs', '*.test.cjs',
+      '*.spec.js', '*.spec.jsx', '*.spec.mjs', '*.spec.cjs',
+      '__tests__/**/*',
+    ],
     channelSdkList,
     layerNamingMap,
     defaultModulePattern: 'src/*/',
@@ -91,34 +98,21 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
     async detect(projectPath: string): Promise<boolean> {
       try {
         await access(join(projectPath, 'package.json'))
-        await access(join(projectPath, 'tsconfig.json'))
         return true
       } catch {
         return false
       }
     },
 
-    async identifyModules(projectPath: string): Promise<ModuleInfo[]> {
-      const srcDir = join(projectPath, 'src')
-      try {
-        await access(srcDir)
-      } catch {
-        throw new Error(
-          `'src/' не найдено в '${projectPath}'. Укажи корневую директорию модулей через overrides.module_pattern в .audit-rules.yaml.`,
-        )
-      }
-      const entries = await readdir(srcDir)
-      const modules: ModuleInfo[] = []
-      for (const e of entries) {
-        const fullPath = join(srcDir, e)
-        const s = await stat(fullPath)
-        if (s.isDirectory()) modules.push({ name: e, path: fullPath })
-      }
-      return modules
+    async identifyModules(projectPath: string, moduleRoot = 'src'): Promise<ModuleInfo[]> {
+      return discoverProductionModules(projectPath, moduleRoot)
     },
 
-    async identifyEntryPoints(projectPath: string): Promise<string[]> {
-      const candidates = ['src/index.ts', 'src/main.ts', 'src/cli.ts']
+    async identifyEntryPoints(projectPath: string, moduleRoot = 'src'): Promise<string[]> {
+      const root = normalizeModuleRoot(moduleRoot)
+      const candidates = ['index', 'main', 'cli'].flatMap(name =>
+        ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs'].map(extension => `${root}/${name}.${extension}`),
+      )
       const found: string[] = []
       for (const c of candidates) {
         try {
@@ -137,6 +131,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       sdkEdges?: { from: string; sdk: string }[]
       barrelImports?: { from: string; to: string; targetFile: string }[]
       modulesList?: string[]
+      moduleRoot?: string
     }): Promise<RawFinding[]> {
       // NOTE: rule_id values here are bare names without baseline: prefix.
       // Namespacing happens in helpers/enrich-findings.ts during enrichment.
@@ -349,6 +344,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       if (args.modulesList && args.barrelImports) {
         const barrelFindings = await detectBarrels({
           projectPath: args.projectPath,
+          moduleRoot: args.moduleRoot ?? 'src',
           modulesList: args.modulesList,
           barrelImports: args.barrelImports,
         })

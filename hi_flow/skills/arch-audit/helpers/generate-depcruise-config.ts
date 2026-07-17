@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises'
+import { access, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { BaselineRule, ProjectRules, Severity } from '../core/types.ts'
@@ -21,15 +21,21 @@ function baselineToDepcruise(rule: BaselineRule) {
     return { name: rule.id, severity: DEPCRUISE_SEV[rule.severity], comment: rule.explanation, from: {}, to: { circular: true } }
   }
   if (rule.name === 'no-orphans') {
-    return { name: rule.id, severity: DEPCRUISE_SEV[rule.severity], comment: rule.explanation, from: { orphan: true, pathNot: ['(^|/)\\.[^/]+\\.(js|ts)$'] }, to: {} }
+    return {
+      name: rule.id,
+      severity: DEPCRUISE_SEV[rule.severity],
+      comment: rule.explanation,
+      from: { orphan: true, pathNot: ['(^|/)\\.[^/]+\\.(ts|tsx|js|jsx|mjs|cjs)$'] },
+      to: {},
+    }
   }
   if (rule.name === 'not-to-test-from-prod') {
     return {
       name: rule.id,
       severity: DEPCRUISE_SEV[rule.severity],
       comment: rule.explanation,
-      from: { pathNot: '\\.(spec|test)\\.(js|ts)x?$' },
-      to: { path: '\\.(spec|test)\\.(js|ts)x?$' },
+      from: { pathNot: '\\.(spec|test)\\.(ts|tsx|js|jsx|mjs|cjs)$' },
+      to: { path: '\\.(spec|test)\\.(ts|tsx|js|jsx|mjs|cjs)$' },
     }
   }
   return null
@@ -37,6 +43,12 @@ function baselineToDepcruise(rule: BaselineRule) {
 
 export async function generateDepcruiseConfig(args: Args): Promise<string> {
   const { baselineRules, projectRules } = args
+  let hasTsconfig = true
+  try {
+    await access(join(args.projectRoot, 'tsconfig.json'))
+  } catch {
+    hasTsconfig = false
+  }
 
   const forbidden: any[] = []
   for (const r of baselineRules) {
@@ -69,13 +81,12 @@ export async function generateDepcruiseConfig(args: Args): Promise<string> {
     required,
     options: {
       doNotFollow: { path: 'node_modules' },
-      tsConfig: { fileName: 'tsconfig.json' },
-      // Required for type-only files and `import type` resolution. Without this,
-      // depcruise cannot follow the import graph through type-only barrels
-      // (common pattern: `src/types/*.ts` re-exporting interfaces, or modules
-      // importing only type aliases). Such files end up flagged as
-      // `invalid module` in metadata.parsing_errors.
-      tsPreCompilationDeps: true,
+      ...(hasTsconfig ? {
+        tsConfig: { fileName: 'tsconfig.json' },
+        // Required for type-only files and `import type` resolution. Without this,
+        // depcruise cannot follow the import graph through type-only barrels.
+        tsPreCompilationDeps: true,
+      } : {}),
       enhancedResolveOptions: {
         exportsFields: ['exports'],
         conditionNames: ['import', 'require', 'node', 'default'],

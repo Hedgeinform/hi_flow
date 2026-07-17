@@ -67,6 +67,20 @@ describe('suppression', () => {
     expect(result.map(f => f.source.module)).toEqual(['b'])
   })
 
+  it('maps parsing errors below a nested configured module root', () => {
+    const finding = mkFinding({
+      rule_id: 'baseline:no-orphans',
+      severity: 'MEDIUM',
+      source: { module: 'a', file: 'packages/runtime/a/index.mjs' },
+      target: undefined,
+    })
+    const result = applySuppression([finding], {
+      parsing_errors: [{ file: 'packages/runtime/a/index.mjs', error: 'SyntaxError' }],
+      modulePattern: 'packages/runtime',
+    })
+    expect(result).toEqual([])
+  })
+
   it('keeps no-orphans when no parsing_errors context provided', () => {
     const orphan: Finding = {
       id: 'f-1',
