@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { access, mkdtemp, readFile, rm } from 'node:fs/promises'
-import { resolve, join } from 'node:path'
+import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 import { buildReport } from '../../core/report-builder.ts'
 import { readBundledDepcruiseVersion } from '../../core/depcruise-runtime.ts'
+import { fixturePath, PACKAGE_ROOT } from '../test-paths.ts'
 
 describe('JavaScript ESM project integration', () => {
   it('builds a non-empty D8 graph with an a -> b .mjs edge', async () => {
-    const projectRoot = resolve('tests/fixtures/js-esm-project')
+    const projectRoot = fixturePath('js-esm-project')
     const outDir = await mkdtemp(join(tmpdir(), 'arch-audit-js-esm-'))
-    const runtimeRoot = resolve('.')
+    const runtimeRoot = PACKAGE_ROOT
 
     const result = await buildReport(createTypescriptDepcruiseAdapter(), projectRoot, {
       auditSha: 'fixture-js-esm-sha',

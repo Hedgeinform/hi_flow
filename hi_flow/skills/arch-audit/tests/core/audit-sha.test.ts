@@ -3,11 +3,11 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { resolveAuditSha } from '../../core/audit-sha.ts'
+import { PACKAGE_ROOT } from '../test-paths.ts'
 
 describe('resolveAuditSha', () => {
   it('returns git short SHA when projectRoot is a git repo', () => {
-    const cwd = process.cwd()
-    const sha = resolveAuditSha(cwd)
+    const sha = resolveAuditSha(PACKAGE_ROOT)
     expect(sha).toMatch(/^[0-9a-f]{7,}$/)
   })
   it('returns uuid: prefix when projectRoot is not a git repo', async () => {

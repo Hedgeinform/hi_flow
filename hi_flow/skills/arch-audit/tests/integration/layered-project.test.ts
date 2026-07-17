@@ -3,10 +3,11 @@ import { join } from 'node:path'
 import { rm, mkdir, readFile } from 'node:fs/promises'
 import { buildReport } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
+import { fixturePath } from '../test-paths.ts'
 
 describe('integration: layered project', () => {
   it('detects layered structure, port-adapter-direction violation, and foundation modules', async () => {
-    const projectRoot = join(process.cwd(), 'tests/fixtures/layered-project')
+    const projectRoot = fixturePath('layered-project')
     const outDir = join(projectRoot, 'audit-report')
     await rm(outDir, { recursive: true, force: true })
     await mkdir(outDir, { recursive: true })

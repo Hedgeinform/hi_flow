@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { readFile, rm, mkdir } from 'node:fs/promises'
 import { buildReport } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
+import { fixturePath } from '../test-paths.ts'
 
 // Mock: god module Ca=12 (11 reverse deps), Ce=11 (11 forward deps), LOC=400
 // a-k modules each import from god (Ca++) and export one function
@@ -36,7 +37,7 @@ const mockGodOutput = JSON.stringify({
 
 describe('integration: god-object project', () => {
   it('produces a god-object finding (mock depcruise)', async () => {
-    const projectRoot = join(process.cwd(), 'tests/fixtures/god-object-project')
+    const projectRoot = fixturePath('god-object-project')
     const outDir = join(projectRoot, 'audit-report')
     await rm(outDir, { recursive: true, force: true })
     await mkdir(outDir, { recursive: true })

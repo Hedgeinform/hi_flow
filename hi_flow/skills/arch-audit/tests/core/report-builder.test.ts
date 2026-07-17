@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { buildReport } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
+import { fixturePath } from '../test-paths.ts'
 
 const adapter = createTypescriptDepcruiseAdapter()
 
@@ -29,7 +30,7 @@ describe('report-builder', () => {
     const result = await buildReport(adapter, dir, {
       auditSha: 'uuid:test-sha',
       depcruiseVersion: '16.3.0',
-      d9MdPath: 'tests/fixtures/d9-sample.md',
+      d9MdPath: fixturePath('d9-sample.md'),
       clusterProsefn: () => ({ name: 'test cluster', root_cause: 'test cause' }),
       // Inject mock depcruise runner to avoid real dependency-cruiser
       runDepcruise: () => cannedDepcruiseOutput,

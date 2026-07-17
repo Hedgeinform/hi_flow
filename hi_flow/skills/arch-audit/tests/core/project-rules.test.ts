@@ -9,6 +9,7 @@ import {
   addRules,
 } from '../../core/project-rules.ts'
 import { copyFile } from 'node:fs/promises'
+import { fixturePath } from '../test-paths.ts'
 // readFile import already via destructuring above
 
 describe('project-rules', () => {
@@ -22,7 +23,7 @@ describe('project-rules', () => {
 
   it('loads forbidden rules and overrides from fixture', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'pr-test-'))
-    await copyFile('tests/fixtures/sample-rules.yaml', join(dir, '.audit-rules.yaml'))
+    await copyFile(fixturePath('sample-rules.yaml'), join(dir, '.audit-rules.yaml'))
     const rules = await loadProjectRules(dir)
     expect(rules.forbidden).toHaveLength(1)
     expect(rules.forbidden[0]!.name).toBe('project:dispatcher-no-pipeline')
@@ -33,7 +34,7 @@ describe('project-rules', () => {
 
   it('findRuleByName searches forbidden + required', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'pr-test-'))
-    await copyFile('tests/fixtures/sample-rules.yaml', join(dir, '.audit-rules.yaml'))
+    await copyFile(fixturePath('sample-rules.yaml'), join(dir, '.audit-rules.yaml'))
     const rules = await loadProjectRules(dir)
     const found = findRuleByName(rules, 'project:dispatcher-no-pipeline')
     expect(found?.severity).toBe('HIGH')

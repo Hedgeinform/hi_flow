@@ -3,12 +3,13 @@ import { mkdtemp, copyFile, mkdir, access, readFile } from 'node:fs/promises'
 import { join, basename } from 'node:path'
 import { tmpdir } from 'node:os'
 import { mergeRulesPatch } from '../../helpers/merge-rules-patch.ts'
+import { fixturePath } from '../test-paths.ts'
 
 describe('merge-rules-patch', () => {
   it('merges patch into project rules and archives the patch', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'mp-'))
     const patchPath = join(dir, 'patch.yaml')
-    await copyFile('tests/fixtures/sample-patch.yaml', patchPath)
+    await copyFile(fixturePath('sample-patch.yaml'), patchPath)
     const archiveDir = join(dir, 'archive')
     const projectRulesPath = join(dir, '.audit-rules.yaml')
 
@@ -30,7 +31,7 @@ describe('merge-rules-patch', () => {
   it('returns success: false on write failure (patch stays in place)', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'mp-'))
     const patchPath = join(dir, 'patch.yaml')
-    await copyFile('tests/fixtures/sample-patch.yaml', patchPath)
+    await copyFile(fixturePath('sample-patch.yaml'), patchPath)
     // Use a path that cannot be written: point at an existing directory as the rules file
     const projectRulesPath = join(dir, 'subdir-that-is-a-dir', '.audit-rules.yaml')
     // Create the parent as a file (not dir) so mkdir recursive fails or writeFile fails

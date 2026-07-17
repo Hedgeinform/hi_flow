@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { parseDepcruiseOutput } from '../../helpers/parse-depcruise-output.ts'
+import { fixturePath } from '../test-paths.ts'
 
 describe('parse-depcruise-output', () => {
   it('parses sample fixture', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-sample.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
 
     expect(result.findings).toHaveLength(1)
@@ -16,13 +17,13 @@ describe('parse-depcruise-output', () => {
   })
 
   it('builds dep_graph at module level (top-level src/<dir>)', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-sample.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
     expect(result.dep_graph).toEqual({ a: ['b'], b: ['a'], c: [] })
   })
 
   it('aggregates per_module_raw with counts', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-sample.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
     expect(result.per_module_raw['a']!.ce).toBe(1) // a→b
     expect(result.per_module_raw['a']!.ca).toBe(1) // b→a
@@ -35,7 +36,7 @@ describe('parse-depcruise-output', () => {
   })
 
   it('extracts parsing_errors from broken modules', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-with-errors.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-with-errors.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
     expect(result.parsing_errors).toBeDefined()
     expect(result.parsing_errors).toHaveLength(1)
@@ -58,7 +59,7 @@ describe('parse-depcruise-output', () => {
   })
 
   it('parsing_errors absent when no broken modules', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-sample.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
     expect(result.parsing_errors === undefined || result.parsing_errors!.length === 0).toBe(true)
   })
@@ -84,7 +85,7 @@ describe('parse-depcruise-output', () => {
   })
 
   it('surfaces barrel_imports for edges resolving to an index file', async () => {
-    const raw = await readFile('tests/fixtures/depcruise-barrel-sample.json', 'utf-8')
+    const raw = await readFile(fixturePath('depcruise-barrel-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
     expect(result.barrel_imports).toBeDefined()
     // bar -> foo, target file is src/foo/index.ts
