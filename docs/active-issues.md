@@ -128,14 +128,6 @@ Implementation deferred до **trigger event = «следующая реальн
 
 ## LOW
 
-### Integration-тесты arch-audit мутируют трекаемые фикстуры
-
-**Локация:** `hi_flow/skills/arch-audit/tests/integration/*` → пишут `audit-report.*` в `tests/fixtures/*/audit-report/`.
-
-**Источник:** graph-core code review 2026-05-31 — прогон integration-сьюта изменяет/удаляет трекаемые файлы фикстур, после прогона нужен `git checkout tests/fixtures/`. Test-hygiene smell.
-
-**План:** генерировать артефакты integration-тестов в tmp/gitignored директорию, не в трекаемые `tests/fixtures/*/audit-report/`.
-
 ### dependency-cruiser не объявлен в devDependencies arch-audit
 
 **Локация:** `hi_flow/skills/arch-audit/package.json`.
