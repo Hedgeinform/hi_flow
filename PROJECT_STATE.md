@@ -5,7 +5,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** JavaScript/ESM support and the four ArchAudit harness/runtime regressions are fixed and verified.
-- **Phase:** released to local `master`
+- **Phase:** released to `origin/master`
 - **Owner/session:** `master`
 
 ## Last Completed
