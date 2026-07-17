@@ -1,6 +1,8 @@
+import { readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { loadD9 } from '../../core/d9-loader.ts'
-import { fixturePath } from '../test-paths.ts'
+import { fixturePath, withTempDir } from '../test-paths.ts'
 
 describe('d9-loader', () => {
   it('loads two principles from sample fixture', async () => {
@@ -16,6 +18,26 @@ describe('d9-loader', () => {
     expect(p.description).toMatch(/No cycles/)
     expect(p.fix_alternatives).toHaveLength(3)
     expect(p.fix_alternatives[0]).toMatch(/Extract shared logic/)
+  })
+
+  it('produces an identical index for LF, CRLF, and lone-CR Markdown', async () => {
+    const fixture = (await readFile(fixturePath('d9-sample.md'), 'utf-8')).replace(/\r\n?/g, '\n')
+
+    await withTempDir('arch-audit-d9-newlines-', async directory => {
+      const lfPath = join(directory, 'lf.md')
+      const crlfPath = join(directory, 'crlf.md')
+      const crPath = join(directory, 'cr.md')
+      await Promise.all([
+        writeFile(lfPath, fixture),
+        writeFile(crlfPath, fixture.replace(/\n/g, '\r\n')),
+        writeFile(crPath, fixture.replace(/\n/g, '\r')),
+      ])
+
+      const [lf, crlf, cr] = await Promise.all([loadD9(lfPath), loadD9(crlfPath), loadD9(crPath)])
+
+      expect(crlf).toEqual(lf)
+      expect(cr).toEqual(lf)
+    })
   })
 
   it('throws on missing file', async () => {

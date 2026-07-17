@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import type { D9Index, PrincipleMetadata } from './types.ts'
 
 export async function loadD9(mdPath: string): Promise<D9Index> {
-  const content = await readFile(mdPath, 'utf-8')
+  const content = (await readFile(mdPath, 'utf-8')).replace(/\r\n?/g, '\n')
   const principles: Record<string, PrincipleMetadata> = {}
   const fix_alternatives: Record<string, string[]> = {}
 
