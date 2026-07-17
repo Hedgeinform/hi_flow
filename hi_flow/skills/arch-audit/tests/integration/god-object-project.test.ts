@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { join } from 'node:path'
-import { readFile, rm, mkdir } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { buildReport } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
-import { fixturePath } from '../test-paths.ts'
+import { fixturePath, withTempDir } from '../test-paths.ts'
 
 // Mock: god module Ca=12 (11 reverse deps), Ce=11 (11 forward deps), LOC=400
 // a-k modules each import from god (Ca++) and export one function
@@ -38,21 +37,20 @@ const mockGodOutput = JSON.stringify({
 describe('integration: god-object project', () => {
   it('produces a god-object finding (mock depcruise)', async () => {
     const projectRoot = fixturePath('god-object-project')
-    const outDir = join(projectRoot, 'audit-report')
-    await rm(outDir, { recursive: true, force: true })
-    await mkdir(outDir, { recursive: true })
+    await withTempDir('arch-audit-god-object-project-', async outDir => {
 
-    const adapter = createTypescriptDepcruiseAdapter()
-    const result = await buildReport(adapter, projectRoot, {
-      auditSha: 'uuid:god-test',
-      depcruiseVersion: '16.3.0',
-      outDir,
-      runDepcruise: () => mockGodOutput,
+      const adapter = createTypescriptDepcruiseAdapter()
+      const result = await buildReport(adapter, projectRoot, {
+        auditSha: 'uuid:god-test',
+        depcruiseVersion: '16.3.0',
+        outDir,
+        runDepcruise: () => mockGodOutput,
+      })
+
+      const json = JSON.parse(await readFile(result.json_path, 'utf-8'))
+      const godFinding = json.findings.find((f: any) => f.rule_id === 'baseline:god-object')
+      expect(godFinding).toBeDefined()
+      expect(godFinding.source.module).toBe('god')
     })
-
-    const json = JSON.parse(await readFile(result.json_path, 'utf-8'))
-    const godFinding = json.findings.find((f: any) => f.rule_id === 'baseline:god-object')
-    expect(godFinding).toBeDefined()
-    expect(godFinding.source.module).toBe('god')
   }, 30_000)
 })
