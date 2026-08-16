@@ -11,8 +11,8 @@ const shippedDist = join(runtimeRoot, 'dist')
 const checkOnly = process.argv.includes('--check')
 const builtinModuleNames = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
 
-const legacyResolverShim = {
-  name: 'legacy-enhanced-resolve-shim',
+const dependencyCruiserBundlePlugin = {
+  name: 'dependency-cruiser-runtime',
   setup(buildContext) {
     buildContext.onResolve(
       { filter: /^enhanced-resolve\/lib\/createInnerCallback$/ },
@@ -24,6 +24,53 @@ const legacyResolverShim = {
         contents: `module.exports = function unsupportedLegacyResolver() {
           throw new Error('Legacy enhanced-resolve (<4) is not supported by the shipped arch-audit runtime')
         }`,
+        loader: 'js',
+      }),
+    )
+    buildContext.onResolve(
+      { filter: /^source-map-support$/ },
+      () => ({ path: 'source-map-support', namespace: 'arch-audit-optional-runtime' }),
+    )
+    buildContext.onLoad(
+      { filter: /.*/, namespace: 'arch-audit-optional-runtime' },
+      () => ({ contents: 'module.exports = { install() {} }', loader: 'js' }),
+    )
+    buildContext.onLoad(
+      { filter: /[\\/]dependency-cruiser[\\/]src[\\/]extract[\\/]transpile[\\/]javascript-wrap\.mjs$/ },
+      () => ({
+        contents: `import { version as acornVersion } from 'acorn'
+          export default {
+            isAvailable: () => true,
+            version: () => \`acorn@\${acornVersion}\`,
+            transpile: (source) => source,
+          }`,
+        loader: 'js',
+      }),
+    )
+    buildContext.onLoad(
+      { filter: /[\\/]dependency-cruiser[\\/]src[\\/]utl[\\/]try-import\.mjs$/ },
+      () => ({
+        contents: `import typescript from 'typescript'
+          import { coerce, satisfies } from 'semver'
+          export default async function tryImport(moduleName, semanticVersion) {
+            if (moduleName !== 'typescript') return false
+            const coerced = coerce(typescript.version)
+            if (semanticVersion && (!coerced || !satisfies(coerced.version, semanticVersion))) return false
+            return typescript
+          }`,
+        loader: 'js',
+      }),
+    )
+    buildContext.onLoad(
+      { filter: /[\\/]dependency-cruiser[\\/]src[\\/]extract[\\/]transpile[\\/]try-import-available\.mjs$/ },
+      () => ({
+        contents: `import typescript from 'typescript'
+          import { coerce, satisfies } from 'semver'
+          export default function tryImportAvailable(moduleName, semanticVersion) {
+            if (moduleName !== 'typescript') return false
+            const coerced = coerce(typescript.version)
+            return Boolean(coerced && (!semanticVersion || satisfies(coerced.version, semanticVersion)))
+          }`,
         loader: 'js',
       }),
     )
@@ -49,9 +96,16 @@ async function buildRuntime(outdir) {
     format: 'esm',
     target: 'node20',
     outExtension: { '.js': '.mjs' },
-    plugins: [legacyResolverShim],
+    plugins: [dependencyCruiserBundlePlugin],
     banner: {
-      js: "import { createRequire as createRuntimeRequire } from 'node:module';\nconst require = createRuntimeRequire(import.meta.url);",
+      js: [
+        "import { createRequire as createRuntimeRequire } from 'node:module';",
+        "import { dirname as runtimeDirname } from 'node:path';",
+        "import { fileURLToPath as runtimeFileURLToPath } from 'node:url';",
+        'const require = createRuntimeRequire(import.meta.url);',
+        'const __filename = runtimeFileURLToPath(import.meta.url);',
+        'const __dirname = runtimeDirname(__filename);',
+      ].join('\n'),
     },
     legalComments: 'eof',
     metafile: true,
@@ -68,7 +122,7 @@ async function buildRuntime(outdir) {
   assert.deepEqual(
     [...new Set(unexpectedExternalImports)].sort(),
     [],
-    'Shipped runtime contains external package imports',
+    'Shipped runtime contains static external package imports',
   )
 
   for (const name of await readdir(outdir)) {

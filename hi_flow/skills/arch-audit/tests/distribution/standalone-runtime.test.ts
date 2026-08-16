@@ -39,8 +39,14 @@ describe('standalone installed runtime', () => {
       await mkdir(join(fixtureProject, 'src', 'api'), { recursive: true })
       await mkdir(join(fixtureProject, 'src', 'domain'), { recursive: true })
       await writeFile(join(fixtureProject, 'package.json'), '{"type":"module"}\n')
-      await writeFile(join(fixtureProject, 'src', 'api', 'index.ts'), "import { value } from '@domain/value'\nexport { value }\n")
-      await writeFile(join(fixtureProject, 'src', 'domain', 'value.ts'), 'export const value = 1\n')
+      await writeFile(
+        join(fixtureProject, 'src', 'api', 'index.ts'),
+        "import type { Result } from '@domain/value'\nexport const result: Result = { value: 1 }\n",
+      )
+      await writeFile(
+        join(fixtureProject, 'src', 'domain', 'value.ts'),
+        'export interface Result { value: number }\n',
+      )
       await writeFile(join(fixtureProject, 'tsconfig.json'), JSON.stringify({
         compilerOptions: {
           baseUrl: '.',
@@ -50,6 +56,13 @@ describe('standalone installed runtime', () => {
 
       const versionOutput = runNpm(installedRuntimeRoot, ['run', 'depcruise:version'])
       expect(versionOutput).toContain('17.4.3')
+
+      const infoOutput = execFileSync(
+        process.execPath,
+        [join(installedRuntimeRoot, 'dist', 'dependency-cruise.mjs'), '--info'],
+        { cwd: installedRuntimeRoot, encoding: 'utf-8' },
+      )
+      expect(infoOutput).toContain('acorn@')
 
       runNpm(installedRuntimeRoot, [
         'run',

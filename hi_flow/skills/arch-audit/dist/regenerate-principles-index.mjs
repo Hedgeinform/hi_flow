@@ -1,5 +1,9 @@
 import { createRequire as createRuntimeRequire } from 'node:module';
+import { dirname as runtimeDirname } from 'node:path';
+import { fileURLToPath as runtimeFileURLToPath } from 'node:url';
 const require = createRuntimeRequire(import.meta.url);
+const __filename = runtimeFileURLToPath(import.meta.url);
+const __dirname = runtimeDirname(__filename);
 import{writeFile as u}from"node:fs/promises";import{dirname as x,join as P,basename as M}from"node:path";import{pathToFileURL as R}from"node:url";import{readFile as g}from"node:fs/promises";async function d(t){let e=(await g(t,"utf-8")).replace(/\r\n?/g,`
 `),r={},n={},s=e.split(/^### /m).slice(1);for(let c of s){let o=c.split(`
 `)[0]?.trim()??"";if(!o||o.startsWith("#"))continue;let i=o.replace(/\s*\([^)]*\)\s*$/,"").split(/\s+/)[0]??"";if(!i)continue;let m=c.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\n|\*\*|$)/)?.[1]?.trim()??"",l=c.match(/\*\*Fix alternatives:\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n###|\n##|$)/),a=[];if(l){let f=l[1]??"";for(let h of f.split(`
