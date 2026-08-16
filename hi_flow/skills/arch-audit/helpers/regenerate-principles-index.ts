@@ -21,7 +21,7 @@ export async function regeneratePrinciplesIndex(args: Args): Promise<Result> {
   return { regenerated_count: Object.keys(d9.principles).length, index_path: indexPath }
 }
 
-// CLI entry: invoked via `npx tsx hi_flow/skills/arch-audit/helpers/regenerate-principles-index.ts <md-path>`
+// CLI entry: invoked via `npm run regenerate-principles-index -- <md-path>`
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const path = process.argv[2]
   if (!path) {

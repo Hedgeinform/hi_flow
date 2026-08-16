@@ -120,9 +120,9 @@ Check depcruise from the installed `arch-audit` skill directory:
 npm run depcruise:version
 ```
 - Success → continue.
-- Fail → hard fail with: «depcruise недоступен в runtime `arch-audit`. Подними зависимости в установленном каталоге skill и повтори запуск.»
+- Fail → hard fail with: «Поставляемый runtime `arch-audit` отсутствует или повреждён. Обнови плагин hi_flow и повтори запуск в новой сессии.» Do not run `npm install` inside the plugin cache.
 
-After version is detected, run preflight check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 18.0.0`; v16 and v17 explicitly tested). Out-of-range version → hard fail with downgrade/upgrade instructions per Q-1.5.
+`npm run audit` performs the preflight version check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 18.0.0`; v16 and v17 explicitly tested). Out-of-range shipped runtime → hard fail with instructions to update hi_flow and retry in a new session.
 
 ### Generate config + run depcruise
 
@@ -138,7 +138,7 @@ Helper `generate-depcruise-config.ts`:
 
 The full audit command invokes this internally through the bundled runtime dependency:
 ```
-node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --output-type json --config <temp-config> '<module-root>/**/*.{ts,tsx,js,jsx,mjs,cjs}'
+node ./dist/dependency-cruise.mjs --output-type json --config <temp-config> '<module-root>/**/*.{ts,tsx,js,jsx,mjs,cjs}'
 ```
 - Capture stdout (JSON) + stderr.
 - Timeout: 60s default, tunable via project rules.
@@ -387,7 +387,7 @@ The runtime is a Node.js package. The skill agent calls it via CLI during a full
 
 ### Prerequisites
 
-Run commands from the installed `arch-audit` skill directory. Required binaries must be available in that directory's `node_modules` (including `tsx` and `dependency-cruiser`). Supported depcruise majors: `16.x.x` and `17.x.x`.
+Run commands from the installed `arch-audit` skill directory with Node.js 20 or newer. The plugin ships the required platform-neutral files in `dist/`; an installed plugin does not need `node_modules`, `tsx`, or a package-install step. Supported depcruise majors: `16.x.x` and `17.x.x`.
 
 ### Run
 
@@ -414,7 +414,7 @@ npm run audit -- C:\path\to\project
 
 ## Deployment
 
-The `arch-audit` runtime is intentionally self-contained: it uses its own installed dependencies instead of the audited project's `node_modules`. This prevents a broken project-local `dependency-cruiser` installation from blocking audit snapshot refresh.
+The `arch-audit` runtime is intentionally self-contained: the shared plugin source ships a checked-in, platform-neutral `dist/` used unchanged by Claude Code, Codex, and Cursor. Runtime libraries are bundled during release; an installed plugin neither materializes its own `node_modules` nor uses the audited project's dependencies. This prevents a broken project-local `dependency-cruiser` installation from blocking audit snapshot refresh.
 
 ---
 

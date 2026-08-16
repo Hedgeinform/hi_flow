@@ -1,14 +1,17 @@
 {
   "name": "@hi_flow/arch-audit",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "audit": "tsx helpers/cli-run-audit.ts",
-    "apply-patch": "tsx helpers/cli-apply-patch.ts",
-    "depcruise:version": "node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --version",
-    "regenerate-principles-index": "tsx helpers/regenerate-principles-index.ts",
-    "render-md": "tsx helpers/cli-render-md.ts",
+    "build": "node scripts/build-runtime.mjs",
+    "build:check": "node scripts/build-runtime.mjs --check",
+    "audit": "node dist/cli-run-audit.mjs",
+    "apply-patch": "node dist/cli-apply-patch.mjs",
+    "depcruise:version": "node dist/dependency-cruise.mjs --version",
+    "regenerate-principles-index": "node dist/regenerate-principles-index.mjs",
+    "render-md": "node dist/cli-render-md.mjs",
+    "pretest": "npm run build:check",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -23,6 +26,7 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.0",
+    "esbuild": "^0.27.7",
     "typescript": "^5.3.0",
     "vitest": "^1.2.0"
   }

@@ -9,7 +9,7 @@ export function resolveRuntimeRoot(fromImportMetaUrl: string): string {
 }
 
 export function resolveBundledDepcruiseCli(runtimeRoot: string): string {
-  return join(runtimeRoot, 'node_modules', 'dependency-cruiser', 'bin', 'dependency-cruise.mjs')
+  return join(runtimeRoot, 'dist', 'dependency-cruise.mjs')
 }
 
 export function readBundledDepcruiseVersion(
