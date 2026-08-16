@@ -4,17 +4,17 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Current Focus
 
-- **Focus:** JavaScript/ESM support and the four ArchAudit harness/runtime regressions are fixed and verified.
-- **Phase:** released to `origin/master`
-- **Owner/session:** `master`
+- **Focus:** ArchAudit ships an autonomous JavaScript/TypeScript runtime that works from an installed plugin without `node_modules`.
+- **Phase:** hi_flow `0.15.2` release to `origin/master`
+- **Owner/session:** `codex/arch-audit-standalone-runtime`
 
 ## Last Completed
 
-- Bug-fix implementation report: `docs/superpowers/plans/2026-07-17-arch-audit-test-harness-hardening-bug-fix-report.md`
+- Bug-fix implementation report: `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix-report.md`
 
 ## Ready Next
 
-- Refresh the installed hi_flow plugin to `0.15.0`, then select the next Active Issue or intake item.
+- Refresh installed hi_flow plugins to `0.15.2`, then rerun the REH_ERP ArchAudit from a new Codex session.
 
 ## Waiting / Blocked
 
@@ -22,20 +22,19 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Latest Verification
 
-- Full ArchAudit suite from the package and an external cwd -> 180/180 passed in each run on 2026-07-17.
-- Tracked audit-report SHA-256 manifest -> 12/12 unchanged after the external-cwd full suite on 2026-07-17.
-- Six tracked Markdown fixtures -> index LF with `text eol=lf` on 2026-07-17.
-- `tsc --noEmit` and `git diff --check` -> passed on 2026-07-17.
-- CWS hash-identical smoke from the preceding JS/ESM fix -> valid D8, 7 modules and 10 edges on 2026-07-17.
-- Plugin manifests for Claude, Codex, Cursor, and marketplace -> synchronized at `0.15.0` on 2026-07-17.
+- Full ArchAudit suite -> 181/181 passed on 2026-08-16.
+- Clean plugin copy without any `node_modules` -> version, info, TypeScript D8 audit, Markdown render, apply-patch, and principles-index regeneration passed on 2026-08-16.
+- Runtime freshness check, `tsc --noEmit`, plugin validation, skill validation, and `git diff --check` -> passed on 2026-08-16.
+- `npm audit --omit=dev` -> zero vulnerabilities on 2026-08-16.
+- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.2` on 2026-08-16.
 
 ## Active Artifacts
 
 - Product backlog: not used for this contract-restoration bug fix
 - Intake: `INTAKE.md`
 - Behavior Registry: project-wide references under `hi_flow/references/behavior-registry/`
-- Current design: `docs/superpowers/specs/2026-07-17-arch-audit-test-harness-hardening-design.md`
-- Current plan/report: `docs/superpowers/plans/2026-07-17-arch-audit-test-harness-hardening-bug-fix.md`, `docs/superpowers/plans/2026-07-17-arch-audit-test-harness-hardening-bug-fix-report.md`
+- Current design: accepted self-contained runtime contract in `hi_flow/skills/arch-audit/SKILL.md`
+- Current plan/report: `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix.md`, `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix-report.md`
 - Architecture snapshot: `ARCHITECTURE.md`
 
 ## Update Notes

@@ -9,7 +9,7 @@ import { buildReportData, renderReport, type ClusterProseFn } from '../core/repo
  * Phase 1 entrypoint — produces audit-report.json + clusters-input.json.
  *
  * Returns the data structure needed by phase 2. The CLI form writes JSON and prints paths;
- * the agent then generates per-cluster prose and invokes cli-render-md.ts for phase 2.
+ * the agent then generates per-cluster prose and invokes `npm run render-md` for phase 2.
  *
  * Programmatic callers can pass `clusterProsefn` to render the markdown in a single call
  * (legacy single-shot mode — used by tests). Production agent flow is two-phase.
@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.log('  1. Read clusters-input.json — list of cluster ids + finding ids + affected modules.')
       console.log('  2. Generate per-cluster prose: { "<principle-id>": { "name": "...", "root_cause": "..." }, ... }')
       console.log('  3. Write the prose to <out-dir>/cluster-prose.json.')
-      console.log('  4. Run cli-render-md.ts <audit-report.json> <cluster-prose.json> [d9-md-path] to emit audit-report.md.')
+      console.log('  4. Run npm run render-md -- <audit-report.json> <cluster-prose.json> [d9-md-path] to emit audit-report.md.')
     })
     .catch((err: unknown) => {
       console.error('ERROR:', err instanceof Error ? err.message : String(err))

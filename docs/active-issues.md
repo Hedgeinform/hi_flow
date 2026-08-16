@@ -13,16 +13,6 @@
 
 ## HIGH
 
-### `fast-uri` в production-графе arch-audit уязвим к path traversal и host confusion
-
-**Локация:** `hi_flow/skills/arch-audit/package-lock.json` — транзитивная зависимость AJV, зафиксирована версия `fast-uri@3.1.0`.
-
-**Источник:** `npm audit --omit=dev` от 2026-07-17 — GHSA-q3j6-qgpj-74h6 и GHSA-v39h-62p7-jpjc; уязвимы версии `<=3.1.1`. Долг существовал до добавления `ajv-formats`.
-
-**План:** обновить AJV/lock-файл до графа с непоражённой версией `fast-uri`, затем прогнать полный ArchAudit suite и `npm audit --omit=dev`. Не применять `npm audit fix` без проверки diff.
-
-**Связи:** `hi_flow/skills/arch-audit/package.json`, D8 schema validation runtime.
-
 ### arch-spec amendment (B + C + D + E) — находки первого боевого прогона REH ERP
 
 **Status:** implemented 2026-06-03 (B+C+D+E в SKILL.md + 3 references; isolated review PASS; report `...-amendment-design-report.md`). Остался release (version bump + commit, D16). Запись удаляется после release.
@@ -45,16 +35,6 @@
 ---
 
 ## MEDIUM
-
-### `js-yaml@4.1.1` в production-зависимостях arch-audit уязвим к quadratic-complexity DoS
-
-**Локация:** `hi_flow/skills/arch-audit/package.json`, `hi_flow/skills/arch-audit/package-lock.json`.
-
-**Источник:** `npm audit --omit=dev` от 2026-07-17 — GHSA-h67p-54hq-rp68; уязвим диапазон `>=4.0.0 <=4.1.1`. Долг существовал до текущего исправления.
-
-**План:** обновить `js-yaml` до непоражённой версии, проверить совместимость загрузки YAML-правил, прогнать полный ArchAudit suite и повторный production audit.
-
-**Связи:** `.audit-rules.yaml`, D9 loader/runtime YAML parsing.
 
 ### tsconfig preflight check в arch-audit runtime
 
@@ -147,14 +127,6 @@ Implementation deferred до **trigger event = «следующая реальн
 ---
 
 ## LOW
-
-### dependency-cruiser не объявлен в devDependencies arch-audit
-
-**Локация:** `hi_flow/skills/arch-audit/package.json`.
-
-**Источник:** graph-core code review 2026-05-31 — integration-тесты требуют `dependency-cruiser` через `npx --no-install` в runtime, но он не в devDependencies и отсутствует в окружении → 3 integration-теста (`cycle/barrel/layered-project`) падают на `depcruise output is not valid JSON` (environmental, не регрессия). graph-core сам бинарь не требует.
-
-**План:** добавить `dependency-cruiser` в devDependencies arch-audit (через `npm install --save-dev`, ask-операция) для воспроизводимости integration. Скоординировать с issue «baseline rollout» (там же установка biome + gates).
 
 ### Version drift arch-audit: package.json 0.3.0 vs ARCHITECTURE Module Map v0.2.6
 

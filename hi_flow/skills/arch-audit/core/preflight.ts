@@ -22,7 +22,7 @@ export function checkDepcruiseVersion(versionString: string, req: ToolingRequire
   if (cmp(got, min) < 0) {
     throw new Error(
       `depcruise version ${versionString.trim()} is older than required ${req.min}. ` +
-      `Update: \`npm install -g dependency-cruiser@latest\` or \`npm install -D dependency-cruiser@^${req.min}\`.`,
+      'Update the hi_flow plugin and retry in a new session.',
     )
   }
   if (req.max) {
@@ -30,8 +30,7 @@ export function checkDepcruiseVersion(versionString: string, req: ToolingRequire
     if (cmp(got, max) >= 0) {
       throw new Error(
         `depcruise version ${versionString.trim()} is at or beyond tested upper bound ${req.max} (exclusive). ` +
-        `Adapter may behave incorrectly. Downgrade: \`npm install -g dependency-cruiser@^${req.min}\` ` +
-        `or wait for adapter update.`,
+        'The shipped adapter may behave incorrectly. Update the hi_flow plugin and retry in a new session.',
       )
     }
   }

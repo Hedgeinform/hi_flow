@@ -85,6 +85,10 @@ The packaging layers share the same `hi_flow/skills/` source. Do not fork
 skill contents per host unless a host-specific runtime constraint makes it
 unavoidable.
 
+`arch-audit` ships a checked-in platform-neutral `dist/`. Installed plugins run
+that runtime directly with Node.js and do not install packages into plugin
+caches or audited projects.
+
 Cursor packaging currently declares the shared skills directory only. It does
 not declare hooks; add Cursor hooks only after a verified smoke test proves the
 runtime needs a session-start bootstrap.

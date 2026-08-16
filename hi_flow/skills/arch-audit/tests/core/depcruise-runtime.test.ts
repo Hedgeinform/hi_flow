@@ -6,16 +6,16 @@ import {
 } from '../../core/depcruise-runtime.ts'
 
 describe('depcruise-runtime', () => {
-  it('resolves the bundled dependency-cruiser cli under the runtime root', () => {
-    expect(resolveBundledDepcruiseCli('C:/runtime-root')).toContain('node_modules')
-    expect(resolveBundledDepcruiseCli('C:/runtime-root')).toContain('dependency-cruiser')
-    expect(resolveBundledDepcruiseCli('C:/runtime-root')).toContain('dependency-cruise.mjs')
+  it('resolves the shipped dependency-cruiser cli under the runtime root', () => {
+    expect(resolveBundledDepcruiseCli('C:/runtime-root').replaceAll('\\', '/')).toBe(
+      'C:/runtime-root/dist/dependency-cruise.mjs',
+    )
   })
 
   it('reads the bundled dependency-cruiser version through node', () => {
     const version = readBundledDepcruiseVersion('C:/runtime-root', ((_file: string, args: readonly string[]) => {
       expect(args[0]?.replaceAll('\\', '/')).toBe(
-        'C:/runtime-root/node_modules/dependency-cruiser/bin/dependency-cruise.mjs',
+        'C:/runtime-root/dist/dependency-cruise.mjs',
       )
       expect(args[1]).toBe('--version')
       return '17.4.3\n'
@@ -32,7 +32,7 @@ describe('depcruise-runtime', () => {
       'src/**/*.{ts,tsx}',
       ((_file: string, args: readonly string[], opts: { cwd?: string; encoding?: string }) => {
         expect(args[0]?.replaceAll('\\', '/')).toBe(
-          'C:/runtime-root/node_modules/dependency-cruiser/bin/dependency-cruise.mjs',
+          'C:/runtime-root/dist/dependency-cruise.mjs',
         )
         expect(args.slice(1)).toEqual([
           '--output-type',

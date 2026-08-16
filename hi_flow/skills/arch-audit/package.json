@@ -1,14 +1,17 @@
 {
   "name": "@hi_flow/arch-audit",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "audit": "tsx helpers/cli-run-audit.ts",
-    "apply-patch": "tsx helpers/cli-apply-patch.ts",
-    "depcruise:version": "node ./node_modules/dependency-cruiser/bin/dependency-cruise.mjs --version",
-    "regenerate-principles-index": "tsx helpers/regenerate-principles-index.ts",
-    "render-md": "tsx helpers/cli-render-md.ts",
+    "build": "node scripts/build-runtime.mjs",
+    "build:check": "node scripts/build-runtime.mjs --check",
+    "audit": "node dist/cli-run-audit.mjs",
+    "apply-patch": "node dist/cli-apply-patch.mjs",
+    "depcruise:version": "node dist/dependency-cruise.mjs --version",
+    "regenerate-principles-index": "node dist/regenerate-principles-index.mjs",
+    "render-md": "node dist/cli-render-md.mjs",
+    "pretest": "npm run build:check",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -17,13 +20,13 @@
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "dependency-cruiser": "^17.4.3",
-    "js-yaml": "^4.1.0",
-    "tsx": "^4.7.0"
+    "js-yaml": "^4.3.1",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
+    "esbuild": "^0.28.2",
     "vitest": "^1.2.0"
   }
 }
