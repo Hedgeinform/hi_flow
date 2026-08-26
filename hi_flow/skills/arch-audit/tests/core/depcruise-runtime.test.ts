@@ -1,9 +1,14 @@
+import { mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   readBundledDepcruiseVersion,
   resolveBundledDepcruiseCli,
   runBundledDepcruise,
 } from '../../core/depcruise-runtime.ts'
+import { withTempDir } from '../test-paths.ts'
+
+const LARGE_JSON_PAYLOAD_BYTES = 2 * 1024 * 1024
 
 describe('depcruise-runtime', () => {
   it('resolves the shipped dependency-cruiser cli under the runtime root', () => {
@@ -47,5 +52,49 @@ describe('depcruise-runtime', () => {
     )
 
     expect(stdout).toBe('{"summary":{"violations":[]}}')
+  })
+
+  it('returns complete JSON from a non-zero depcruise exit when output exceeds the default child-process buffer', async () => {
+    await withTempDir('hi-flow-large-depcruise-', async runtimeRoot => {
+      const distDir = join(runtimeRoot, 'dist')
+      await mkdir(distDir)
+      await writeFile(
+        join(distDir, 'dependency-cruise.mjs'),
+        [
+          `process.stdout.write(JSON.stringify({ padding: 'x'.repeat(${LARGE_JSON_PAYLOAD_BYTES}) }))`,
+          'process.exitCode = 1',
+          '',
+        ].join('\n'),
+        'utf-8',
+      )
+
+      const stdout = runBundledDepcruise(
+        runtimeRoot,
+        runtimeRoot,
+        join(runtimeRoot, '.dependency-cruiser.cjs'),
+        'src/**/*.{ts,tsx}',
+      )
+      const parsed = JSON.parse(stdout) as { padding: string }
+
+      expect(stdout.length).toBeGreaterThan(1024 * 1024)
+      expect(parsed.padding).toHaveLength(LARGE_JSON_PAYLOAD_BYTES)
+    })
+  })
+
+  it('rejects partial stdout when bundled depcruise exceeds its configured buffer', () => {
+    expect(() =>
+      runBundledDepcruise(
+        'C:/runtime-root',
+        'C:/project-root',
+        'C:/tmp/.dependency-cruiser.cjs',
+        'src/**/*.{ts,tsx}',
+        (() => {
+          throw Object.assign(new Error('spawnSync node ENOBUFS'), {
+            code: 'ENOBUFS',
+            stdout: '{"partial":',
+          })
+        }) as any,
+      ),
+    ).toThrow(/buffer/i)
   })
 })
