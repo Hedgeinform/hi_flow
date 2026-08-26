@@ -4,17 +4,17 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Current Focus
 
-- **Focus:** ArchAudit ships an autonomous JavaScript/TypeScript runtime that works from an installed plugin without `node_modules`.
-- **Phase:** hi_flow `0.15.2` release to `origin/master`
-- **Owner/session:** `codex/arch-audit-standalone-runtime`
+- **Focus:** ArchAudit preserves complete large dependency-cruiser reports and rejects buffer-truncated partial JSON.
+- **Phase:** hi_flow `0.15.3` release and installed-plugin verification
+- **Owner/session:** `codex/arch-audit-large-output-buffer`
 
 ## Last Completed
 
-- Bug-fix implementation report: `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix-report.md`
+- Bug-fix implementation report: `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix-report.md`
 
 ## Ready Next
 
-- Refresh installed hi_flow plugins to `0.15.2`, then rerun the REH_ERP ArchAudit from a new Codex session.
+- Refresh installed hi_flow plugins to `0.15.3`, then rerun the full REH_ERP ArchAudit that previously truncated dependency-cruiser JSON at 1,114,112 bytes.
 
 ## Waiting / Blocked
 
@@ -22,19 +22,19 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Latest Verification
 
-- Full ArchAudit suite -> 181/181 passed on 2026-08-16.
-- Clean plugin copy without any `node_modules` -> version, info, TypeScript D8 audit, Markdown render, apply-patch, and principles-index regeneration passed on 2026-08-16.
-- Runtime freshness check, `tsc --noEmit`, plugin validation, skill validation, and `git diff --check` -> passed on 2026-08-16.
-- `npm audit --omit=dev` -> zero vulnerabilities on 2026-08-16.
-- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.2` on 2026-08-16.
+- Real dependency-cruiser child process -> complete 2 MiB JSON preserved with `exitCode = 1`; `ENOBUFS` partial stdout rejected on 2026-08-26.
+- Full ArchAudit suite -> 183/183 passed on 2026-08-26, including runtime freshness and clean installed-plugin distribution checks.
+- `tsc --noEmit`, plugin validation, skill validation, independent review, and `git diff --check` -> passed on 2026-08-26.
+- `npm audit --omit=dev` -> zero vulnerabilities on 2026-08-26.
+- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.3`; internal ArchAudit package -> `0.3.3` on 2026-08-26.
 
 ## Active Artifacts
 
 - Product backlog: not used for this contract-restoration bug fix
 - Intake: `INTAKE.md`
 - Behavior Registry: project-wide references under `hi_flow/references/behavior-registry/`
-- Current design: accepted self-contained runtime contract in `hi_flow/skills/arch-audit/SKILL.md`
-- Current plan/report: `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix.md`, `docs/superpowers/plans/2026-08-16-arch-audit-standalone-runtime-bug-fix-report.md`
+- Current design: accepted self-contained complete-report runtime contract in `hi_flow/skills/arch-audit/SKILL.md`
+- Current plan/report: `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix.md`, `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix-report.md`
 - Architecture snapshot: `ARCHITECTURE.md`
 
 ## Update Notes

@@ -51,11 +51,11 @@
 - Consumes: `runBundledDepcruise` and its injected child-process boundary
 - Produces: failing proof for real JSON output above 1 MiB and for `ENOBUFS` with partial stdout
 
-- [ ] **Step 1: Write the failing proofs**
+- [x] **Step 1: Write the failing proofs**
 
 Add a temporary bundled CLI that writes valid JSON larger than the default buffer, plus an injected `ENOBUFS` failure carrying partial stdout.
 
-- [ ] **Step 2: Run focused RED**
+- [x] **Step 2: Run focused RED**
 
 Run: `npx vitest run tests/core/depcruise-runtime.test.ts`
 Expected: FAIL because the large JSON is truncated and the `ENOBUFS` branch returns partial stdout.
@@ -75,16 +75,16 @@ Expected: FAIL because the large JSON is truncated and the `ENOBUFS` branch retu
 - Consumes: complete dependency-cruiser JSON or a child-process failure
 - Produces: complete bounded JSON output, or a clear failure before parsing partial output
 
-- [ ] **Step 1: Implement minimal fix**
+- [x] **Step 1: Implement minimal fix**
 
 Set an explicit bounded `maxBuffer` large enough for real project graphs on the audit invocation. Detect `ENOBUFS` before the legacy non-zero-exit stdout recovery and throw a contextual error. Leave the version probe and complete non-zero JSON behavior unchanged.
 
-- [ ] **Step 2: Run focused GREEN**
+- [x] **Step 2: Run focused GREEN**
 
 Run: `npm test -- tests/core/depcruise-runtime.test.ts`
 Expected: PASS.
 
-- [ ] **Step 3: Run affected runtime and distribution gates**
+- [x] **Step 3: Run affected runtime and distribution gates**
 
 Run: `npm run build`, `npm run build:check`, and the standalone distribution regression.
 Expected: PASS.
@@ -95,11 +95,11 @@ Expected: PASS.
 
 **Covers:** release metadata and current project state
 
-- [ ] **Step 1: Synchronize release metadata**
+- [x] **Step 1: Synchronize release metadata**
 
 Bump the internal ArchAudit runtime package and all Claude Code, Codex, Cursor, and marketplace manifests for hi_flow `0.15.3`.
 
-- [ ] **Step 2: Update Project State**
+- [x] **Step 2: Update Project State**
 
 Record the repaired large-output boundary, latest verification, current plan/report, and the installed-plugin rerun as the ready next action.
 
@@ -107,22 +107,22 @@ Record the repaired large-output boundary, latest verification, current plan/rep
 
 ## Completion Protocol
 
-- [ ] **Implementation report created**
+- [x] **Implementation report created**
 
 Write: `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix-report.md`.
 
-- [ ] **Final verification passed or blockers recorded**
+- [x] **Final verification passed or blockers recorded**
 
 Run the focused regression, full `npm test`, `npm run typecheck`, `npm run build:check`, `npm audit --omit=dev`, manifest and skill validation, and `git diff --check`.
 
-- [ ] **Isolated review completed**
+- [x] **Isolated review completed**
 
 Review against this bug-fix plan and the accepted complete-graph contract. Fix blocking findings before completion, or record accepted follow-ups explicitly.
 
-- [ ] **Architecture audit explicitly skipped**
+- [x] **Architecture audit explicitly skipped**
 
 This fix changes only the existing child-process adapter limit and failure classification; it does not add or alter an architecture boundary.
 
-- [ ] **Living artifacts updated**
+- [x] **Living artifacts updated**
 
 Update `PROJECT_STATE.md`; leave Behavior Registry and Active Issues unchanged when the verified fix is complete.

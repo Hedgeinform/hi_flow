@@ -54,13 +54,17 @@ describe('depcruise-runtime', () => {
     expect(stdout).toBe('{"summary":{"violations":[]}}')
   })
 
-  it('returns complete JSON when bundled depcruise output exceeds the default child-process buffer', async () => {
+  it('returns complete JSON from a non-zero depcruise exit when output exceeds the default child-process buffer', async () => {
     await withTempDir('hi-flow-large-depcruise-', async runtimeRoot => {
       const distDir = join(runtimeRoot, 'dist')
       await mkdir(distDir)
       await writeFile(
         join(distDir, 'dependency-cruise.mjs'),
-        `process.stdout.write(JSON.stringify({ padding: 'x'.repeat(${LARGE_JSON_PAYLOAD_BYTES}) }))\n`,
+        [
+          `process.stdout.write(JSON.stringify({ padding: 'x'.repeat(${LARGE_JSON_PAYLOAD_BYTES}) }))`,
+          'process.exitCode = 1',
+          '',
+        ].join('\n'),
         'utf-8',
       )
 
