@@ -5,8 +5,8 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** ArchAudit preserves canonical `project:<rule-name>` identifiers from project-rule configuration through D8 finding enrichment.
-- **Phase:** hi_flow `0.15.4` release and installed-plugin verification
-- **Owner/session:** `codex/arch-audit-project-rule-ids`
+- **Phase:** hi_flow `0.15.4` released and verified in the original Zhenka failure contour
+- **Owner/session:** `codex/arch-audit-project-rule-ids-closeout`
 
 ## Last Completed
 
@@ -14,7 +14,7 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Ready Next
 
-- Publish and refresh installed hi_flow plugins to `0.15.4`, then rerun the full Zhenka ArchAudit that previously failed on `project:no-tools-to-dispatcher` during enrichment.
+- No remaining action for this bug fix.
 
 ## Waiting / Blocked
 
@@ -27,6 +27,7 @@ This document is the current operational dashboard for the project. It is not a 
 - `tsc --noEmit`, plugin validation, skill validation, independent review, and `git diff --check` -> passed on 2026-08-26.
 - `npm audit --omit=dev` -> zero vulnerabilities on 2026-08-26.
 - Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.4`; internal ArchAudit package -> `0.3.4` on 2026-08-26.
+- Codex VPS installed-plugin acceptance -> full Zhenka audit exited `0`; jq-valid JSON contains 36 modules, 185 edges, and 21 findings; former `project:no-tools-to-dispatcher` enrichment failure absent on 2026-08-26.
 
 ## Active Artifacts
 
