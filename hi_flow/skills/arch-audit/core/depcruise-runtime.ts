@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 type ExecFileSyncLike = typeof execFileSync
 
+const DEPCRUISE_JSON_MAX_BUFFER_BYTES = 64 * 1024 * 1024
+
 export function resolveRuntimeRoot(fromImportMetaUrl: string): string {
   return resolve(dirname(fileURLToPath(fromImportMetaUrl)), '..')
 }
@@ -47,9 +49,19 @@ export function runBundledDepcruise(
         configPath,
         srcPath,
       ],
-      { cwd: projectRoot, encoding: 'utf-8' },
+      {
+        cwd: projectRoot,
+        encoding: 'utf-8',
+        maxBuffer: DEPCRUISE_JSON_MAX_BUFFER_BYTES,
+      },
     )
   } catch (error: any) {
+    if (error?.code === 'ENOBUFS') {
+      throw new Error(
+        `Bundled dependency-cruiser output exceeded the ${DEPCRUISE_JSON_MAX_BUFFER_BYTES}-byte buffer for '${projectRoot}'; partial JSON was discarded`,
+      )
+    }
+
     if (typeof error?.stdout === 'string' && error.stdout.length > 0) {
       return error.stdout
     }
