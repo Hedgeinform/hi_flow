@@ -104,6 +104,66 @@ describe('report-builder', () => {
     await rm(dir, { recursive: true })
   })
 
+  it('emits a canonical project rule finding when dependency-cruiser reports its namespaced id', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rb-project-rule-'))
+    await mkdir(join(dir, 'src/tools'), { recursive: true })
+    await mkdir(join(dir, 'src/dispatcher'), { recursive: true })
+    await writeFile(join(dir, 'package.json'), '{}')
+    await writeFile(join(dir, 'tsconfig.json'), '{ "compilerOptions": {} }')
+    await writeFile(join(dir, 'src/tools/index.ts'), "import '../dispatcher/index.ts'\n")
+    await writeFile(join(dir, 'src/dispatcher/index.ts'), 'export const dispatch = true\n')
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      [
+        'forbidden:',
+        '  - name: no-tools-to-dispatcher',
+        '    severity: HIGH',
+        '    principle: layered-architecture-respect',
+        '    from:',
+        '      path: ^src/tools',
+        '    to:',
+        '      path: ^src/dispatcher',
+        '    comment: Tools must not import dispatcher.',
+        'required: []',
+        '',
+      ].join('\n'),
+    )
+
+    const mockOutput = JSON.stringify({
+      summary: {
+        violations: [{
+          from: 'src/tools/index.ts',
+          to: 'src/dispatcher/index.ts',
+          type: 'dependency',
+          rule: { name: 'project:no-tools-to-dispatcher', severity: 'error' },
+        }],
+      },
+      modules: [
+        {
+          source: 'src/tools/index.ts',
+          dependencies: [{ resolved: 'src/dispatcher/index.ts', module: '../dispatcher/index.ts' }],
+        },
+        { source: 'src/dispatcher/index.ts', dependencies: [] },
+      ],
+    })
+
+    const report = await buildReport(adapter, dir, {
+      depcruiseVersion: '16.3.0',
+      auditSha: 'test-sha',
+      runDepcruise: () => mockOutput,
+    })
+    const json = JSON.parse(await readFile(report.json_path, 'utf-8'))
+    expect(json.findings).toContainEqual(expect.objectContaining({
+      rule_id: 'project:no-tools-to-dispatcher',
+      severity: 'HIGH',
+      reason: {
+        principle: 'layered-architecture-respect',
+        explanation: 'Tools must not import dispatcher.',
+      },
+    }))
+    await rm(dir, { recursive: true })
+  })
+
   it('fails closed when module_pattern points to a missing root', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'rb-missing-root-'))
     await writeFile(join(dir, 'package.json'), '{ "type": "module" }')

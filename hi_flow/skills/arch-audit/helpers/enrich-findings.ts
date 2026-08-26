@@ -32,8 +32,8 @@ export function enrichFindings(args: Args): Finding[] {
     ...baselineRules.map(r => [r.name, r] as [string, BaselineRule]),
     ...baselineRules.map(r => [r.id, r] as [string, BaselineRule]),
   ])
-  const projectByName = new Map(
-    [...projectRules.forbidden, ...projectRules.required].map(r => [r.name.replace(/^project:/, ''), r]),
+  const projectById = new Map(
+    [...projectRules.forbidden, ...projectRules.required].map(r => [r.name, r]),
   )
 
   const disabled = new Set(projectRules.overrides?.baseline_disables?.map(d => d.rule_id) ?? [])
@@ -51,9 +51,9 @@ export function enrichFindings(args: Args): Finding[] {
     if (baselineByName.has(raw.rule_id)) {
       baseline = baselineByName.get(raw.rule_id)!
       namespacedId = baseline.id
-    } else if (projectByName.has(raw.rule_id)) {
-      projectRule = projectByName.get(raw.rule_id)!
-      namespacedId = projectRule.name.startsWith('project:') ? projectRule.name : `project:${projectRule.name}`
+    } else if (projectById.has(raw.rule_id)) {
+      projectRule = projectById.get(raw.rule_id)!
+      namespacedId = projectRule.name
     } else {
       throw new Error(`enrich-findings: unknown rule_id '${raw.rule_id}' — not in baseline or project rules. Upstream bug.`)
     }
