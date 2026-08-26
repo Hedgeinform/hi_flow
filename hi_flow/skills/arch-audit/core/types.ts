@@ -6,7 +6,7 @@ export type DepcruiseSeverity = 'error' | 'warn' | 'info'
 
 // Pre-enrichment finding (from helper #2 parse or adapter structural detection)
 export interface RawFinding {
-  rule_id: string                      // depcruise/baseline rule name, no namespace prefix
+  rule_id: string                      // depcruise rule name: baseline may be bare; project rules use "project:..."
   raw_severity: DepcruiseSeverity      // depcruise raw severity
   type: string                         // 'cycle' | 'orphan' | 'cross-module' | 'metric' | etc
   source: { module: string; file: string }

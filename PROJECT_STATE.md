@@ -4,17 +4,17 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Current Focus
 
-- **Focus:** ArchAudit preserves complete large dependency-cruiser reports and rejects buffer-truncated partial JSON.
-- **Phase:** hi_flow `0.15.3` release and installed-plugin verification
-- **Owner/session:** `codex/arch-audit-large-output-buffer`
+- **Focus:** ArchAudit preserves canonical `project:<rule-name>` identifiers from project-rule configuration through D8 finding enrichment.
+- **Phase:** hi_flow `0.15.4` release and installed-plugin verification
+- **Owner/session:** `codex/arch-audit-project-rule-ids`
 
 ## Last Completed
 
-- Bug-fix implementation report: `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix-report.md`
+- Bug-fix implementation report: `docs/superpowers/plans/2026-08-26-arch-audit-project-rule-id-bug-fix-report.md`
 
 ## Ready Next
 
-- Refresh installed hi_flow plugins to `0.15.3`, then rerun the full REH_ERP ArchAudit that previously truncated dependency-cruiser JSON at 1,114,112 bytes.
+- Publish and refresh installed hi_flow plugins to `0.15.4`, then rerun the full Zhenka ArchAudit that previously failed on `project:no-tools-to-dispatcher` during enrichment.
 
 ## Waiting / Blocked
 
@@ -22,19 +22,19 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Latest Verification
 
-- Real dependency-cruiser child process -> complete 2 MiB JSON preserved with `exitCode = 1`; `ENOBUFS` partial stdout rejected on 2026-08-26.
-- Full ArchAudit suite -> 183/183 passed on 2026-08-26, including runtime freshness and clean installed-plugin distribution checks.
+- Canonical project-rule regression -> RED failed with `unknown rule_id 'project:no-tools-to-dispatcher'`; GREEN passed with the namespaced D8 finding on 2026-08-26.
+- Full ArchAudit suite -> 184/184 passed on 2026-08-26, including runtime freshness and clean installed-plugin distribution checks.
 - `tsc --noEmit`, plugin validation, skill validation, independent review, and `git diff --check` -> passed on 2026-08-26.
 - `npm audit --omit=dev` -> zero vulnerabilities on 2026-08-26.
-- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.3`; internal ArchAudit package -> `0.3.3` on 2026-08-26.
+- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.4`; internal ArchAudit package -> `0.3.4` on 2026-08-26.
 
 ## Active Artifacts
 
 - Product backlog: not used for this contract-restoration bug fix
 - Intake: `INTAKE.md`
 - Behavior Registry: project-wide references under `hi_flow/references/behavior-registry/`
-- Current design: accepted self-contained complete-report runtime contract in `hi_flow/skills/arch-audit/SKILL.md`
-- Current plan/report: `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix.md`, `docs/superpowers/plans/2026-08-26-arch-audit-large-output-buffer-bug-fix-report.md`
+- Current design: canonical project-rule cross-reference contract in `hi_flow/skills/arch-audit/references/d8-schema.json`
+- Current plan/report: `docs/superpowers/plans/2026-08-26-arch-audit-project-rule-id-bug-fix.md`, `docs/superpowers/plans/2026-08-26-arch-audit-project-rule-id-bug-fix-report.md`
 - Architecture snapshot: `ARCHITECTURE.md`
 
 ## Update Notes
