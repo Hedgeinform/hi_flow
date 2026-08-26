@@ -34,6 +34,7 @@ Project rule findings use the canonical `project:<rule-name>` identifier defined
 - ArchAudit skill structural validation: passed.
 - `git diff --check`: passed.
 - Independent review: Critical 0, implementation Important 0, Minor 0. Its two artifact findings were fixed before commit.
+- Installed-plugin acceptance on Codex VPS: hi_flow `0.15.4` / ArchAudit `0.3.4`; the full Zhenka audit completed with exit code `0`, produced a jq-valid `audit-report.json`, and emitted 36 modules, 185 edges, and 21 findings without the former `project:no-tools-to-dispatcher` error.
 
 ## Deviations from spec
 
@@ -48,4 +49,4 @@ Project rule findings use the canonical `project:<rule-name>` identifier defined
 
 ## Open items
 
-- Publish the merged `0.15.4` marketplace revision, refresh installed plugins, and rerun the full Zhenka ArchAudit that exposed the failure.
+- None.
