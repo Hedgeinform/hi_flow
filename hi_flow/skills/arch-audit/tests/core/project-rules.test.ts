@@ -10,7 +10,20 @@ import {
 } from '../../core/project-rules.ts'
 import { copyFile } from 'node:fs/promises'
 import { fixturePath } from '../test-paths.ts'
+import type { D9Index } from '../../core/types.ts'
 // readFile import already via destructuring above
+
+const d9: D9Index = {
+  principles: {
+    'acyclic-dependencies': {
+      id: 'acyclic-dependencies',
+      name: 'acyclic-dependencies',
+      description: 'No module cycles.',
+      fix_alternatives: [],
+    },
+  },
+  fix_alternatives: { 'acyclic-dependencies': [] },
+}
 
 describe('project-rules', () => {
   it('returns empty rules when file absent', async () => {
@@ -89,6 +102,92 @@ describe('project-rules', () => {
     const rules = await loadProjectRules(dir)
     expect(rules.overrides?.profile).toBe('frontend')
     expect(rules.overrides?.layer_aliases?.['comm']).toBe('data-access')
+    await rm(dir, { recursive: true })
+  })
+
+  it('rejects a project rule whose principle is not a canonical D9 id', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-invalid-principle-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      [
+        'forbidden:',
+        '  - name: project:bad-cycle',
+        '    severity: HIGH',
+        '    principle: acyclic-dependencies (ADP)',
+        '    comment: No cycles.',
+        'required: []',
+        '',
+      ].join('\n'),
+      'utf-8',
+    )
+
+    await expect(loadProjectRules(dir, { d9 })).rejects.toThrow(/acyclic-dependencies \(ADP\).*canonical D9/i)
+    await rm(dir, { recursive: true })
+  })
+
+  it('rejects a project rule with a blank explanation', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-blank-comment-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      [
+        'forbidden:',
+        '  - name: project:bad-cycle',
+        '    severity: HIGH',
+        '    principle: acyclic-dependencies',
+        "    comment: ''",
+        'required: []',
+        '',
+      ].join('\n'),
+      'utf-8',
+    )
+
+    await expect(loadProjectRules(dir, { d9 })).rejects.toThrow(/comment.*non-empty/i)
+    await rm(dir, { recursive: true })
+  })
+
+  it('normalizes the D11 description field into the finding explanation', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-description-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      [
+        'forbidden: []',
+        'required:',
+        '  - name: required-domain',
+        '    severity: HIGH',
+        '    principle: acyclic-dependencies',
+        '    description: Domain module must exist.',
+        '',
+      ].join('\n'),
+      'utf-8',
+    )
+
+    const rules = await loadProjectRules(dir, { d9 })
+    expect(rules.required[0]).toEqual(expect.objectContaining({
+      name: 'project:required-domain',
+      comment: 'Domain module must exist.',
+    }))
+    await rm(dir, { recursive: true })
+  })
+
+  it('synthesizes a non-blank explanation for a valid D11 forbidden rule without prose', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pr-fallback-comment-'))
+    await writeFile(
+      join(dir, '.audit-rules.yaml'),
+      [
+        'forbidden:',
+        '  - name: no-domain-to-api',
+        '    severity: HIGH',
+        '    principle: acyclic-dependencies',
+        '    from: { path: "^src/domain/" }',
+        '    to: { path: "^src/api/" }',
+        'required: []',
+        '',
+      ].join('\n'),
+      'utf-8',
+    )
+
+    const rules = await loadProjectRules(dir, { d9 })
+    expect(rules.forbidden[0]!.comment).toMatch(/project:no-domain-to-api/)
     await rm(dir, { recursive: true })
   })
 })

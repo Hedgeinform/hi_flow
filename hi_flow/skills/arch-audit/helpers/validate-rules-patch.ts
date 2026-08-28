@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import yaml from 'js-yaml'
 import type { D9Index, ProjectRules, Rule, ValidationError } from '../core/types.ts'
+import { normalizeProjectRule } from '../core/project-rules.ts'
 
 interface Args {
   patchPath: string
@@ -34,8 +35,23 @@ export async function validateRulesPatch(args: Args): Promise<Result> {
     return { valid: false, errors, parsed_rules: [] }
   }
 
-  const allRules: Rule[] = [...(parsed?.forbidden ?? []), ...(parsed?.required ?? [])]
-  const existingNames = new Set([...args.projectRules.forbidden, ...args.projectRules.required].map(r => r.name))
+  const rawForbidden = Array.isArray(parsed?.forbidden) ? parsed.forbidden : []
+  const rawRequired = Array.isArray(parsed?.required) ? parsed.required : []
+  if (parsed?.forbidden !== undefined && !Array.isArray(parsed.forbidden)) {
+    errors.push({ field: 'forbidden', message: 'forbidden must be an array' })
+  }
+  if (parsed?.required !== undefined && !Array.isArray(parsed.required)) {
+    errors.push({ field: 'required', message: 'required must be an array' })
+  }
+  const allRules: Rule[] = [...rawForbidden, ...rawRequired]
+    .filter((rule): rule is Rule => Boolean(rule && typeof rule === 'object'))
+    .map(normalizeProjectRule)
+  const existingNames = new Set(
+    [...args.projectRules.forbidden, ...args.projectRules.required]
+      .map(normalizeProjectRule)
+      .map(rule => rule.name),
+  )
+  const patchNames = new Set<string>()
 
   for (const rule of allRules) {
     if (!rule.name) errors.push({ rule_name: '?', field: 'name', message: 'rule.name is required' })
@@ -56,6 +72,10 @@ export async function validateRulesPatch(args: Args): Promise<Result> {
     if (existingNames.has(rule.name)) {
       errors.push({ rule_name: rule.name, field: 'name', message: `rule name '${rule.name}' already exists in project rules (collision)` })
     }
+    if (patchNames.has(rule.name)) {
+      errors.push({ rule_name: rule.name, field: 'name', message: `duplicate normalized rule name '${rule.name}' inside patch` })
+    }
+    patchNames.add(rule.name)
     for (const f of ['from', 'to'] as const) {
       const path = (rule as any)[f]?.path
       if (path) {

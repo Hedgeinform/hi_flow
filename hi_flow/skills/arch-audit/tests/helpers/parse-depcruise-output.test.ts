@@ -4,16 +4,11 @@ import { parseDepcruiseOutput } from '../../helpers/parse-depcruise-output.ts'
 import { fixturePath } from '../test-paths.ts'
 
 describe('parse-depcruise-output', () => {
-  it('parses sample fixture', async () => {
+  it('does not duplicate a two-module cycle owned by inappropriate-intimacy', async () => {
     const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
 
-    expect(result.findings).toHaveLength(1)
-    expect(result.findings[0]!.rule_id).toBe('no-circular')
-    expect(result.findings[0]!.raw_severity).toBe('warn')
-    expect(result.findings[0]!.source.module).toBe('a')
-    expect(result.findings[0]!.target!.module).toBe('b')
-    expect(result.findings[0]!.type).toBe('cycle')
+    expect(result.findings).toEqual([])
   })
 
   it('builds dep_graph at module level (top-level src/<dir>)', async () => {
@@ -29,6 +24,65 @@ describe('parse-depcruise-output', () => {
     expect(result.per_module_raw['a']!.ca).toBe(1) // b→a
     expect(result.per_module_raw['c']!.ce).toBe(0)
     expect(result.per_module_raw['c']!.ca).toBe(0)
+  })
+
+  it('returns the audited source files grouped by module for LOC aggregation', async () => {
+    const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
+    const result = parseDepcruiseOutput(raw)
+
+    expect(result.source_files_by_module).toEqual({
+      a: ['src/a/index.ts'],
+      b: ['src/b/index.ts'],
+      c: ['src/c/index.ts'],
+    })
+  })
+
+  it('normalizes dependency-cruiser cycle objects to ordered module members', () => {
+    const raw = JSON.stringify({
+      summary: {
+        violations: [{
+          type: 'cycle',
+          from: 'src/a/one.ts',
+          to: 'src/b/two.ts',
+          rule: { name: 'no-circular', severity: 'warn' },
+          cycle: [
+            { name: 'src/b/two.ts', dependencyTypes: ['local'] },
+            { name: 'src/c/three.ts', dependencyTypes: ['local'] },
+            { name: 'src/a/one.ts', dependencyTypes: ['local'] },
+          ],
+        }],
+      },
+      modules: [
+        { source: 'src/a/one.ts', dependencies: [{ resolved: 'src/b/two.ts', module: '../b/two.ts' }] },
+        { source: 'src/b/two.ts', dependencies: [{ resolved: 'src/c/three.ts', module: '../c/three.ts' }] },
+        { source: 'src/c/three.ts', dependencies: [{ resolved: 'src/a/one.ts', module: '../a/one.ts' }] },
+      ],
+    })
+
+    const result = parseDepcruiseOutput(raw)
+
+    expect(result.findings).toHaveLength(1)
+    expect(result.findings[0]!.extras).toEqual({ members: ['a', 'b', 'c'] })
+  })
+
+  it('drops file-level cycles that collapse to one module', () => {
+    const raw = JSON.stringify({
+      summary: {
+        violations: [{
+          type: 'cycle',
+          from: 'src/a/one.ts',
+          to: 'src/a/two.ts',
+          rule: { name: 'no-circular', severity: 'warn' },
+          cycle: ['src/a/one.ts', 'src/a/two.ts', 'src/a/one.ts'],
+        }],
+      },
+      modules: [
+        { source: 'src/a/one.ts', dependencies: [{ resolved: 'src/a/two.ts', module: './two.ts' }] },
+        { source: 'src/a/two.ts', dependencies: [{ resolved: 'src/a/one.ts', module: './one.ts' }] },
+      ],
+    })
+
+    expect(parseDepcruiseOutput(raw).findings).toEqual([])
   })
 
   it('throws on invalid JSON', () => {

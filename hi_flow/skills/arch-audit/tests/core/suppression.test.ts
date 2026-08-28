@@ -14,6 +14,33 @@ const mkFinding = (overrides: Partial<Finding>): Finding => ({
 })
 
 describe('suppression', () => {
+  it('keeps only the most specific highest-severity owner for one module cycle', () => {
+    const findings = [
+      mkFinding({
+        id: 'f-001',
+        rule_id: 'baseline:inappropriate-intimacy',
+        type: 'cycle',
+        severity: 'HIGH',
+        source: { module: 'domain', file: '' },
+        target: { module: 'infrastructure', file: '' },
+        extras: { members: ['domain', 'infrastructure'] },
+      }),
+      mkFinding({
+        id: 'f-002',
+        rule_id: 'baseline:architectural-layer-cycle',
+        type: 'cycle',
+        severity: 'CRITICAL',
+        source: { module: 'infrastructure', file: '' },
+        target: { module: 'domain', file: '' },
+        extras: { members: ['infrastructure', 'domain'], layers: ['infrastructure', 'domain'] },
+      }),
+    ]
+
+    const result = applySuppression(findings)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.rule_id).toBe('baseline:architectural-layer-cycle')
+  })
+
   it('passes through when no LOW findings', () => {
     const findings = [mkFinding({ severity: 'HIGH', rule_id: 'baseline:no-circular' })]
     expect(applySuppression(findings)).toEqual(findings)

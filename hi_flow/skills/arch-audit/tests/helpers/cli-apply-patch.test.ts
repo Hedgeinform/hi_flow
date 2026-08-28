@@ -4,6 +4,9 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import yaml from 'js-yaml'
 import { applyPatch } from '../../helpers/cli-apply-patch.ts'
+import { loadProjectRules } from '../../core/project-rules.ts'
+import { loadD9, resolveBundledD9Path } from '../../core/d9-loader.ts'
+import { PACKAGE_ROOT } from '../test-paths.ts'
 
 describe('cli-apply-patch', () => {
   it('validates + merges patch into .audit-rules.yaml + archives the patch', async () => {
@@ -12,10 +15,9 @@ describe('cli-apply-patch', () => {
     await writeFile(patchPath, yaml.dump({
       forbidden: [
         {
-          name: 'project:no-cross-feature',
+          name: 'no-cross-feature',
           severity: 'HIGH',
           principle: 'vertical-slice-cohesion',
-          comment: 'features must not import each other',
           from: { path: '^src/features/(?!common)([^/]+)/' },
           to: { path: '^src/features/(?!common)(?!\\1)([^/]+)/' },
         },
@@ -33,6 +35,10 @@ describe('cli-apply-patch', () => {
     const rules = yaml.load(await readFile(join(dir, '.audit-rules.yaml'), 'utf-8')) as any
     expect(rules.forbidden).toHaveLength(1)
     expect(rules.forbidden[0].name).toBe('project:no-cross-feature')
+    const normalized = await loadProjectRules(dir, {
+      d9: await loadD9(resolveBundledD9Path(PACKAGE_ROOT)),
+    })
+    expect(normalized.forbidden[0]!.comment).toMatch(/project:no-cross-feature/)
 
     await rm(dir, { recursive: true })
   })

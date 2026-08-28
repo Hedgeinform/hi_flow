@@ -139,6 +139,20 @@ describe('typescript-depcruise adapter — structural detection', () => {
     expect(findings.some(f => f.rule_id === 'high-fanout')).toBe(true)
   })
 
+  it('owns two-module cycles as one inappropriate-intimacy finding with D8 members', async () => {
+    const a = createTypescriptDepcruiseAdapter()
+    const findings = await a.detectStructural({
+      projectPath: '/tmp/x',
+      depGraph: { a: ['b'], b: ['a'] },
+      perModuleRaw: { a: { ca: 1, ce: 1, loc: 1 }, b: { ca: 1, ce: 1, loc: 1 } },
+      projectRules: { forbidden: [], required: [] },
+    })
+
+    const cycles = findings.filter(f => f.type === 'cycle' && f.rule_id === 'inappropriate-intimacy')
+    expect(cycles).toHaveLength(1)
+    expect(cycles[0]!.extras).toEqual({ members: ['a', 'b'] })
+  })
+
   it('detects port-adapter-direction when domain imports infrastructure', async () => {
     const a = createTypescriptDepcruiseAdapter()
     const findings = await a.detectStructural({
@@ -159,7 +173,11 @@ describe('typescript-depcruise adapter — structural detection', () => {
       projectRules: { forbidden: [], required: [] },
       sdkEdges: [{ from: 'domain', sdk: 'telegraf' }],
     })
-    expect(findings.some(f => f.rule_id === 'domain-no-channel-sdk')).toBe(true)
+    expect(findings).toContainEqual(expect.objectContaining({
+      rule_id: 'domain-no-channel-sdk',
+      target: { module: 'telegraf', file: '' },
+      extras: { sdk: 'telegraf', external_target: true },
+    }))
   })
 
   it('emits barrel-file findings via detectBarrels integration', async () => {
@@ -219,7 +237,10 @@ describe('typescript-depcruise adapter — frontend layered detection', () => {
       { components: ['hooks'], hooks: ['components'], pages: [], lib: [] },
       ['components', 'hooks', 'pages', 'lib'],
     )
-    expect(findings.some(f => f.rule_id === 'frontend-layer-cycle')).toBe(true)
+    expect(findings).toContainEqual(expect.objectContaining({
+      rule_id: 'frontend-layer-cycle',
+      extras: expect.objectContaining({ members: ['components', 'hooks'] }),
+    }))
   })
 
   it('does NOT emit a false app -> api violation in a frontend profile', async () => {

@@ -34,6 +34,30 @@ describe('validate-rules-patch', () => {
     expect(r.errors[0]!.message).toMatch(/uniqueness|collision|exists/i)
   })
 
+  it('rejects a legacy unprefixed name that collides after namespace normalization', async () => {
+    const collidingRules: ProjectRules = {
+      forbidden: [{ name: 'project:dispatcher-no-pipeline', severity: 'LOW', principle: 'layered-architecture-respect' }],
+      required: [],
+    }
+    const r = await validateRulesPatch({
+      patchPath: fixturePath('sample-patch-legacy-name.yaml'),
+      projectRules: collidingRules,
+      d9Index: d9,
+    })
+    expect(r.valid).toBe(false)
+    expect(r.errors[0]!.message).toMatch(/collision|exists/i)
+  })
+
+  it('rejects duplicate prefixed and legacy names inside one patch', async () => {
+    const r = await validateRulesPatch({
+      patchPath: fixturePath('sample-patch-duplicate-normalized.yaml'),
+      projectRules: emptyRules,
+      d9Index: d9,
+    })
+    expect(r.valid).toBe(false)
+    expect(r.errors.some(error => /duplicate|collision/i.test(error.message))).toBe(true)
+  })
+
   it('returns structured result on parse failure (does not throw)', async () => {
     const r = await validateRulesPatch({ patchPath: fixturePath('nonexistent.yaml'), projectRules: emptyRules, d9Index: d9 })
     expect(r.valid).toBe(false)

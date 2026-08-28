@@ -5,7 +5,7 @@ import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depc
 import { fixturePath, withTempDir } from '../test-paths.ts'
 
 describe('integration: cycle project', () => {
-  it('produces audit-report.json with inappropriate-intimacy or no-circular finding', async () => {
+  it('produces exactly one canonical two-module cycle finding', async () => {
     const projectRoot = fixturePath('cycle-project')
     await withTempDir('arch-audit-cycle-project-', async outDir => {
 
@@ -17,9 +17,12 @@ describe('integration: cycle project', () => {
       })
 
       const json = JSON.parse(await readFile(result.json_path, 'utf-8'))
-      const ruleIds = json.findings.map((f: any) => f.rule_id)
-      const hasCycleFinding = ruleIds.includes('baseline:no-circular') || ruleIds.includes('baseline:inappropriate-intimacy')
-      expect(hasCycleFinding).toBe(true)
+      const cycles = json.findings.filter((f: any) => f.type === 'cycle')
+      expect(cycles).toHaveLength(1)
+      expect(cycles[0]).toEqual(expect.objectContaining({
+        rule_id: 'baseline:inappropriate-intimacy',
+        extras: { members: ['a', 'b'] },
+      }))
     })
   }, 60_000)
 })

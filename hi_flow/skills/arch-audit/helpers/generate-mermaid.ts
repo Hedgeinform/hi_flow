@@ -34,24 +34,29 @@ function classifyEdges(findings: Finding[]): {
   const criticalEdges = new Set<string>()
   const highMedBoundaryEdges = new Set<string>()
   for (const f of findings) {
-    if (!f.target) continue
-    const src = escId(f.source.module)
-    const tgt = escId(f.target.module)
-    const edge = `${src}-${tgt}`
-    const reverseEdge = `${tgt}-${src}`
     if (
       f.type === 'cycle' ||
       f.rule_id === 'baseline:no-circular' ||
       f.rule_id === 'baseline:inappropriate-intimacy' ||
       f.rule_id === 'baseline:architectural-layer-cycle'
     ) {
-      // Cycles are inherently bidirectional. The adapter emits one finding per
-      // cycle pair (with src < tgt to dedupe), but the dep_graph contains both
-      // directions and both must be styled as cycle edges — otherwise one side
-      // renders red and the other default gray, masking the cycle visually.
-      cycleEdges.add(edge)
-      cycleEdges.add(reverseEdge)
-    } else if (f.severity === 'CRITICAL') {
+      const members = Array.isArray(f.extras?.members)
+        ? f.extras.members.filter((member): member is string => typeof member === 'string')
+        : []
+      if (members.length >= 2) {
+        for (let index = 0; index < members.length; index++) {
+          cycleEdges.add(`${escId(members[index]!)}-${escId(members[(index + 1) % members.length]!)}`)
+        }
+      } else if (f.target) {
+        // Compatibility for older pair findings without extras.members.
+        cycleEdges.add(`${escId(f.source.module)}-${escId(f.target.module)}`)
+        cycleEdges.add(`${escId(f.target.module)}-${escId(f.source.module)}`)
+      }
+      continue
+    }
+    if (!f.target) continue
+    const edge = `${escId(f.source.module)}-${escId(f.target.module)}`
+    if (f.severity === 'CRITICAL') {
       criticalEdges.add(edge)
     } else if (f.type === 'boundary' && (f.severity === 'HIGH' || f.severity === 'MEDIUM')) {
       highMedBoundaryEdges.add(edge)
@@ -150,7 +155,25 @@ function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, st
     const lines = ['flowchart TD']
     const seenNode = new Set<string>()
     const seenEdge = new Set<string>()
+    const cycleEdgeIndexes: number[] = []
+    let edgeIndex = 0
     for (const f of group) {
+      const cycleMembers = f.type === 'cycle' && Array.isArray(f.extras?.members)
+        ? f.extras.members.filter((member): member is string => typeof member === 'string')
+        : []
+      if (cycleMembers.length >= 2) {
+        for (let index = 0; index < cycleMembers.length; index++) {
+          const source = escId(cycleMembers[index]!)
+          const target = escId(cycleMembers[(index + 1) % cycleMembers.length]!)
+          const edge = `${source} ==>|cycle| ${target}`
+          if (!seenEdge.has(edge)) {
+            lines.push(`    ${edge}`)
+            seenEdge.add(edge)
+            cycleEdgeIndexes.push(edgeIndex++)
+          }
+        }
+        continue
+      }
       if (!f.target || f.source.module === f.target.module) {
         const node = escId(f.source.module)
         if (!seenNode.has(node)) {
@@ -160,8 +183,13 @@ function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, st
         continue
       }
       const e = `${escId(f.source.module)} --> ${escId(f.target.module)}`
-      if (!seenEdge.has(e)) { lines.push(`    ${e}`); seenEdge.add(e) }
+      if (!seenEdge.has(e)) {
+        lines.push(`    ${e}`)
+        seenEdge.add(e)
+        edgeIndex++
+      }
     }
+    for (const index of cycleEdgeIndexes) lines.push(`    linkStyle ${index} ${STYLE_CYCLE}`)
     out[`cluster-${principle}`] = lines.join('\n')
   }
   return out

@@ -1,0 +1,12 @@
+forbidden:
+  - name: duplicate-rule
+    severity: HIGH
+    principle: layered-architecture-respect
+    from: { path: "^src/a" }
+    to: { path: "^src/b" }
+  - name: project:duplicate-rule
+    severity: HIGH
+    principle: layered-architecture-respect
+    from: { path: "^src/c" }
+    to: { path: "^src/d" }
+required: []

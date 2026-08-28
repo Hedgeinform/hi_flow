@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mkdtemp, mkdir, writeFile, rm, access, stat } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, rm, access, stat, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { runAudit } from '../../helpers/cli-run-audit.ts'
@@ -42,6 +42,7 @@ describe('cli-run-audit outDir override', () => {
     // Output files in altOut
     await access(join(altOut, 'audit-report.json'))
     await access(join(altOut, 'clusters-input.json'))
+    expect(await readFile(join(altOut, 'audit-report.md'), 'utf-8')).toContain('INCOMPLETE')
     // Default location must NOT have been used
     await expect(access(join(root, 'audit-report'))).rejects.toBeTruthy()
 
