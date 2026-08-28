@@ -7,7 +7,7 @@ const minimalReport = (overrides: Partial<D8AuditReport> = {}): D8AuditReport =>
     audit_sha: 'uuid:test',
     audit_timestamp: '2026-04-28T00:00:00Z',
     audit_tooling_version: 'test (16.0.0)',
-    schema_version: '1.1',
+    schema_version: '1.2',
   },
   findings: [],
   metrics: {
@@ -92,6 +92,34 @@ describe('generate-mermaid', () => {
     // cycle-styled (red bold solid: stroke:#d32f2f).
     const cycleStyleCount = (result.overall!.match(/stroke:#d32f2f/g) ?? []).length
     expect(cycleStyleCount).toBe(2)
+  })
+
+  it('styles and renders every ordered edge of a three-module cycle', () => {
+    const report = minimalReport({
+      findings: [{
+        id: 'f-001',
+        rule_id: 'baseline:no-circular',
+        type: 'cycle',
+        severity: 'HIGH',
+        source: { module: 'a', file: '' },
+        target: { module: 'b', file: '' },
+        reason: { principle: 'acyclic-dependencies', explanation: 'Three-module cycle.' },
+        extras: { members: ['a', 'b', 'c'] },
+      }],
+      metrics: {
+        ...minimalReport().metrics,
+        dep_graph: { a: ['b'], b: ['c'], c: ['a'] },
+      },
+    })
+
+    const result = generateMermaid(report)
+    expect(result.overall).toMatch(/a ==>|cycle| b/)
+    expect(result.overall).toMatch(/b ==>|cycle| c/)
+    expect(result.overall).toMatch(/c ==>|cycle| a/)
+    expect(result.clusters['cluster-acyclic-dependencies']).toMatch(/a ==>|cycle| b/)
+    expect(result.clusters['cluster-acyclic-dependencies']).toMatch(/b ==>|cycle| c/)
+    expect(result.clusters['cluster-acyclic-dependencies']).toMatch(/c ==>|cycle| a/)
+    expect(result.clusters['cluster-acyclic-dependencies']).toMatch(/stroke:#d32f2f/)
   })
 
   it('does not render self-edges in cluster diagrams', () => {

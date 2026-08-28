@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir, rename } from 'node:fs/promises'
 import { dirname, join, basename } from 'node:path'
 import yaml from 'js-yaml'
 import type { ProjectRules } from '../core/types.ts'
+import { normalizeProjectRule } from '../core/project-rules.ts'
 
 interface Args {
   patchPath: string
@@ -35,8 +36,8 @@ export async function mergeRulesPatch(args: Args): Promise<Result> {
   }
 
   const merged: ProjectRules = {
-    forbidden: [...current.forbidden, ...(patch?.forbidden ?? [])],
-    required: [...current.required, ...(patch?.required ?? [])],
+    forbidden: [...current.forbidden, ...(patch?.forbidden ?? [])].map(normalizeProjectRule),
+    required: [...current.required, ...(patch?.required ?? [])].map(normalizeProjectRule),
     overrides: { ...current.overrides, ...(patch?.overrides ?? {}) },
   }
   const rulesAdded = (patch?.forbidden?.length ?? 0) + (patch?.required?.length ?? 0)

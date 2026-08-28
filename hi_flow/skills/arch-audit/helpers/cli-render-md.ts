@@ -22,6 +22,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   renderReportFromDisk(resolve(jsonPath), resolve(prosePath), d9MdPath ? resolve(d9MdPath) : undefined)
     .then(({ md_path }) => {
       console.log('audit-report.md:', md_path)
+      console.log('D8 semantic validation passed; the two-phase audit artifact is complete.')
     })
     .catch((err: unknown) => {
       console.error('ERROR:', err instanceof Error ? err.message : String(err))

@@ -1,8 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { describe, it, expect } from 'vitest'
-import { loadD9 } from '../../core/d9-loader.ts'
-import { fixturePath, withTempDir } from '../test-paths.ts'
+import { loadD9, resolveBundledD9Path } from '../../core/d9-loader.ts'
+import { fixturePath, PACKAGE_ROOT, withTempDir } from '../test-paths.ts'
 
 describe('d9-loader', () => {
   it('loads two principles from sample fixture', async () => {
@@ -64,5 +64,16 @@ describe('d9-loader', () => {
     const alts = d9.principles['acyclic-dependencies']!.fix_alternatives
     expect(alts.every(a => !a.includes('Related'))).toBe(true)
     expect(alts.every(a => !a.includes('god-object-prohibition'))).toBe(true)
+  })
+
+  it('loads formulation and numbered fix alternatives from the canonical bundled D9', async () => {
+    const d9 = await loadD9(resolveBundledD9Path(PACKAGE_ROOT))
+    const principle = d9.principles['acyclic-dependencies']!
+
+    expect(principle.description).toMatch(/Граф зависимостей/)
+    expect(principle.fix_alternatives).toEqual(expect.arrayContaining([
+      expect.stringContaining('Extract third package'),
+      expect.stringContaining('Dependency Inversion'),
+    ]))
   })
 })

@@ -12,9 +12,30 @@ interface ParseResult {
   findings: RawFinding[]
   dep_graph: DepGraph
   per_module_raw: Record<string, PerModuleRaw>
+  source_files_by_module: Record<string, string[]>
   sdk_edges: { from: string; sdk: string }[]
   parsing_errors?: { file: string; error: string }[]
   barrel_imports?: { from: string; to: string; targetFile: string }[]
+}
+
+function cycleEntryName(entry: unknown): string | null {
+  if (typeof entry === 'string') return entry
+  if (entry && typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
+    return entry.name
+  }
+  return null
+}
+
+function normalizeCycleMembers(sourceFile: string, rawCycle: unknown, modulePattern: string): string[] {
+  const cycleEntries = Array.isArray(rawCycle) ? rawCycle : []
+  const files = [sourceFile, ...cycleEntries.map(cycleEntryName).filter((name): name is string => !!name)]
+  const members: string[] = []
+  for (const file of files) {
+    const module = fileToModule(file, modulePattern)
+    if (module && members.at(-1) !== module) members.push(module)
+  }
+  if (members.length > 1 && members[0] === members.at(-1)) members.pop()
+  return members
 }
 
 // Map depcruise violation types to D8 schema enum values
@@ -46,6 +67,11 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     const targetFile = v.to ?? v.from ?? ''
     const srcMod = fileToModule(sourceFile, modulePattern)
     const ruleName = v.rule?.name ?? 'unknown'
+    const isCycle = v.type === 'cycle'
+    const cycleMembers = isCycle ? normalizeCycleMembers(sourceFile, v.cycle, modulePattern) : []
+    // D8 is module-level. File cycles inside one module are not architecture findings,
+    // and two-module cycles are owned by the adapter's inappropriate-intimacy rule.
+    if (isCycle && cycleMembers.length < 3) continue
     const isModuleProperty = MODULE_PROPERTY_RULES.has(ruleName) || sourceFile === targetFile
     if (!srcMod) continue
     if (!isModuleProperty) {
@@ -57,7 +83,7 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
         type: normalizeViolationType(v.type),
         source: { module: srcMod, file: sourceFile },
         target: { module: tgtMod, file: targetFile },
-        extras: v.cycle ? { cycle: v.cycle } : undefined,
+        extras: isCycle ? { members: cycleMembers } : undefined,
       })
     } else {
       findings.push({
@@ -65,13 +91,14 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
         raw_severity: (v.rule?.severity ?? 'warn') as DepcruiseSeverity,
         type: normalizeViolationType(v.type),
         source: { module: srcMod, file: sourceFile },
-        extras: v.cycle ? { cycle: v.cycle } : undefined,
+        extras: isCycle ? { members: cycleMembers } : undefined,
       })
     }
   }
 
   const dep_graph: DepGraph = {}
   const per_module_raw: Record<string, PerModuleRaw> = {}
+  const source_files_by_module: Record<string, string[]> = {}
   const sdk_edges: { from: string; sdk: string }[] = []
   const barrel_imports: { from: string; to: string; targetFile: string }[] = []
   const INDEX_FILENAME_RE = /\/index\.(ts|tsx|js|jsx|mjs|cjs)$/
@@ -81,8 +108,9 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     const srcMod = fileToModule(m.source, modulePattern)
     if (!srcMod) continue
     if (!dep_graph[srcMod]) dep_graph[srcMod] = []
-    if (!per_module_raw[srcMod]) per_module_raw[srcMod] = { ca: 0, ce: 0, loc: m.metrics?.loc ?? 0 }
-    else if (m.metrics?.loc) per_module_raw[srcMod]!.loc = m.metrics.loc
+    if (!per_module_raw[srcMod]) per_module_raw[srcMod] = { ca: 0, ce: 0, loc: 0 }
+    if (!source_files_by_module[srcMod]) source_files_by_module[srcMod] = []
+    if (!source_files_by_module[srcMod]!.includes(m.source)) source_files_by_module[srcMod]!.push(m.source)
     for (const dep of m.dependencies ?? []) {
       // Capture bare-name external imports as sdk_edges
       const bareName: string = dep.module ?? ''
@@ -105,8 +133,8 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
 
   // Ca/Ce = in/out-degree of the deduplicated module graph. The formula lives in
   // graph-core (computeCoupling) so arch-audit and arch-spec's hypothetical-graph
-  // analysis share one definition (SSoT). loc stays here — it comes from depcruise
-  // metrics and is not derivable from the graph.
+  // analysis share one definition (SSoT). LOC is initialized here and populated
+  // later by source-metrics from the files dependency-cruiser actually audited.
   const coupling = computeCoupling(dep_graph)
   for (const m of Object.keys(per_module_raw)) {
     per_module_raw[m]!.ce = coupling[m]?.ce ?? 0
@@ -129,6 +157,7 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     findings,
     dep_graph,
     per_module_raw,
+    source_files_by_module,
     sdk_edges,
     ...(parsing_errors.length > 0 ? { parsing_errors } : {}),
     ...(barrel_imports.length > 0 ? { barrel_imports } : {}),

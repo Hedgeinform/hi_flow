@@ -1,5 +1,6 @@
 import type { Finding } from './types.ts'
 import { fileToModule } from './source-scope.ts'
+import { canonicalCycleKey } from './cycle-key.ts'
 
 const SUPPRESSIBLE_RULE_ID = 'baseline:cross-module-import-info'
 const NO_ORPHANS_RULE_ID = 'baseline:no-orphans'
@@ -16,6 +17,32 @@ interface SuppressionContext {
 }
 
 export function applySuppression(findings: Finding[], ctx: SuppressionContext = {}): Finding[] {
+  const cycleOwners = new Map<string, Finding>()
+  const cycleRuleSpecificity: Record<string, number> = {
+    'baseline:architectural-layer-cycle': 3,
+    'baseline:frontend-layer-cycle': 3,
+    'baseline:no-circular': 2,
+    'baseline:inappropriate-intimacy': 1,
+  }
+  for (const finding of findings) {
+    if (finding.type !== 'cycle' || !Array.isArray(finding.extras?.members)) continue
+    const members = finding.extras.members.filter((member): member is string => typeof member === 'string')
+    if (members.length < 2) continue
+    const key = canonicalCycleKey(members)
+    const current = cycleOwners.get(key)
+    if (!current) {
+      cycleOwners.set(key, finding)
+      continue
+    }
+    const currentRank = SEVERITY_RANK[current.severity]
+    const candidateRank = SEVERITY_RANK[finding.severity]
+    const currentSpecificity = cycleRuleSpecificity[current.rule_id] ?? 0
+    const candidateSpecificity = cycleRuleSpecificity[finding.rule_id] ?? 0
+    if (candidateRank > currentRank || (candidateRank === currentRank && candidateSpecificity > currentSpecificity)) {
+      cycleOwners.set(key, finding)
+    }
+  }
+
   const higherEdges = new Set<string>()
   for (const f of findings) {
     if (!f.target) continue
@@ -34,6 +61,10 @@ export function applySuppression(findings: Finding[], ctx: SuppressionContext = 
   }
 
   return findings.filter(f => {
+    if (f.type === 'cycle' && Array.isArray(f.extras?.members)) {
+      const members = f.extras.members.filter((member): member is string => typeof member === 'string')
+      if (members.length >= 2 && cycleOwners.get(canonicalCycleKey(members)) !== f) return false
+    }
     if (f.rule_id === SUPPRESSIBLE_RULE_ID) {
       if (!f.target) return true
       return !higherEdges.has(`${f.source.module}->${f.target.module}`)

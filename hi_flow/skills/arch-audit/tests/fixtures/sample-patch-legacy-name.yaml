@@ -1,0 +1,7 @@
+forbidden:
+  - name: dispatcher-no-pipeline
+    severity: HIGH
+    principle: layered-architecture-respect
+    from: { path: "^src/dispatcher" }
+    to: { path: "^src/pipeline" }
+required: []

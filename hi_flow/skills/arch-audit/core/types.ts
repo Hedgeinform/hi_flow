@@ -55,8 +55,12 @@ export interface D8AuditReport {
     audit_sha: string
     audit_timestamp: string
     audit_tooling_version: string
-    schema_version: '1.1'
+    schema_version: '1.2'
+    project_name?: string
+    module_root?: string
     parsing_errors?: { file: string; error: string }[]
+    operator_notes?: string[]
+    known_rule_ids?: string[]
   }
   findings: Finding[]
   metrics: {
@@ -111,6 +115,7 @@ export interface Rule {
   from?: { path: string }              // regex
   to?: { path: string }               // regex
   comment?: string
+  description?: string                 // D11 producer alias, normalized to comment on load
 }
 
 // D9 index (from helper regenerate-principles-index)

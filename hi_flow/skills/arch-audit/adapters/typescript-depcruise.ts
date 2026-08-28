@@ -191,7 +191,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
               type: 'cycle',
               source: { module: src, file: '' },
               target: { module: tgt, file: '' },
-              extras: { cycle: [src, tgt] },
+              extras: { members: [src, tgt] },
             })
           }
         }
@@ -248,7 +248,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
               type: 'cycle',
               source: f.source,
               target: f.target,
-              extras: { layers: [sLayer, tLayer] },
+              extras: { members: [f.source.module, f.target.module], layers: [sLayer, tLayer] },
             })
           }
         }
@@ -299,7 +299,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
               type: 'cycle',
               source: f.source,
               target: f.target,
-              extras: { layers: [sLayer, tLayer] },
+              extras: { members: [f.source.module, f.target.module], layers: [sLayer, tLayer] },
             })
           }
         }
@@ -336,7 +336,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
             type: 'boundary',
             source: { module: edge.from, file: '' },
             target: { module: edge.sdk, file: '' },
-            extras: { sdk: edge.sdk },
+            extras: { sdk: edge.sdk, external_target: true },
           })
         }
       }

@@ -1,5 +1,10 @@
 import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { D9Index, PrincipleMetadata } from './types.ts'
+
+export function resolveBundledD9Path(runtimeRoot: string): string {
+  return join(runtimeRoot, '..', '..', 'references', 'architectural-principles.md')
+}
 
 export async function loadD9(mdPath: string): Promise<D9Index> {
   const content = (await readFile(mdPath, 'utf-8')).replace(/\r\n?/g, '\n')
@@ -21,16 +26,20 @@ export async function loadD9(mdPath: string): Promise<D9Index> {
     const id = fullHeading.replace(/\s*\([^)]*\)\s*$/, '').split(/\s+/)[0] ?? ''
     if (!id) continue
 
-    const descMatch = section.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\n|\*\*|$)/)
-    const description = descMatch?.[1]?.trim() ?? ''
+    const descriptionLine = lines.find(line =>
+      /^\s*-?\s*\*\*(?:Description|Formulation):\*\*/.test(line),
+    )
+    const description = descriptionLine
+      ?.replace(/^\s*-?\s*\*\*(?:Description|Formulation):\*\*\s*/, '')
+      .trim() ?? ''
 
-    const fixMatch = section.match(/\*\*Fix alternatives:\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n###|\n##|$)/)
     const alternatives: string[] = []
-    if (fixMatch) {
-      const block = fixMatch[1] ?? ''
-      for (const line of block.split('\n')) {
-        const m = line.match(/^-\s+(.+)$/)
-        if (m && m[1]) alternatives.push(m[1].trim())
+    const alternativesStart = lines.findIndex(line => /^\s*-?\s*\*\*Fix alternatives:\*\*/.test(line))
+    if (alternativesStart >= 0) {
+      for (const line of lines.slice(alternativesStart + 1)) {
+        if (/^\s*-?\s*\*\*[A-Z][^*]*:\*\*/.test(line)) break
+        const match = line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)$/)
+        if (match?.[1]) alternatives.push(match[1].trim())
       }
     }
 

@@ -38,7 +38,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ### `no-circular`
 - **Principle:** `acyclic-dependencies`
-- **Detection:** depcruise built-in, **сконфигурирован с `minCycleLength: 3`** (циклы длины 2 ловит `inappropriate-intimacy` в Слое B, чтобы избежать double-finding).
+- **Detection:** depcruise built-in detects file cycles; the parser maps the ordered path to module ids and keeps only cycles with 3+ modules. Two-module cycles are owned by exactly one specialized layer-cycle rule when applicable, otherwise by `inappropriate-intimacy`; file cycles contained inside one module are not architecture findings.
 - **What:** циклы длины 3+ в графе зависимостей модулей.
 - **Severity:** **HIGH** (depcruise error → normalized).
 
@@ -72,7 +72,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ### `inappropriate-intimacy`
 - **Principle:** `acyclic-dependencies` (subcase — cycle length 2)
-- **Detection:** custom — bidirectional dependency между двумя модулями (A↔B). Покрывает случай, исключённый из `no-circular` через `minCycleLength: 3`.
+- **Detection:** custom — bidirectional dependency между двумя модулями (A↔B). This is the default length-2 owner; a matching `architectural-layer-cycle` or `frontend-layer-cycle` replaces it during deterministic suppression so the same cycle has one finding.
 - **What:** взаимные импорты двух модулей — особый случай ADP.
 - **Severity:** HIGH.
 
@@ -176,7 +176,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
   - I (instability) = Ce / (Ca + Ce).
   - A (abstractness) — где computable (ratio абстрактных классов/interfaces).
   - D (distance from main sequence) = |A + I − 1|, где A computable. **Diagnostic-only**, не finding.
-  - LOC.
+  - LOC — physical lines aggregated from the actual source files present in the dependency-cruiser graph; dependency-cruiser module JSON is not treated as a LOC source.
 - **Project-level:**
   - NCCD (Normalized Cumulative Component Dependency).
   - Severity counts по findings.
@@ -247,7 +247,7 @@ Project rules могут:
 ## Validation history
 
 - **2026-04-28 — Subagent validation v1 pass (Opus, изолированный контекст) для baseline coverage.** Проверена полнота покрытия 16 D9 принципов 13 baseline правилами. Найдены и применены:
-  - **CRITICAL D.1** — overlap `no-circular` ⇄ `inappropriate-intimacy` на 2-циклах. **Fixed:** `no-circular` сконфигурирован с `minCycleLength: 3`, `inappropriate-intimacy` owns 2-циклы.
+  - **CRITICAL D.1** — overlap `no-circular` ⇄ two-module cycle rules. **Fixed:** parser retains `no-circular` only for module cycles length 3+; deterministic suppression keeps one applicable owner for each two-module cycle.
   - **HIGH B.1** — пропущен принцип `hub-like-dependency`. **Fixed:** добавлен в D9 (17 принципов) + baseline rule `dependency-hub`.
   - **HIGH B.5/B.6** — пропущены trivial built-ins (`not-to-unresolvable`, `no-non-package-json`). **Decided not to fix:** это dependency hygiene, не архитектура. Отнесено к scope-reminder для соседних tools.
   - **HIGH D.2** — отсутствие suppression precedence. **Fixed:** добавлен раздел Suppression precedence.

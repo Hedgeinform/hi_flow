@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "hi_flow/skills/arch-audit/references/d8-schema.json",
   "title": "D8 Audit-Report Schema",
-  "description": "JSON Schema for audit-report.json produced by hi_flow:arch-audit. Version 1.0.",
+  "description": "JSON Schema for audit-report.json produced by hi_flow:arch-audit. Version 1.2.",
   "type": "object",
   "required": ["metadata", "findings", "metrics"],
   "properties": {
@@ -16,9 +16,9 @@
         },
         "schema_version": {
           "type": "string",
-          "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
-          "default": "1.1",
-          "description": "Semver D8 schema version. Current: 1.1. Protects downstream consumers from breaking changes without warning."
+          "enum": ["1.1", "1.2"],
+          "default": "1.2",
+          "description": "Supported D8 schema version. Current producer: 1.2; 1.1 remains readable for legacy reports."
         },
         "audit_timestamp": {
           "type": "string",
@@ -28,6 +28,16 @@
         "audit_tooling_version": {
           "type": "string",
           "description": "Version string of audit tooling (e.g., 'typescript-depcruise (16.3.0)'). Optional, helps interpret rule sets behind the run."
+        },
+        "project_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Project name rendered in the operator-facing report header."
+        },
+        "module_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relative source root used to derive module ids."
         },
         "parsing_errors": {
           "type": "array",
@@ -40,8 +50,33 @@
             },
             "required": ["file", "error"]
           }
+        },
+        "operator_notes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Deterministic notes about explicit project overrides, parsing gaps, and suppression effects."
+        },
+        "known_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(baseline|project):[a-z0-9][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "description": "Exact baseline and project rule registry used by Phase 1 and rechecked before Phase 2 rendering."
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "schema_version": { "const": "1.2" } },
+            "required": ["schema_version"]
+          },
+          "then": {
+            "required": ["project_name", "module_root", "known_rule_ids"]
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "findings": {
@@ -56,7 +91,8 @@
           },
           "rule_id": {
             "type": "string",
-            "description": "Cross-reference to the baseline rule or project rule whose violation is recorded in this finding. Naming convention: 'baseline:no-circular', 'project:custom-rule-name'. Plain rule names are acceptable when no disambiguation is needed."
+            "pattern": "^(baseline|project):[a-z0-9][a-z0-9-]*$",
+            "description": "Canonical namespaced cross-reference to the baseline or project rule whose violation is recorded."
           },
           "type": {
             "type": "string",
@@ -74,7 +110,8 @@
               "module": { "type": "string" },
               "file":   { "type": "string" }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "required": ["module", "file"]
           },
           "target": {
             "type": "object",
@@ -82,18 +119,21 @@
               "module": { "type": "string" },
               "file":   { "type": "string" }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "required": ["module", "file"]
           },
           "reason": {
             "type": "object",
-            "required": ["principle"],
+            "required": ["principle", "explanation"],
             "properties": {
               "principle": {
                 "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
                 "description": "Canonical principle id from D9 library at hi_flow/references/architectural-principles.md."
               },
               "explanation": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Free-form formulation invoking the principle in concrete terms."
               }
             },
@@ -101,7 +141,7 @@
           },
           "extras": {
             "type": "object",
-            "description": "Type-specific extras: cycle members for cycles, type-only flag for boundary, etc."
+            "description": "Type-specific extras: ordered module members for cycles; external_target plus sdk for external boundaries; detector details for other findings."
           }
         },
         "additionalProperties": false
@@ -109,19 +149,20 @@
     },
     "metrics": {
       "type": "object",
+      "required": ["per_module", "nccd", "nccd_threshold", "severity_counts", "dep_graph"],
       "properties": {
         "per_module": {
           "type": "object",
           "additionalProperties": {
             "type": "object",
-            "required": ["Ca", "Ce", "I"],
+            "required": ["Ca", "Ce", "I", "LOC"],
             "properties": {
               "Ca":  { "type": "number", "description": "Afferent coupling — incoming dependencies." },
               "Ce":  { "type": "number", "description": "Efferent coupling — outgoing dependencies." },
               "I":   { "type": "number", "minimum": 0, "maximum": 1, "description": "Instability metric, 0..1." },
               "A":   { "type": "number", "minimum": 0, "maximum": 1, "description": "Abstractness metric, 0..1." },
               "D":   { "type": "number", "description": "Distance from the main sequence." },
-              "LOC": { "type": "integer", "description": "Lines of code." }
+              "LOC": { "type": "integer", "minimum": 0, "description": "Physical lines across audited source files assigned to the module." }
             }
           }
         },
@@ -135,6 +176,7 @@
         },
         "severity_counts": {
           "type": "object",
+          "required": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
           "properties": {
             "CRITICAL": { "type": "integer", "minimum": 0 },
             "HIGH":     { "type": "integer", "minimum": 0 },
