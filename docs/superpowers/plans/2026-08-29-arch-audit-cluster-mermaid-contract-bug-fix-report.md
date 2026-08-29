@@ -45,5 +45,5 @@
 
 ## Open items
 
-- Operator merges the hi_flow `0.15.7` PR.
+- Operator merges hi_flow PR #25 for `0.15.7`.
 - After merge, update the local and Codex VPS plugin caches from the official marketplace revision. New sessions are required to load the updated skills/runtime.

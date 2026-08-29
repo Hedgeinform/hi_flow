@@ -5,7 +5,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** ArchAudit cluster mini-graphs preserve one logical edge, full style precedence, global hub classes, and deterministic finding reasons.
-- **Phase:** hi_flow `0.15.7` source implementation and exact-SHA Zhenka smoke verified; PR merge and marketplace refresh are next
+- **Phase:** hi_flow `0.15.7` source implementation and exact-SHA Zhenka smoke verified; PR #25 is open, with merge and marketplace refresh next
 - **Owner/session:** `codex/arch-audit-cluster-edge-precedence`
 
 ## Last Completed
@@ -14,7 +14,7 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Ready Next
 
-- Publish and merge the hi_flow `0.15.7` patch release.
+- Merge hi_flow PR #25 for the `0.15.7` patch release.
 - Refresh the official marketplace plugin locally and on Codex VPS after merge.
 - Start new Codex sessions before relying on the updated ArchAudit runtime.
 

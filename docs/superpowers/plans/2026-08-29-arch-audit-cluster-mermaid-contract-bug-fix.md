@@ -69,7 +69,7 @@
 - [x] Synchronize Claude Code, Codex, Cursor, marketplace, and internal package versions.
 - [x] Create the implementation report and update `PROJECT_STATE.md`.
 - [x] Complete final isolated code review and verification-before-completion.
-- [ ] Commit, push, and open a narrow PR; do not merge it without the operator.
+- [x] Commit, push, and open narrow PR #25; do not merge it without the operator.
 
 ## Completion Protocol
 
