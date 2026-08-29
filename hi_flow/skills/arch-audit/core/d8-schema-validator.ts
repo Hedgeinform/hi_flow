@@ -83,6 +83,7 @@ function validateSemantics(report: D8AuditReport, context: D8ValidationContext):
   for (const [index, finding] of report.findings.entries()) {
     const basePath = `/findings/${index}`
     const isExternalBoundary = finding.type === 'boundary' && finding.extras?.external_target === true
+    const isProjectNccd = finding.type === 'nccd' && finding.rule_id === 'baseline:nccd-breach'
     actualCounts[finding.severity]++
     if (!/^(baseline|project):[a-z0-9][a-z0-9-]*$/.test(finding.rule_id)) {
       errors.push(semanticError(`${basePath}/rule_id`, `rule_id '${finding.rule_id}' must be namespaced and kebab-case`))
@@ -97,7 +98,14 @@ function validateSemantics(report: D8AuditReport, context: D8ValidationContext):
     if (finding.reason.explanation.trim().length === 0) {
       errors.push(semanticError(`${basePath}/reason/explanation`, 'explanation must be non-empty'))
     }
-    if (finding.source.module !== '<project>' && !graphSet.has(finding.source.module)) {
+    if (finding.source.module === '<project>' && !isProjectNccd) {
+      errors.push(semanticError(
+        `${basePath}/source/module`,
+        "source module '<project>' is reserved for baseline:nccd-breach",
+      ))
+    } else if (isProjectNccd && finding.source.module !== '<project>') {
+      errors.push(semanticError(`${basePath}/source/module`, "baseline:nccd-breach must use source module '<project>'"))
+    } else if (finding.source.module !== '<project>' && !graphSet.has(finding.source.module)) {
       errors.push(semanticError(`${basePath}/source/module`, `module '${finding.source.module}' is absent from dep_graph`))
     }
     if (finding.target && !graphSet.has(finding.target.module) && !isExternalBoundary) {

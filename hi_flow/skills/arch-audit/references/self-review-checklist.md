@@ -54,7 +54,7 @@
 ### Группа 2 — Внутренняя консистентность
 
 **Finding ↔ dep_graph cross-checks (критично):**
-- Каждое finding'а `source.module` присутствует как ключ в `metrics.dep_graph`.
+- Каждое finding'а `source.module` присутствует как ключ в `metrics.dep_graph`, кроме project-level `type: nccd` / `rule_id: baseline:nccd-breach`, для которого source обязан быть ровно `<project>`. Sentinel `<project>` запрещён для остальных findings.
 - Каждое internal finding'а `target.module` присутствует в dep_graph (либо как ключ, либо как value в каком-то списке). External SDK boundary явно помечен `extras.external_target: true`, а `extras.sdk` совпадает с `target.module`.
 - Если finding type=`boundary` с разными internal modules source=A, target=B — `dep_graph[A]` должен содержать `B`. Intra-module file boundary подтверждается непустыми `source.file`/`target.file`, потому что module graph не хранит self-edge.
 - Если finding type=`cycle` с `extras.members` [A, B, C] — для каждой пары последовательных в cycle должен существовать соответствующий edge в dep_graph (A→B, B→C, C→A).

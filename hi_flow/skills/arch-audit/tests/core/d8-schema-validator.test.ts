@@ -226,6 +226,70 @@ describe('d8-schema-validator', () => {
     expect(result).toEqual({ valid: true, errors: [] })
   })
 
+  it('rejects the <project> source sentinel on a non-NCCD finding', () => {
+    const report = {
+      ...validReport,
+      findings: [{
+        id: 'f-001',
+        rule_id: 'baseline:god-object',
+        type: 'coupling',
+        severity: 'HIGH',
+        source: { module: '<project>', file: '' },
+        reason: { principle: 'single-responsibility', explanation: 'Invalid project aggregate.' },
+      }],
+      metrics: {
+        ...validReport.metrics,
+        per_module: { domain: { Ca: 0, Ce: 0, I: 0, LOC: 1 } },
+        severity_counts: { CRITICAL: 0, HIGH: 1, MEDIUM: 0, LOW: 0 },
+        dep_graph: { domain: [] },
+      },
+    }
+
+    const result = validateD8Report(report, {
+      canonicalPrincipleIds: new Set(['single-responsibility']),
+      knownRuleIds: new Set(['baseline:god-object']),
+    })
+
+    expect(result.valid).toBe(false)
+    expect(result.errors).toContainEqual(expect.objectContaining({
+      path: '/findings/0/source/module',
+      message: expect.stringContaining('reserved'),
+    }))
+  })
+
+  it('rejects an NCCD aggregate that names a graph module as its source', () => {
+    const report = {
+      ...validReport,
+      findings: [{
+        id: 'f-001',
+        rule_id: 'baseline:nccd-breach',
+        type: 'nccd',
+        severity: 'HIGH',
+        source: { module: 'domain', file: '' },
+        reason: { principle: 'acyclic-dependencies', explanation: 'NCCD exceeds the threshold.' },
+        extras: { nccd: 2, threshold: 1, module_count: 16 },
+      }],
+      metrics: {
+        ...validReport.metrics,
+        per_module: { domain: { Ca: 0, Ce: 0, I: 0, LOC: 1 } },
+        nccd: 2,
+        severity_counts: { CRITICAL: 0, HIGH: 1, MEDIUM: 0, LOW: 0 },
+        dep_graph: { domain: [] },
+      },
+    }
+
+    const result = validateD8Report(report, {
+      canonicalPrincipleIds: new Set(['acyclic-dependencies']),
+      knownRuleIds: new Set(['baseline:nccd-breach']),
+    })
+
+    expect(result.valid).toBe(false)
+    expect(result.errors).toContainEqual(expect.objectContaining({
+      path: '/findings/0/source/module',
+      message: expect.stringContaining('<project>'),
+    }))
+  })
+
   it('accepts a file-level boundary inside one architecture module', () => {
     const report = {
       ...validReport,
