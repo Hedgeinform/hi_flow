@@ -145,6 +145,7 @@ function buildOverall(
 
 function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, string> {
   const byPrinciple = new Map<string, Finding[]>()
+  const hubModules = new Set(findHubModules(findings).map(escId))
   for (const f of findings) {
     const key = f.reason.principle
     if (!byPrinciple.has(key)) byPrinciple.set(key, [])
@@ -153,10 +154,33 @@ function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, st
   const out: Record<string, string> = {}
   for (const [principle, group] of byPrinciple) {
     const lines = ['flowchart TD']
-    const seenNode = new Set<string>()
-    const seenEdge = new Set<string>()
-    const cycleEdgeIndexes: number[] = []
-    let edgeIndex = 0
+    const visibleNodes = new Set<string>()
+    const items = new Map<string,
+      { type: 'node'; id: string } |
+      { type: 'edge'; source: string; target: string; kind: EdgeKind }
+    >()
+    const edgePriority: Record<EdgeKind, number> = {
+      default: 0,
+      highMedBoundary: 1,
+      critical: 2,
+      cycle: 3,
+    }
+    const addNode = (id: string): void => {
+      visibleNodes.add(id)
+      const key = `node:${id}`
+      if (!items.has(key)) items.set(key, { type: 'node', id })
+    }
+    const addEdge = (source: string, target: string, kind: EdgeKind): void => {
+      visibleNodes.add(source)
+      visibleNodes.add(target)
+      const key = `edge:${source}-${target}`
+      const current = items.get(key)
+      if (!current) {
+        items.set(key, { type: 'edge', source, target, kind })
+      } else if (current.type === 'edge' && edgePriority[kind] > edgePriority[current.kind]) {
+        items.set(key, { ...current, kind })
+      }
+    }
     for (const f of group) {
       const cycleMembers = f.type === 'cycle' && Array.isArray(f.extras?.members)
         ? f.extras.members.filter((member): member is string => typeof member === 'string')
@@ -165,31 +189,56 @@ function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, st
         for (let index = 0; index < cycleMembers.length; index++) {
           const source = escId(cycleMembers[index]!)
           const target = escId(cycleMembers[(index + 1) % cycleMembers.length]!)
-          const edge = `${source} ==>|cycle| ${target}`
-          if (!seenEdge.has(edge)) {
-            lines.push(`    ${edge}`)
-            seenEdge.add(edge)
-            cycleEdgeIndexes.push(edgeIndex++)
-          }
+          addEdge(source, target, 'cycle')
         }
         continue
       }
       if (!f.target || f.source.module === f.target.module) {
-        const node = escId(f.source.module)
-        if (!seenNode.has(node)) {
-          lines.push(`    ${node}`)
-          seenNode.add(node)
-        }
+        addNode(escId(f.source.module))
         continue
       }
-      const e = `${escId(f.source.module)} --> ${escId(f.target.module)}`
-      if (!seenEdge.has(e)) {
-        lines.push(`    ${e}`)
-        seenEdge.add(e)
-        edgeIndex++
-      }
+
+      const kind: EdgeKind =
+        f.type === 'cycle' ? 'cycle' :
+        f.severity === 'CRITICAL' ? 'critical' :
+        f.type === 'boundary' && (f.severity === 'HIGH' || f.severity === 'MEDIUM')
+          ? 'highMedBoundary'
+          : 'default'
+      const source = escId(f.source.module)
+      const target = escId(f.target.module)
+      addEdge(source, target, kind)
+      if (kind === 'cycle') addEdge(target, source, kind)
     }
-    for (const index of cycleEdgeIndexes) lines.push(`    linkStyle ${index} ${STYLE_CYCLE}`)
+
+    const edgeKinds: EdgeKind[] = []
+    for (const item of items.values()) {
+      if (item.type === 'node') {
+        lines.push(`    ${item.id}`)
+        continue
+      }
+      const arrow =
+        item.kind === 'cycle' ? '==>|cycle|' :
+        item.kind === 'critical' ? '-.->|critical|' :
+        item.kind === 'highMedBoundary' ? '-->|boundary|' :
+        '-->'
+      lines.push(`    ${item.source} ${arrow} ${item.target}`)
+      edgeKinds.push(item.kind)
+    }
+
+    edgeKinds.forEach((kind, index) => {
+      const style =
+        kind === 'cycle' ? STYLE_CYCLE :
+        kind === 'critical' ? STYLE_CRITICAL :
+        kind === 'highMedBoundary' ? STYLE_HIGH_MED_BOUNDARY :
+        STYLE_DEFAULT
+      lines.push(`    linkStyle ${index} ${style}`)
+    })
+
+    const visibleHubs = [...hubModules].filter(module => visibleNodes.has(module))
+    if (visibleHubs.length) {
+      lines.push(`    classDef hubModule ${STYLE_HUB}`)
+      for (const module of visibleHubs) lines.push(`    class ${module} hubModule`)
+    }
     out[`cluster-${principle}`] = lines.join('\n')
   }
   return out

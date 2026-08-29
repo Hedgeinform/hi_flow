@@ -48,4 +48,12 @@ describe('baseline-rules', () => {
     expect(rule?.severity).toBe('MEDIUM')
     expect(rule?.principle).toBe('barrel-discipline')
   })
+
+  it('emits deterministic explanations without prohibited hedging', () => {
+    const explanations = getBaselineRules().map(rule => rule.explanation).join('\n')
+
+    expect(explanations).not.toMatch(
+      /\b(likely|possibly|probably|potentially|maybe|perhaps|might|sometimes)\b/i,
+    )
+  })
 })

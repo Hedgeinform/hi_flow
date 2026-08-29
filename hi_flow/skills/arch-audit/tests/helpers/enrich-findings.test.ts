@@ -81,7 +81,7 @@ describe('enrich-findings', () => {
     }
     const result = enrichFindings({ rawFindings: [raw], baselineRules: baseline, projectRules: emptyProjectRules })
     expect(result[0]!.reason.explanation).toBe(
-      'Module Ce (25) > 15 — too many outgoing dependencies, likely doing too many things.',
+      'Module Ce (25) > 15 — outgoing dependency fan-out exceeds the configured threshold.',
     )
   })
 
