@@ -62,19 +62,19 @@
 - [x] Expand the executable proof after code review to cover CRITICAL, MEDIUM, default, full precedence, and hub propagation into a foreign cluster.
 - [x] Replace the two hedged explanations with graph-derived factual statements and synchronize the interpolation test.
 - [x] Rebuild the checked-in runtime and run focused plus full gates.
-- [ ] Run the full real Zhenka audit with the rebuilt runtime and repeat isolated self-review.
+- [x] Run the full real Zhenka audit with the rebuilt runtime and repeat isolated self-review.
 
 ### Task 3: Publish the patch release
 
 - [x] Synchronize Claude Code, Codex, Cursor, marketplace, and internal package versions.
-- [ ] Create the implementation report and update `PROJECT_STATE.md`.
-- [ ] Complete final isolated code review and verification-before-completion.
+- [x] Create the implementation report and update `PROJECT_STATE.md`.
+- [x] Complete final isolated code review and verification-before-completion.
 - [ ] Commit, push, and open a narrow PR; do not merge it without the operator.
 
 ## Completion Protocol
 
-- [ ] Implementation report exists at `docs/superpowers/plans/2026-08-29-arch-audit-cluster-mermaid-contract-bug-fix-report.md`.
-- [ ] Focused tests, full tests, typecheck, build:check, plugin validation, skill validation, and `git diff --check` pass.
-- [ ] Real Zhenka full output has no duplicate logical edge, correct styles/classes, deterministic reasons, and isolated self-review PASS (or exact remaining limitations are recorded).
-- [ ] Full `hi_flow:arch-audit` smoke runs from the exact published branch commit; it validates the renderer and Phase 1 reason generation without changing Zhenka's Target Architecture Contract.
-- [ ] `PROJECT_STATE.md` reflects the verified release state and next action.
+- [x] Implementation report exists at `docs/superpowers/plans/2026-08-29-arch-audit-cluster-mermaid-contract-bug-fix-report.md`.
+- [x] Focused tests, full tests, typecheck, build:check, plugin validation, skill validation, and `git diff --check` pass.
+- [x] Real Zhenka full output has no duplicate logical edge, correct styles/classes, deterministic reasons, and isolated self-review PASS with the recorded `mmdc` limitation.
+- [x] Full `hi_flow:arch-audit` smoke runs from the exact published branch commit; it validates the renderer and Phase 1 reason generation without changing Zhenka's Target Architecture Contract.
+- [x] `PROJECT_STATE.md` reflects the verified release state and next action.
