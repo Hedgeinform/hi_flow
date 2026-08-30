@@ -23,7 +23,7 @@ const RULES: BaselineRule[] = [
     severity: 'HIGH',
     explanation: 'Production code imports test files — inverted dependency direction.',
   },
-  // === Layer B — universal custom (7) ===
+  // === Layer B — universal custom (6) ===
   {
     id: 'baseline:god-object',
     name: 'god-object',
@@ -62,13 +62,6 @@ const RULES: BaselineRule[] = [
     severity: 'MEDIUM',
     threshold_default: 15,
     explanation: 'Module Ce ({ce}) > {threshold} — outgoing dependency fan-out exceeds the configured threshold.',
-  },
-  {
-    id: 'baseline:cross-module-import-info',
-    name: 'cross-module-import-info',
-    principle: 'module-boundary-awareness',
-    severity: 'LOW',
-    explanation: 'Cross-module import (informational): {source} → {target}.',
   },
   {
     id: 'baseline:barrel-file',

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { enrichFindings } from '../../helpers/enrich-findings.ts'
 import { getBaselineRules } from '../../core/baseline-rules.ts'
-import type { RawFinding, ProjectRules } from '../../core/types.ts'
+import type { BaselineRule, RawFinding, ProjectRules } from '../../core/types.ts'
 
 const baseline = getBaselineRules()
 const emptyProjectRules: ProjectRules = { forbidden: [], required: [] }
@@ -86,12 +86,19 @@ describe('enrich-findings', () => {
   })
 
   it('interpolates {source} and {target} from finding source/target modules', () => {
+    const edgeRule: BaselineRule = {
+      id: 'baseline:test-edge',
+      name: 'test-edge',
+      principle: 'module-boundary-awareness',
+      severity: 'LOW',
+      explanation: 'Test edge: {source} → {target}.',
+    }
     const result = enrichFindings({
-      rawFindings: [mkRaw('cross-module-import-info', 'info')],
-      baselineRules: baseline,
+      rawFindings: [mkRaw('test-edge', 'info')],
+      baselineRules: [...baseline, edgeRule],
       projectRules: emptyProjectRules,
     })
-    expect(result[0]!.reason.explanation).toBe('Cross-module import (informational): a → b.')
+    expect(result[0]!.reason.explanation).toBe('Test edge: a → b.')
   })
 
   it('leaves unknown {key} placeholders unchanged (visible gap signal)', () => {

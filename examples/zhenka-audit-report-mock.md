@@ -26,9 +26,9 @@ arch-audit покрывает архитектурные нарушения (г�
 | **MEDIUM** | 6 | boundary MEDIUM (custom rules from project) |
 | **error** | 0 | — |
 | **warn** | 0 | — |
-| **LOW** | 12 | `cross-module-import-info` (after suppression: only impacts non-overlap edges) |
+| **LOW** | 0 | — |
 
-**Total findings:** 28 (16 baseline + 12 informational).
+**Total findings:** 16.
 **Total modules:** 18.
 **Project NCCD:** 2.34 (default threshold 1.0, project override 2.0 → finding fires).
 
@@ -385,12 +385,6 @@ flowchart LR
 - (6) module-boundary-awareness (admin temporary alpha).
 - (7) **vertical-slice-cohesion** (tools/X не должен импортировать tools/Y минуя tools/shared/) — это **baseline** rule `vertical-slice-respect`.
 
-### LOW — informational (12)
-
-`cross-module-import-info` — после suppression precedence показано только 12 cross-module imports, на которые НЕ сработали более специфичные правила выше. Список в JSON; в markdown пропущено для читаемости.
-
----
-
 ## Cluster suggestions для arch-redesign
 
 Auto-grouping по reason'ам — first draft cluster list (operator confirms / overrides в triage-mode):
@@ -449,7 +443,7 @@ Auto-grouping по reason'ам — first draft cluster list (operator confirms /
 
 ## Notes for operator
 
-- **Suppression precedence applied:** некоторые cross-module imports показаны только в Cluster B/D (более специфичные rules), не дублированы в LOW informational.
+- **Ordinary dependency edges:** сохранены в `metrics.dep_graph` и диаграммах, но не создают informational findings без нарушения правила.
 - **Custom rules from project rules-файл** (`docs/project/dependency_rules.yaml`) учтены поверх baseline. Список — см. project rules.
 - **NCCD threshold override** до 2.0 (default 1.0) — задокументировано в project rules как «accepted complexity для legacy phase».
 

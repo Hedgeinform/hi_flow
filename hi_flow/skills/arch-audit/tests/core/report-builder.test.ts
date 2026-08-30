@@ -48,6 +48,7 @@ describe('report-builder', () => {
     const md = await readFile(result.md_path, 'utf-8')
     expect(md).toContain('**Project:**')
     expect(md).toContain('## Scope')
+    expect(md).toContain('npx depcruise --validate')
     expect(md).toContain('eslint')
     expect(md).toContain('npm audit')
     expect(md).toContain('| Severity | Count | Rules triggered |')
@@ -59,6 +60,36 @@ describe('report-builder', () => {
     expect(md).toContain('### LOW (0)')
     expect(md).toContain('## Notes for operator')
 
+    await rm(dir, { recursive: true })
+  })
+
+  it('keeps ordinary module edges in dep_graph without advertising a dead informational finding rule', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rb-graph-only-edge-'))
+    await mkdir(join(dir, 'src/a'), { recursive: true })
+    await mkdir(join(dir, 'src/b'), { recursive: true })
+    await writeFile(join(dir, 'package.json'), '{}')
+    await writeFile(join(dir, 'src/a/index.ts'), "import '../b/index.ts'\nexport const a = true\n")
+    await writeFile(join(dir, 'src/b/index.ts'), 'export const b = true\n')
+
+    const result = await buildReport(adapter, dir, {
+      auditSha: 'test-sha',
+      depcruiseVersion: '17.4.3',
+      runDepcruise: () => JSON.stringify({
+        summary: { violations: [] },
+        modules: [
+          {
+            source: 'src/a/index.ts',
+            dependencies: [{ resolved: 'src/b/index.ts', module: '../b/index.ts' }],
+          },
+          { source: 'src/b/index.ts', dependencies: [] },
+        ],
+      }),
+    })
+
+    const report = JSON.parse(await readFile(result.json_path, 'utf-8'))
+    expect(report.metrics.dep_graph).toEqual({ a: ['b'], b: [] })
+    expect(report.findings).toEqual([])
+    expect(report.metadata.known_rule_ids).not.toContain('baseline:cross-module-import-info')
     await rm(dir, { recursive: true })
   })
 

@@ -163,16 +163,14 @@ Checks:
 - **Vertical-slice detection** — when feature folders are detected.
 - **Channel SDK detection** — when a domain layer is detected; SDK list comes from the adapter.
 
-### Apply suppression precedence
+### Apply deterministic finding ownership
 
-Helper `core/suppression.ts`. Rules with more specific semantics suppress general informational findings on the same import edge:
+Helper `core/suppression.ts` removes duplicate or structurally invalid findings:
 
-1. CRITICAL: `architectural-layer-cycle`, `frontend-layer-cycle`.
-2. HIGH: `god-object`, `dependency-hub`, `inappropriate-intimacy`, `nccd-breach`, `no-circular`, `not-to-test-from-prod`.
-3. MEDIUM: `layered-respect`, `frontend-layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`, `no-orphans`.
-4. LOW (suppressed by higher): `cross-module-import-info`.
+- For one module cycle, retain exactly one canonical owner: a matching architectural layer-cycle rule first, then `no-circular`, then `inappropriate-intimacy`.
+- Suppress `no-orphans` for modules whose source files failed to parse; an invisible import graph is a parser gap, not evidence of an orphan.
 
-Algorithm: for each LOW finding (`cross-module-import-info`) — match by key `(source.module, target.module)`; if any finding with the same key has higher severity → suppress the LOW one.
+Ordinary module dependencies are graph evidence, not findings. They remain available in `metrics.dep_graph`, Mermaid diagrams, and coupling metrics; only a triggered architecture rule creates a finding.
 
 ### Build artifacts — two-phase
 
@@ -426,7 +424,7 @@ The `arch-audit` runtime is intentionally self-contained: the shared plugin sour
 
 - `references/d8-schema.json` — JSON Schema for validators.
 - `references/d8-schema.md` — markdown spec for D8 (canonical source — `hi_flow/skills/arch-audit/references/`; `arch-redesign` and `arch-spec` read from here).
-- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 7 universal custom + 7 conditional structural = 17 rules, incl. `barrel-file` and the frontend layered pair), severity normalization, suppression precedence, override mechanism.
+- `references/baseline-rules.md` — canonical baseline rule set (3 built-in + 6 universal custom + 7 conditional structural = 16 rules, incl. `barrel-file` and the frontend layered pair), severity normalization, deterministic finding ownership, override mechanism.
 - `references/self-review-checklist.md` — seven-group checklist for the Self-Review subagent.
 - `references/audit-report-template.md` — markdown template for header + sections.
 - `hi_flow/references/architectural-principles.md` — D9 library (catalog of principles with typical fix alternatives; owned by this skill).

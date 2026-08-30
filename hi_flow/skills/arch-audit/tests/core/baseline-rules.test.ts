@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { getBaselineRules } from '../../core/baseline-rules.ts'
 
 describe('baseline-rules', () => {
-  it('returns 17 baseline rules', () => {
+  it('returns 16 baseline rules', () => {
     const rules = getBaselineRules()
-    expect(rules).toHaveLength(17)
+    expect(rules).toHaveLength(16)
   })
 
   it('every rule has namespaced id with baseline: prefix', () => {
@@ -24,11 +24,6 @@ describe('baseline-rules', () => {
   it('architectural-layer-cycle is CRITICAL', () => {
     const rule = getBaselineRules().find(r => r.id === 'baseline:architectural-layer-cycle')
     expect(rule?.severity).toBe('CRITICAL')
-  })
-
-  it('cross-module-import-info is LOW', () => {
-    const rule = getBaselineRules().find(r => r.id === 'baseline:cross-module-import-info')
-    expect(rule?.severity).toBe('LOW')
   })
 
   it('every rule references a non-empty principle id', () => {
