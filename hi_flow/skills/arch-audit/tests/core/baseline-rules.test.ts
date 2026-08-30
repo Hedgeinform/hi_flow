@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { getBaselineRules } from '../../core/baseline-rules.ts'
 
 describe('baseline-rules', () => {
-  it('returns 17 baseline rules', () => {
+  it('returns 16 baseline rules', () => {
     const rules = getBaselineRules()
-    expect(rules).toHaveLength(17)
+    expect(rules).toHaveLength(16)
   })
 
   it('every rule has namespaced id with baseline: prefix', () => {
@@ -26,11 +26,6 @@ describe('baseline-rules', () => {
     expect(rule?.severity).toBe('CRITICAL')
   })
 
-  it('cross-module-import-info is LOW', () => {
-    const rule = getBaselineRules().find(r => r.id === 'baseline:cross-module-import-info')
-    expect(rule?.severity).toBe('LOW')
-  })
-
   it('every rule references a non-empty principle id', () => {
     for (const r of getBaselineRules()) {
       expect(r.principle.length).toBeGreaterThan(0)
@@ -47,5 +42,13 @@ describe('baseline-rules', () => {
     expect(rule).toBeDefined()
     expect(rule?.severity).toBe('MEDIUM')
     expect(rule?.principle).toBe('barrel-discipline')
+  })
+
+  it('emits deterministic explanations without prohibited hedging', () => {
+    const explanations = getBaselineRules().map(rule => rule.explanation).join('\n')
+
+    expect(explanations).not.toMatch(
+      /\b(likely|possibly|probably|potentially|maybe|perhaps|might|sometimes)\b/i,
+    )
   })
 })

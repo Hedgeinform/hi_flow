@@ -10,10 +10,10 @@
 
 ## Структура baseline
 
-17 правил в трёх слоях:
+16 правил в трёх слоях:
 
 - **Слой A — depcruise built-ins** (3 правила): переиспользуем existing default rule set, навешиваем `principle:` ссылки.
-- **Слой B — universal custom** (7 правил): работают на любом проекте без operator-declared контекста, через метрики и граф.
+- **Слой B — universal custom** (6 правил): работают на любом проекте без operator-declared контекста, через метрики и граф.
 - **Слой C — conditional structural** (7 правил): применяются автоматически, если detected конкретные конвенциональные структуры (layered naming, feature folders, frontend layers).
 
 Метрики (Ca/Ce/I/A/D/LOC/NCCD) считаются всегда, идут в `audit-report.json → metrics` как сырые числа для контекста.
@@ -56,7 +56,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ---
 
-## Слой B — universal custom (7)
+## Слой B — universal custom (6)
 
 ### `god-object`
 - **Principle:** `god-object-prohibition`
@@ -78,7 +78,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ### `nccd-breach`
 - **Principle:** `acyclic-dependencies` (aggregate)
-- **Detection:** custom — applies **только если N модулей в проекте > 15** (на меньших NCCD статистически не информативен — false positives на маленьких проектах). Threshold default NCCD > 0.5, **tunable** через project rules.
+- **Detection:** custom — applies **только если N модулей в проекте > 15** (на меньших NCCD статистически не информативен — false positives на маленьких проектах). Threshold default NCCD > 1.0, **tunable** через project rules.
 - **What:** общая запутанность проекта превышает порог.
 - **Severity:** HIGH.
 
@@ -87,13 +87,6 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 - **Detection:** custom — Ce > 15 для конкретного модуля.
 - **What:** модуль использует слишком многих — намёк на разнородные ответственности внутри.
 - **Severity:** MEDIUM.
-
-### `cross-module-import-info`
-- **Principle:** `module-boundary-awareness`
-- **Detection:** custom — любой импорт через границу top-level директории под `src/`.
-- **What:** информативный сигнал о cross-module dependency. Не ругает, напоминает оператору осознать.
-- **Severity:** LOW.
-- **Suppression:** **подавляется**, если на этом импорте сработало одно из более специфичных правил Слоя C (`layered-respect`, `port-adapter-direction`, `vertical-slice-respect`). Иначе оператор видит double/triple findings на одном импорте.
 
 ### `barrel-file`
 - **Principle:** `barrel-discipline`
@@ -185,17 +178,11 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ---
 
-## Suppression precedence
+## Deterministic finding ownership
 
-Правила с более специфичной семантикой подавляют общие informational findings на том же импорте. Это предотвращает double/triple findings на одном нарушении.
-
-**Precedence chain (high → low):**
-1. CRITICAL: `architectural-layer-cycle`, `frontend-layer-cycle`
-2. HIGH: `god-object`, `dependency-hub`, `inappropriate-intimacy`, `nccd-breach`
-3. MEDIUM: `layered-respect`, `frontend-layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`, `high-fanout`
-4. LOW (suppressed by higher): `cross-module-import-info`
-
-**Suppression rule:** если на конкретном импорте срабатывает правило выше в chain, finding для `cross-module-import-info` на том же импорте подавляется.
+- Один module cycle имеет ровно одного владельца: профильный `architectural-layer-cycle` / `frontend-layer-cycle`, иначе `no-circular` для циклов длиной 3+ или `inappropriate-intimacy` для длины 2.
+- `no-orphans` подавляется для модулей с parsing errors: неполный граф импорта не доказывает orphan status.
+- Обычные межмодульные импорты сохраняются в `metrics.dep_graph`, Mermaid и coupling metrics, но сами по себе не являются findings.
 
 ---
 
@@ -204,7 +191,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 - **CRITICAL:** 2 (architectural-layer-cycle, frontend-layer-cycle; conditional).
 - **HIGH:** 6 (no-circular, not-to-test-from-prod, god-object, dependency-hub, inappropriate-intimacy, nccd-breach).
 - **MEDIUM:** 8 (no-orphans, high-fanout, layered-respect, frontend-layered-respect, domain-no-channel-sdk, port-adapter-direction, vertical-slice-respect, barrel-file).
-- **LOW:** 1 (cross-module-import-info).
+- **LOW:** 0 (универсальных LOW baseline findings нет).
 
 Все severity ∈ {CRITICAL, HIGH, MEDIUM, LOW} — D8 schema valid.
 
@@ -227,7 +214,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 Project rules могут:
 - **Disable** baseline rule (с обязательным `comment` поле — обоснование).
-- **Tune threshold** (например, повысить `god-object` порог для большого core модуля; повысить `nccd-breach` threshold до 0.7 для сложного domain).
+- **Tune threshold** (например, повысить `god-object` порог для большого core модуля; повысить `nccd-breach` threshold до 2.0 для сложного domain).
 - **Lower/raise severity** (например, поднять `domain-no-channel-sdk` до CRITICAL для своего проекта где channel-agnosticism foundational).
 - **Add layer alias map** (например, `mybiz/` → domain) — расширяет detection для conditional rules.
 - **Add custom rules**, ссылающиеся на любые принципы из D9 — включая принципы без baseline rule (например, custom правило с `principle: stable-dependencies` для модулей которые оператор объявил стабильными).
@@ -250,9 +237,9 @@ Project rules могут:
   - **CRITICAL D.1** — overlap `no-circular` ⇄ two-module cycle rules. **Fixed:** parser retains `no-circular` only for module cycles length 3+; deterministic suppression keeps one applicable owner for each two-module cycle.
   - **HIGH B.1** — пропущен принцип `hub-like-dependency`. **Fixed:** добавлен в D9 (17 принципов) + baseline rule `dependency-hub`.
   - **HIGH B.5/B.6** — пропущены trivial built-ins (`not-to-unresolvable`, `no-non-package-json`). **Decided not to fix:** это dependency hygiene, не архитектура. Отнесено к scope-reminder для соседних tools.
-  - **HIGH D.2** — отсутствие suppression precedence. **Fixed:** добавлен раздел Suppression precedence.
+  - **HIGH D.2** — неоднозначный владелец одного cycle. **Fixed:** добавлен deterministic cycle ownership.
   - **HIGH E.1** — layer name list неполный. **Fixed:** расширен с 8 до 17 имён + operator-overridable alias map.
-  - **HIGH C** — `nccd-breach` magic threshold 0.5 на маленьких проектах = false positives. **Fixed:** conditional triggering (N > 15) + tunable threshold.
+  - **HIGH C** — ранний порог `nccd-breach` был ниже канонического default 1.0 и давал false positives на маленьких проектах. **Fixed:** conditional triggering (N > 15) + tunable threshold.
   - **MEDIUM E.2** — channel SDK list неполный. **Fixed:** расширен с 7 до 22 SDK.
   - **MEDIUM B.3** — пропущен `no-deep-internal-import`. **Decided not to fix в v1:** требует barrel/index discipline detection, добавим эмпирически если будет нужно.
   - **MEDIUM B.4** — пропущен `no-duplicate-dep-types`. **Decided not to fix:** dependency hygiene, scope-reminder.

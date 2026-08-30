@@ -14,7 +14,7 @@ const RULES: BaselineRule[] = [
     name: 'no-orphans',
     principle: 'dead-code-elimination',
     severity: 'MEDIUM',
-    explanation: 'Module is not imported by any entry point or other module — likely dead code.',
+    explanation: 'Module is not imported by any entry point or other module in the scanned production graph.',
   },
   {
     id: 'baseline:not-to-test-from-prod',
@@ -23,7 +23,7 @@ const RULES: BaselineRule[] = [
     severity: 'HIGH',
     explanation: 'Production code imports test files — inverted dependency direction.',
   },
-  // === Layer B — universal custom (7) ===
+  // === Layer B — universal custom (6) ===
   {
     id: 'baseline:god-object',
     name: 'god-object',
@@ -61,14 +61,7 @@ const RULES: BaselineRule[] = [
     principle: 'single-responsibility-module',
     severity: 'MEDIUM',
     threshold_default: 15,
-    explanation: 'Module Ce ({ce}) > {threshold} — too many outgoing dependencies, likely doing too many things.',
-  },
-  {
-    id: 'baseline:cross-module-import-info',
-    name: 'cross-module-import-info',
-    principle: 'module-boundary-awareness',
-    severity: 'LOW',
-    explanation: 'Cross-module import (informational): {source} → {target}.',
+    explanation: 'Module Ce ({ce}) > {threshold} — outgoing dependency fan-out exceeds the configured threshold.',
   },
   {
     id: 'baseline:barrel-file',

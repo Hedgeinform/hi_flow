@@ -122,6 +122,157 @@ describe('generate-mermaid', () => {
     expect(result.clusters['cluster-acyclic-dependencies']).toMatch(/stroke:#d32f2f/)
   })
 
+  it('renders an overlapping boundary and cycle as one cycle-styled cluster edge', () => {
+    const report = minimalReport({
+      findings: [
+        {
+          id: 'f-001',
+          rule_id: 'project:no-tools-to-dispatcher',
+          type: 'boundary',
+          severity: 'HIGH',
+          source: { module: 'tools', file: 'src/tools/index.ts' },
+          target: { module: 'dispatcher', file: 'src/dispatcher/index.ts' },
+          reason: { principle: 'acyclic-dependencies', explanation: 'Forbidden boundary.' },
+        },
+        {
+          id: 'f-002',
+          rule_id: 'project:critical-tools-to-dispatcher',
+          type: 'boundary',
+          severity: 'CRITICAL',
+          source: { module: 'tools', file: 'src/tools/index.ts' },
+          target: { module: 'dispatcher', file: 'src/dispatcher/index.ts' },
+          reason: { principle: 'acyclic-dependencies', explanation: 'Critical boundary.' },
+        },
+        {
+          id: 'f-003',
+          rule_id: 'baseline:inappropriate-intimacy',
+          type: 'cycle',
+          severity: 'HIGH',
+          source: { module: 'dispatcher', file: '' },
+          target: { module: 'tools', file: '' },
+          reason: { principle: 'acyclic-dependencies', explanation: 'Two-module cycle.' },
+          extras: { members: ['dispatcher', 'tools'] },
+        },
+      ],
+      metrics: {
+        ...minimalReport().metrics,
+        dep_graph: { dispatcher: ['tools'], tools: ['dispatcher'] },
+      },
+    })
+
+    const cluster = generateMermaid(report).clusters['cluster-acyclic-dependencies']!
+    const toolsToDispatcher = cluster
+      .split('\n')
+      .filter(line => /^\s+tools (?:-->|==>\|cycle\|) dispatcher$/.test(line))
+
+    expect(toolsToDispatcher).toEqual(['    tools ==>|cycle| dispatcher'])
+    expect(cluster.match(/stroke:#d32f2f/g)).toHaveLength(2)
+  })
+
+  it.each(['HIGH', 'MEDIUM'] as const)(
+    'styles a standalone %s boundary orange in its cluster',
+    severity => {
+      const report = minimalReport({
+        findings: [{
+          id: 'f-001',
+          rule_id: 'project:no-api-to-db',
+          type: 'boundary',
+          severity,
+          source: { module: 'api', file: 'src/api/index.ts' },
+          target: { module: 'db', file: 'src/db/index.ts' },
+          reason: { principle: 'module-boundary-awareness', explanation: 'Forbidden boundary.' },
+        }],
+        metrics: { ...minimalReport().metrics, dep_graph: { api: ['db'], db: [] } },
+      })
+
+      const cluster = generateMermaid(report).clusters['cluster-module-boundary-awareness']!
+      expect(cluster).toContain('api -->|boundary| db')
+      expect(cluster).toContain('linkStyle 0 stroke:#f57c00,stroke-width:2px')
+    },
+  )
+
+  it('prefers a CRITICAL edge over a HIGH boundary for the same ordered pair', () => {
+    const report = minimalReport({
+      findings: [
+        {
+          id: 'f-001',
+          rule_id: 'project:no-api-to-db',
+          type: 'boundary',
+          severity: 'HIGH',
+          source: { module: 'api', file: 'src/api/index.ts' },
+          target: { module: 'db', file: 'src/db/index.ts' },
+          reason: { principle: 'module-boundary-awareness', explanation: 'Forbidden boundary.' },
+        },
+        {
+          id: 'f-002',
+          rule_id: 'project:critical-api-to-db',
+          type: 'boundary',
+          severity: 'CRITICAL',
+          source: { module: 'api', file: 'src/api/index.ts' },
+          target: { module: 'db', file: 'src/db/index.ts' },
+          reason: { principle: 'module-boundary-awareness', explanation: 'Critical boundary.' },
+        },
+      ],
+      metrics: { ...minimalReport().metrics, dep_graph: { api: ['db'], db: [] } },
+    })
+
+    const cluster = generateMermaid(report).clusters['cluster-module-boundary-awareness']!
+    expect(cluster).toContain('api -.->|critical| db')
+    expect(cluster).not.toContain('api -->|boundary| db')
+    expect(cluster).toContain('linkStyle 0 stroke:#d32f2f,stroke-width:3px,stroke-dasharray:6 4')
+  })
+
+  it('styles an unclassified cluster edge with the canonical default style', () => {
+    const report = minimalReport({
+      findings: [{
+        id: 'f-001',
+        rule_id: 'project:informational-coupling',
+        type: 'coupling',
+        severity: 'LOW',
+        source: { module: 'api', file: 'src/api/index.ts' },
+        target: { module: 'lib', file: 'src/lib/index.ts' },
+        reason: { principle: 'module-boundary-awareness', explanation: 'Observed coupling.' },
+      }],
+      metrics: { ...minimalReport().metrics, dep_graph: { api: ['lib'], lib: [] } },
+    })
+
+    const cluster = generateMermaid(report).clusters['cluster-module-boundary-awareness']!
+    expect(cluster).toContain('api --> lib')
+    expect(cluster).toContain('linkStyle 0 stroke:#bdbdbd,stroke-width:1px,opacity:0.5')
+  })
+
+  it('marks hub modules with the canonical class in cluster diagrams', () => {
+    const report = minimalReport({
+      findings: [
+        {
+          id: 'f-001',
+          rule_id: 'baseline:dependency-hub',
+          type: 'coupling',
+          severity: 'HIGH',
+          source: { module: 'types', file: '' },
+          target: { module: 'types', file: '' },
+          reason: { principle: 'hub-like-dependency', explanation: 'Dependency hub.' },
+        },
+        {
+          id: 'f-002',
+          rule_id: 'baseline:no-orphans',
+          type: 'coupling',
+          severity: 'MEDIUM',
+          source: { module: 'types', file: '' },
+          target: { module: 'types', file: '' },
+          reason: { principle: 'dead-code-elimination', explanation: 'Orphan module.' },
+        },
+      ],
+      metrics: { ...minimalReport().metrics, dep_graph: { types: [] } },
+    })
+
+    for (const principle of ['hub-like-dependency', 'dead-code-elimination']) {
+      const cluster = generateMermaid(report).clusters[`cluster-${principle}`]!
+      expect(cluster).toContain('classDef hubModule fill:#fce5f3,stroke:#c2185b')
+      expect(cluster).toContain('class types hubModule')
+    }
+  })
+
   it('does not render self-edges in cluster diagrams', () => {
     const report = minimalReport({
       findings: [

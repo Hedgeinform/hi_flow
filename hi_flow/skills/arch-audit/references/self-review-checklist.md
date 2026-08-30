@@ -77,13 +77,11 @@
 - Если есть finding `nccd-breach` → `metrics.nccd > nccd_threshold` должно выполняться.
 - Если `metrics.nccd_threshold` отсутствует → используется default из baseline (1.0).
 
-**Suppression precedence (с алгоритмом):**
+**Deterministic ownership and parser-gap suppression:**
 
-Для каждого finding F с rule = `cross-module-import-info` (LOW):
-- Construct matching key: `(F.source.module, F.target.module)`.
-- Iterate findings array, ищем другое finding F' с тем же matching key И rule ∈ {`layered-respect`, `port-adapter-direction`, `vertical-slice-respect`, `domain-no-channel-sdk`}.
-- Если найден F' — F должен быть suppressed (отсутствовать в final findings array).
-- Если F присутствует, а F' тоже есть → suppression precedence не применён → flag.
+- Для каждого canonical cycle key в final findings есть ровно один owner: профильный layer-cycle rule, иначе `no-circular` для 3+ modules или `inappropriate-intimacy` для двух modules.
+- Если module присутствует в `metadata.parsing_errors`, `no-orphans` для него отсутствует: parser gap не считается evidence orphan status.
+- Обычный edge в `metrics.dep_graph` не обязан иметь finding. Отсутствие finding корректно, если ни одно baseline/project rule не сработало.
 
 ### Группа 3 — Markdown report quality
 
@@ -109,7 +107,7 @@
 
 **Forward — каждое finding в JSON отражено в markdown:**
 - Matching key для cross-check: finding `id`. Каждый id из JSON должен встречаться в markdown (либо в severity-grouped section, либо в cluster suggestions, либо в обоих).
-- **Suppressed-aware:** finding с rule = `cross-module-import-info`, который suppressed (см. Group 2 suppression algorithm), может отсутствовать в markdown без flag — это намеренный gap.
+- Обычные edges из `metrics.dep_graph` могут отсутствовать в findings и severity sections; они остаются доступны в graph/metrics/Mermaid.
 - Cluster suggestions не пропускают findings — каждое finding попадает хотя бы в один cluster или explicitly помечен как «standalone» (isolated finding, не группируется).
 - Если есть hub-like findings → они упомянуты в cluster suggestions (даже если cluster size = 1, отдельным).
 
@@ -176,7 +174,7 @@
 - **Severity changes** (HIGH → CRITICAL и т.п.) — semantic decision, нужен оператор.
 - **Cluster regrouping** — может потребовать re-cluster других findings.
 - **Schema/contract changes** — требуют coordination с downstream.
-- **Suppression-related fixes** — могут unhide намеренно скрытые findings.
+- **Cycle-ownership fixes** — могут изменить владельца finding и его severity.
 
 ### Safety rule
 

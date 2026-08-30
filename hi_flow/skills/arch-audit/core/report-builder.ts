@@ -366,7 +366,7 @@ function renderMarkdownReport(
 
   lines.push('## Scope')
   lines.push('')
-  lines.push('arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, eslint, tests, and `npm audit` as complementary code-quality gates.')
+  lines.push('arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
   lines.push('')
 
   // Severity roll-up
