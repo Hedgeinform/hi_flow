@@ -4,13 +4,13 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Current Focus
 
-- **Focus:** ArchAudit cluster mini-graphs preserve one logical edge, full style precedence, global hub classes, and deterministic finding reasons.
-- **Phase:** hi_flow `0.15.7` source implementation and exact-SHA Zhenka smoke verified; PR #25 is open, with merge and marketplace refresh next
+- **Focus:** Ship the verified ArchAudit `0.15.7` contract repair: deterministic Mermaid output plus graph-only ordinary edges and a consistent baseline registry.
+- **Phase:** implementation, independent review, and exact-SHA Phase 1+2 smoke completed; PR #25 is open, with operator merge and plugin refresh next
 - **Owner/session:** `codex/arch-audit-cluster-edge-precedence`
 
 ## Last Completed
 
-- Bug-fix implementation report: `docs/superpowers/plans/2026-08-29-arch-audit-cluster-mermaid-contract-bug-fix-report.md`
+- Bug-fix implementation report: `docs/superpowers/plans/2026-08-30-arch-audit-baseline-contract-cleanup-bug-fix-report.md`
 
 ## Ready Next
 
@@ -24,20 +24,19 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Latest Verification
 
-- Mermaid + reason regressions -> RED on 3 cluster cases and 2 hedged baseline explanations; final focused gate 32/32 passed on 2026-08-29.
-- Full ArchAudit suite -> 30 test files and 221/221 tests passed, including standalone runtime distribution coverage, on 2026-08-29.
-- `npm run typecheck`, `npm run build:check`, plugin validation, skill validation, independent code review, and `git diff --check` -> passed on 2026-08-29.
-- `npm audit --omit=dev --audit-level=high` -> zero production vulnerabilities on 2026-08-29.
-- Exact-SHA Zhenka Phase 1+2 smoke (`bae98d0` runtime, `0a331a05` project) -> D8 semantic validation and isolated seven-group self-review PASS; 36 modules, LOC 137949, 19 findings, counts 0/17/2/0. Mermaid used the checklist static fallback because `mmdc` is unavailable.
-- Plugin manifests for Claude Code, Codex, Cursor, and marketplace -> synchronized at `0.15.7`; internal ArchAudit package -> `0.3.7` on 2026-08-29.
+- Baseline registry and Scope regressions reproduced RED; focused GREEN gate passed 35/35 on 2026-08-30.
+- Full ArchAudit suite passed 218/218 across 30 test files on 2026-08-30.
+- Typecheck, reproducible build, plugin/skill validation, dependency audit, diff check, and independent code review passed.
+- Exact published candidate `421edf5` completed Phase 1+2 smoke and isolated seven-group report self-review; the permitted static Mermaid fallback was used because `mmdc` is unavailable.
+- Claude Code, Codex, Cursor, and marketplace manifests remain synchronized at `0.15.7`; internal ArchAudit package remains `0.3.7`.
 
 ## Active Artifacts
 
 - Product backlog: not used for this contract-restoration bug fix
 - Intake: `INTAKE.md`
 - Behavior Registry: project-wide references under `hi_flow/references/behavior-registry/`
-- Current design: Mermaid and prohibited-content contracts in `hi_flow/skills/arch-audit/references/self-review-checklist.md`
-- Current plan/report: `docs/superpowers/plans/2026-08-29-arch-audit-cluster-mermaid-contract-bug-fix.md`, `docs/superpowers/plans/2026-08-29-arch-audit-cluster-mermaid-contract-bug-fix-report.md`
+- Current design: baseline and report contracts in `hi_flow/skills/arch-audit/references/baseline-rules.md` and `hi_flow/skills/arch-audit/references/self-review-checklist.md`
+- Current plan/report: `docs/superpowers/plans/2026-08-30-arch-audit-baseline-contract-cleanup-bug-fix.md`, `docs/superpowers/plans/2026-08-30-arch-audit-baseline-contract-cleanup-bug-fix-report.md`
 - Architecture snapshot: `ARCHITECTURE.md`
 
 ## Update Notes

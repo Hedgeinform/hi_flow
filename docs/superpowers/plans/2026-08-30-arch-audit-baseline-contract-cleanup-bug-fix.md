@@ -57,14 +57,14 @@
 ### Task 3: Close the existing PR extension
 
 - [x] Run the full test, typecheck, build, plugin, skill, dependency, and diff gates.
-- [ ] Run an exact-branch Zhenka audit smoke and isolated report review.
-- [ ] Create the implementation report and update `PROJECT_STATE.md`.
-- [ ] Obtain isolated code review, commit, push, and update PR #25 without merging it. (Review passed; publication pending exact-SHA smoke.)
+- [x] Run an exact-branch Zhenka audit smoke and isolated report review.
+- [x] Create the implementation report and update `PROJECT_STATE.md`.
+- [x] Obtain isolated code review, commit, push, and update PR #25 without merging it.
 
 ## Completion Protocol
 
-- [ ] Implementation report exists beside this plan.
-- [ ] Focused RED/GREEN evidence is recorded.
-- [ ] Full verification and exact-branch Zhenka audit pass, or exact blockers are recorded.
-- [ ] Claude Code, Codex, Cursor, marketplace, and internal package versions remain synchronized at `0.15.7` / `0.3.7`.
-- [ ] PR #25 contains the verified patch and remains operator-controlled.
+- [x] Implementation report exists beside this plan.
+- [x] Focused RED/GREEN evidence is recorded.
+- [x] Full verification and exact-branch Zhenka audit pass, or exact blockers are recorded.
+- [x] Claude Code, Codex, Cursor, marketplace, and internal package versions remain synchronized at `0.15.7` / `0.3.7`.
+- [x] PR #25 contains the verified patch and remains operator-controlled.
