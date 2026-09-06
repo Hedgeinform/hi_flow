@@ -129,7 +129,14 @@ describe('report-builder', () => {
       runDepcruise: () => mockOutput,
     })
     const json = JSON.parse(await readFile(report.json_path, 'utf-8'))
-    expect(json.findings.some((f: any) => f.rule_id === 'baseline:nccd-breach')).toBe(true)
+    const finding = json.findings.find((f: any) => f.rule_id === 'baseline:nccd-breach')
+    expect(finding).toMatchObject({
+      severity: 'HIGH',
+      reason: {
+        principle: 'module-boundary-awareness',
+        explanation: 'Project NCCD (8.50) exceeds threshold (1) — aggregate transitive dependency complexity exceeds the configured limit.',
+      },
+    })
     await rm(dir, { recursive: true })
   })
 

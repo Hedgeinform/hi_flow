@@ -49,11 +49,11 @@ const RULES: BaselineRule[] = [
   {
     id: 'baseline:nccd-breach',
     name: 'nccd-breach',
-    principle: 'acyclic-dependencies',
+    principle: 'module-boundary-awareness',
     severity: 'HIGH',
     threshold_default: 1.0,
     conditional: { kind: 'always' },
-    explanation: 'Project NCCD ({nccd}) exceeds threshold ({threshold}) — graph has aggregate cyclic complexity.',
+    explanation: 'Project NCCD ({nccd}) exceeds threshold ({threshold}) — aggregate transitive dependency complexity exceeds the configured limit.',
   },
   {
     id: 'baseline:high-fanout',

@@ -67,7 +67,7 @@ describe('enrich-findings', () => {
     }
     const result = enrichFindings({ rawFindings: [raw], baselineRules: baseline, projectRules: emptyProjectRules })
     expect(result[0]!.reason.explanation).toBe(
-      'Project NCCD (7.06) exceeds threshold (1) — graph has aggregate cyclic complexity.',
+      'Project NCCD (7.06) exceeds threshold (1) — aggregate transitive dependency complexity exceeds the configured limit.',
     )
   })
 
