@@ -4,31 +4,30 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Current Focus
 
-- **Focus:** Ship the verified ArchAudit `0.15.7` contract repair: deterministic Mermaid output plus graph-only ordinary edges and a consistent baseline registry.
-- **Phase:** implementation, independent review, and exact-SHA Phase 1+2 smoke completed; PR #25 is open, with operator merge and plugin refresh next
-- **Owner/session:** `codex/arch-audit-cluster-edge-precedence`
+- **Focus:** Ship ArchAudit `0.15.8` corrections: deduplicated barrel findings, bounded foundation diagrams, readable Markdown evidence, and semantically accurate NCCD findings.
+- **Phase:** implementation and independent review completed; release PR pending
+- **Owner/session:** `codex/arch-audit-037-contract-fixes`
 
 ## Last Completed
 
-- Bug-fix implementation report: `docs/superpowers/plans/2026-08-30-arch-audit-baseline-contract-cleanup-bug-fix-report.md`
+- ArchAudit `0.15.7` baseline contract repair merged as PR #25.
 
 ## Ready Next
 
-- Merge hi_flow PR #25 for the `0.15.7` patch release.
+- Create and merge the hi_flow PR for the `0.15.8` patch release.
 - Refresh the official marketplace plugin locally and on Codex VPS after merge.
 - Start new Codex sessions before relying on the updated ArchAudit runtime.
 
 ## Waiting / Blocked
 
-- Operator merge of the `0.15.7` PR is required before official marketplace installation.
+- Operator merge of the `0.15.8` PR is required before official marketplace installation.
 
 ## Latest Verification
 
-- Baseline registry and Scope regressions reproduced RED; focused GREEN gate passed 35/35 on 2026-08-30.
-- Full ArchAudit suite passed 218/218 across 30 test files on 2026-08-30.
-- Typecheck, reproducible build, plugin/skill validation, dependency audit, diff check, and independent code review passed.
-- Exact published candidate `421edf5` completed Phase 1+2 smoke and isolated seven-group report self-review; the permitted static Mermaid fallback was used because `mmdc` is unavailable.
-- Claude Code, Codex, Cursor, and marketplace manifests remain synchronized at `0.15.7`; internal ArchAudit package remains `0.3.7`.
+- Barrel, foundation-view, Markdown Details, and NCCD semantic regressions reproduced RED and passed GREEN.
+- Full ArchAudit suite passed 224/224 across 30 test files on 2026-09-06.
+- Typecheck, reproducible build, installed-artifact parity, diff check, and independent code review passed.
+- Claude Code, Codex, Cursor, and marketplace manifests are synchronized at `0.15.8`; internal ArchAudit package is `0.3.8`.
 
 ## Active Artifacts
 

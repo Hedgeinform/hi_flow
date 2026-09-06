@@ -80,16 +80,22 @@ export async function detectBarrels(args: DetectBarrelsArgs): Promise<RawFinding
     const content = await readFile(indexPath, 'utf-8')
     if (!isBarrelContent(content, threshold)) continue
 
-    const importers = args.barrelImports
-      .filter(e => e.to === moduleName && e.from !== moduleName)
-      .map(e => e.from)
-
-    if (importers.length === 0) continue
-
     const indexRelative = indexPath
       .replace(args.projectPath + '/', '')
       .replace(args.projectPath + '\\', '')
       .replace(/\\/g, '/')
+
+    const importers = [...new Set(
+      args.barrelImports
+        .filter(e =>
+          e.to === moduleName &&
+          e.from !== moduleName &&
+          e.targetFile.replace(/\\/g, '/') === indexRelative,
+        )
+        .map(e => e.from),
+    )]
+
+    if (importers.length === 0) continue
 
     for (const importer of importers) {
       findings.push({

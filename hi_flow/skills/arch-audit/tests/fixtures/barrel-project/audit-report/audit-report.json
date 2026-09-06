@@ -21,7 +21,7 @@
       },
       "reason": {
         "principle": "barrel-discipline",
-        "explanation": "Module {module} has a barrel index file (src/foo/index.ts) imported by sibling modules (bar). Barrels obscure the real dependency graph; prefer explicit deep imports."
+        "explanation": "Module foo has a barrel index file (src/foo/index.ts) imported by sibling modules (bar). Barrels obscure the real dependency graph; prefer explicit deep imports."
       },
       "extras": {
         "barrel_file": "src/foo/index.ts",

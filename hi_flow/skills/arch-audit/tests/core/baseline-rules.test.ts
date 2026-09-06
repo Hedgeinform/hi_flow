@@ -44,6 +44,17 @@ describe('baseline-rules', () => {
     expect(rule?.principle).toBe('barrel-discipline')
   })
 
+  it('maps NCCD to module-boundary-awareness without describing it as a cycle', () => {
+    const rule = getBaselineRules().find(candidate => candidate.id === 'baseline:nccd-breach')
+
+    expect(rule?.severity).toBe('HIGH')
+    expect(rule?.principle).toBe('module-boundary-awareness')
+    expect(rule?.explanation).toBe(
+      'Project NCCD ({nccd}) exceeds threshold ({threshold}) — aggregate transitive dependency complexity exceeds the configured limit.',
+    )
+    expect(rule?.explanation).not.toMatch(/cyclic|cycle/i)
+  })
+
   it('emits deterministic explanations without prohibited hedging', () => {
     const explanations = getBaselineRules().map(rule => rule.explanation).join('\n')
 

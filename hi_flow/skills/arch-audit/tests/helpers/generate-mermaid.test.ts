@@ -36,6 +36,52 @@ describe('generate-mermaid', () => {
     expect(result.overall).toMatch(/a --> b/)
   })
 
+  it('renders the foundation view as the induced subgraph of foundation modules and direct neighbors', () => {
+    const report = minimalReport({
+      metrics: {
+        ...minimalReport().metrics,
+        per_module: {
+          foundation: { Ca: 6, Ce: 1, I: 0.14, LOC: 0 },
+          caller: { Ca: 0, Ce: 1, I: 1, LOC: 0 },
+          dependent: { Ca: 1, Ce: 0, I: 0, LOC: 0 },
+          unrelated: { Ca: 0, Ce: 1, I: 1, LOC: 0 },
+          elsewhere: { Ca: 1, Ce: 0, I: 0, LOC: 0 },
+        },
+        dep_graph: {
+          caller: ['foundation'],
+          foundation: ['dependent'],
+          dependent: [],
+          unrelated: ['elsewhere'],
+          elsewhere: [],
+        },
+      },
+    })
+
+    const foundation = generateMermaid(report).foundation!
+    expect(foundation).toContain('caller --> foundation')
+    expect(foundation).toContain('foundation --> dependent')
+    expect(foundation).not.toContain('unrelated')
+    expect(foundation).not.toContain('elsewhere')
+  })
+
+  it('skips the foundation view when its induced subgraph exceeds the node cap', () => {
+    const neighbors = Array.from({ length: MERMAID_OVERALL_CAP }, (_, index) => `dependent${index}`)
+    const report = minimalReport({
+      metrics: {
+        ...minimalReport().metrics,
+        per_module: Object.fromEntries([
+          ['foundation', { Ca: 6, Ce: 1, I: 0.14, LOC: 0 }],
+          ...neighbors.map(module => [module, { Ca: 1, Ce: 0, I: 0, LOC: 0 }]),
+        ]),
+        dep_graph: { foundation: neighbors, ...Object.fromEntries(neighbors.map(module => [module, []])) },
+      },
+    })
+
+    const result = generateMermaid(report)
+    expect(result.foundation).toBeNull()
+    expect(result.foundationSkipped).toBe(true)
+  })
+
   it('layered is null when no architectural-layer-cycle hint', () => {
     const report = minimalReport()
     expect(generateMermaid(report).layered).toBeNull()

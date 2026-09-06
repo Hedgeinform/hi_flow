@@ -77,9 +77,9 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 - **Severity:** HIGH.
 
 ### `nccd-breach`
-- **Principle:** `acyclic-dependencies` (aggregate)
+- **Principle:** `module-boundary-awareness` (aggregate)
 - **Detection:** custom — applies **только если N модулей в проекте > 15** (на меньших NCCD статистически не информативен — false positives на маленьких проектах). Threshold default NCCD > 1.0, **tunable** через project rules.
-- **What:** общая запутанность проекта превышает порог.
+- **What:** aggregate transitive dependency complexity проекта превышает порог. NCCD не утверждает наличие цикла: высокий результат возможен и в ациклическом графе.
 - **Severity:** HIGH.
 
 ### `high-fanout`

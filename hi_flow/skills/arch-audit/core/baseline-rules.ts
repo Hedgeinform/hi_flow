@@ -49,11 +49,11 @@ const RULES: BaselineRule[] = [
   {
     id: 'baseline:nccd-breach',
     name: 'nccd-breach',
-    principle: 'acyclic-dependencies',
+    principle: 'module-boundary-awareness',
     severity: 'HIGH',
     threshold_default: 1.0,
     conditional: { kind: 'always' },
-    explanation: 'Project NCCD ({nccd}) exceeds threshold ({threshold}) — graph has aggregate cyclic complexity.',
+    explanation: 'Project NCCD ({nccd}) exceeds threshold ({threshold}) — aggregate transitive dependency complexity exceeds the configured limit.',
   },
   {
     id: 'baseline:high-fanout',
@@ -69,7 +69,7 @@ const RULES: BaselineRule[] = [
     principle: 'barrel-discipline',
     severity: 'MEDIUM',
     threshold_default: 0.8,
-    explanation: 'Module {module} has a barrel index file ({barrel_file}) imported by sibling modules ({importing_modules}). Barrels obscure the real dependency graph; prefer explicit deep imports.',
+    explanation: 'Module {target} has a barrel index file ({barrel_file}) imported by sibling modules ({importing_modules}). Barrels obscure the real dependency graph; prefer explicit deep imports.',
   },
   // === Layer C — conditional structural (7) ===
   {
