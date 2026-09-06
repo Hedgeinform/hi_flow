@@ -81,6 +81,7 @@
 
 - Для каждого canonical cycle key в final findings есть ровно один owner: профильный layer-cycle rule, иначе `no-circular` для 3+ modules или `inappropriate-intimacy` для двух modules.
 - Если module присутствует в `metadata.parsing_errors`, `no-orphans` для него отсутствует: parser gap не считается evidence orphan status.
+- Каждый `baseline:no-orphans` относится к module, у которого `Ca = 0`; file-level сигнал внутри импортируемого module не является D8 finding.
 - Обычный edge в `metrics.dep_graph` не обязан иметь finding. Отсутствие finding корректно, если ни одно baseline/project rule не сработало.
 
 ### Группа 3 — Markdown report quality

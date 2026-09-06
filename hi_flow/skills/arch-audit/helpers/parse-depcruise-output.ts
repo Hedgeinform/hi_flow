@@ -153,8 +153,16 @@ export function parseDepcruiseOutput(jsonString: string, modulePattern = 'src'):
     }
   }
 
+  // dependency-cruiser evaluates `orphan` per source file, but D8 findings
+  // describe architecture modules. An unused file inside a module imported by
+  // another module is not evidence that the module itself is an orphan.
+  const moduleLevelFindings = findings.filter(finding => {
+    if (finding.rule_id !== 'no-orphans' && finding.rule_id !== 'baseline:no-orphans') return true
+    return (per_module_raw[finding.source.module]?.ca ?? 0) === 0
+  })
+
   return {
-    findings,
+    findings: moduleLevelFindings,
     dep_graph,
     per_module_raw,
     source_files_by_module,

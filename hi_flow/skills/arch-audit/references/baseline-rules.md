@@ -44,7 +44,7 @@ D8 schema findings всегда содержат severity ∈ {CRITICAL, HIGH, M
 
 ### `no-orphans`
 - **Principle:** `dead-code-elimination`
-- **Detection:** depcruise built-in.
+- **Detection:** depcruise built-in reports source files; the parser retains a D8 finding only when the containing module has zero module-graph in-degree. An unused file inside an imported module is not a module orphan.
 - **What:** модули с нулевым in-degree, не являющиеся entry points.
 - **Severity:** **MEDIUM** (depcruise warn → normalized).
 

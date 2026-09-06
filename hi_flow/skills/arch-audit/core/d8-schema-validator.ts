@@ -108,6 +108,15 @@ function validateSemantics(report: D8AuditReport, context: D8ValidationContext):
     } else if (finding.source.module !== '<project>' && !graphSet.has(finding.source.module)) {
       errors.push(semanticError(`${basePath}/source/module`, `module '${finding.source.module}' is absent from dep_graph`))
     }
+    if (
+      finding.rule_id === 'baseline:no-orphans' &&
+      (report.metrics.per_module[finding.source.module]?.Ca ?? 0) > 0
+    ) {
+      errors.push(semanticError(
+        `${basePath}/source/module`,
+        'baseline:no-orphans source must have no incoming module-graph dependencies',
+      ))
+    }
     if (finding.target && !graphSet.has(finding.target.module) && !isExternalBoundary) {
       errors.push(semanticError(`${basePath}/target/module`, `module '${finding.target.module}' is absent from dep_graph`))
     }

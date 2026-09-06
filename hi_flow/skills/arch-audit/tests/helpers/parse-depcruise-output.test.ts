@@ -112,6 +112,44 @@ describe('parse-depcruise-output', () => {
     expect(result.parsing_errors === undefined || result.parsing_errors!.length === 0).toBe(true)
   })
 
+  it('does not elevate an unused file inside an imported module to a no-orphans module finding', () => {
+    const raw = JSON.stringify({
+      summary: {
+        violations: [{
+          type: 'module',
+          from: 'src/app/storage-key.ts',
+          to: 'src/app/storage-key.ts',
+          rule: { name: 'baseline:no-orphans', severity: 'warn' },
+        }, {
+          type: 'module',
+          from: 'src/orphan/index.ts',
+          to: 'src/orphan/index.ts',
+          rule: { name: 'baseline:no-orphans', severity: 'warn' },
+        }],
+      },
+      modules: [
+        { source: 'src/api/index.ts', dependencies: [{ resolved: 'src/app/index.ts', module: '../app/index.ts' }] },
+        { source: 'src/app/index.ts', dependencies: [] },
+        { source: 'src/app/storage-key.ts', dependencies: [] },
+        { source: 'src/onlyoffice/index.ts', dependencies: [{ resolved: 'src/app/index.ts', module: '../app/index.ts' }] },
+        { source: 'src/orphan/index.ts', dependencies: [] },
+      ],
+    })
+
+    const result = parseDepcruiseOutput(raw)
+
+    expect(result.per_module_raw.app!.ca).toBe(2)
+    expect(result.findings).not.toContainEqual(expect.objectContaining({
+      rule_id: 'baseline:no-orphans',
+      source: { module: 'app', file: 'src/app/storage-key.ts' },
+    }))
+    expect(result.per_module_raw.orphan!.ca).toBe(0)
+    expect(result.findings).toContainEqual(expect.objectContaining({
+      rule_id: 'baseline:no-orphans',
+      source: { module: 'orphan', file: 'src/orphan/index.ts' },
+    }))
+  })
+
   it('parsing_errors absent when no broken modules', async () => {
     const raw = await readFile(fixturePath('depcruise-sample.json'), 'utf-8')
     const result = parseDepcruiseOutput(raw)
