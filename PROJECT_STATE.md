@@ -5,7 +5,7 @@ This document is the current operational dashboard for the project. It is not a 
 ## Current Focus
 
 - **Focus:** Ship ArchAudit `0.15.9` no-orphans granularity repair: an unused file can no longer make an imported module look orphaned.
-- **Phase:** implementation, full verification, and isolated review completed; release PR pending
+- **Phase:** release PR #27 open; awaiting review and merge
 - **Owner/session:** `codex/arch-audit-no-orphans-module-granularity`
 
 ## Last Completed
@@ -14,13 +14,13 @@ This document is the current operational dashboard for the project. It is not a 
 
 ## Ready Next
 
-- Create and merge the hi_flow PR for the `0.15.9` patch release.
+- Review and merge [PR #27](https://github.com/Hedgeinform/hi_flow/pull/27) for the `0.15.9` patch release.
 - Refresh the official marketplace plugin locally and on Codex VPS after merge.
 - Start new Codex sessions before relying on the updated ArchAudit runtime.
 
 ## Waiting / Blocked
 
-- Operator merge of the `0.15.9` PR is required before official marketplace installation.
+- Operator merge of PR #27 is required before official marketplace installation.
 
 ## Latest Verification
 

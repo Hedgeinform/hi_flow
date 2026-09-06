@@ -24,7 +24,7 @@
 
 ## Open items
 
-- Create and merge the hi_flow `0.15.9` PR; do not install the marketplace artifact until after merge.
+- Merge [PR #27](https://github.com/Hedgeinform/hi_flow/pull/27); do not install the marketplace artifact until after merge.
 
 ## Verification
 
