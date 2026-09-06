@@ -11,7 +11,7 @@ import { generateDepcruiseConfig } from '../helpers/generate-depcruise-config.ts
 import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
 import { computeNCCD, instability } from './graph-core.ts'
 import { enrichFindings } from '../helpers/enrich-findings.ts'
-import { generateMermaid } from '../helpers/generate-mermaid.ts'
+import { generateMermaid, MERMAID_OVERALL_CAP } from '../helpers/generate-mermaid.ts'
 import { checkDepcruiseVersion } from './preflight.ts'
 import { resolveAuditSha } from './audit-sha.ts'
 import { resolveRuntimeRoot, runBundledDepcruise } from './depcruise-runtime.ts'
@@ -45,6 +45,28 @@ async function publishMarkdown(path: string, content: string): Promise<void> {
   const temporaryPath = `${path}.tmp-${process.pid}-${Date.now()}`
   await writeFile(temporaryPath, content, 'utf-8')
   await rename(temporaryPath, path)
+}
+
+/**
+ * Formats JSON-like evidence for Markdown only. The original evidence is kept
+ * untouched in audit-report.json and on the finding itself.
+ */
+export function formatMarkdownDetails(value: unknown): string {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? String(Number(value.toFixed(2))) : 'null'
+  }
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') {
+    return JSON.stringify(value)
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(formatMarkdownDetails).join(',')}]`
+  }
+  if (typeof value === 'object') {
+    return `{${Object.entries(value).map(([key, nested]) =>
+      `${JSON.stringify(key)}:${formatMarkdownDetails(nested)}`,
+    ).join(',')}}`
+  }
+  return 'null'
 }
 
 function buildOperatorNotes(
@@ -404,14 +426,18 @@ function renderMarkdownReport(
   }
 
   // Foundation diagram (conditional)
-  if (mermaid.foundation && mermaid.foundationModules.length) {
+  if (mermaid.foundationModules.length) {
     lines.push(`## Foundation modules`)
     lines.push('')
     lines.push(`Pure utility modules (Ca > 5, Ce ≤ 3, no findings) hidden from focused view: ${mermaid.foundationModules.map(m => `\`${m}\``).join(', ')}.`)
     lines.push('')
-    lines.push('```mermaid')
-    lines.push(mermaid.foundation)
-    lines.push('```')
+    if (mermaid.foundation) {
+      lines.push('```mermaid')
+      lines.push(mermaid.foundation)
+      lines.push('```')
+    } else if (mermaid.foundationSkipped) {
+      lines.push(`Foundation diagram exceeds ${MERMAID_OVERALL_CAP} modules — skipped.`)
+    }
     lines.push('')
   }
 
@@ -466,7 +492,7 @@ function renderMarkdownReport(
       }
       lines.push(`**Reason:** ${f.reason.principle} — ${f.reason.explanation}`)
       if (f.extras && Object.keys(f.extras).length > 0) {
-        lines.push(`**Details:** \`${JSON.stringify(f.extras)}\``)
+        lines.push(`**Details:** \`${formatMarkdownDetails(f.extras)}\``)
       }
       lines.push('')
     }

@@ -69,7 +69,7 @@ const RULES: BaselineRule[] = [
     principle: 'barrel-discipline',
     severity: 'MEDIUM',
     threshold_default: 0.8,
-    explanation: 'Module {module} has a barrel index file ({barrel_file}) imported by sibling modules ({importing_modules}). Barrels obscure the real dependency graph; prefer explicit deep imports.',
+    explanation: 'Module {target} has a barrel index file ({barrel_file}) imported by sibling modules ({importing_modules}). Barrels obscure the real dependency graph; prefer explicit deep imports.',
   },
   // === Layer C — conditional structural (7) ===
   {

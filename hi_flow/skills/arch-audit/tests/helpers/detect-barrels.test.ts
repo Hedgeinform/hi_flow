@@ -138,4 +138,28 @@ describe('detect-barrels', () => {
 
     await rm(dir, { recursive: true })
   })
+
+  it('emits one finding per importing module when several files import the same barrel', async () => {
+    const dir = await makeProject()
+    await mkdir(join(dir, 'src/baz'), { recursive: true })
+    await writeFile(join(dir, 'src/foo/index.ts'), `export * from './a.ts'\n`)
+    await writeFile(join(dir, 'src/foo/a.ts'), 'export const A = 1\n')
+
+    const findings = await detectBarrels({
+      projectPath: dir,
+      modulesList: ['foo', 'bar', 'baz'],
+      barrelImports: [
+        { from: 'bar', to: 'foo', targetFile: 'src/foo/index.ts' },
+        { from: 'bar', to: 'foo', targetFile: 'src/foo/index.ts' },
+        { from: 'baz', to: 'foo', targetFile: 'src/foo/index.ts' },
+      ],
+    })
+
+    expect(findings).toHaveLength(2)
+    expect(findings.map(f => f.source.module).sort()).toEqual(['bar', 'baz'])
+    expect(findings.every(f => f.extras?.importing_modules instanceof Array)).toBe(true)
+    expect(findings[0]!.extras?.importing_modules).toEqual(['bar', 'baz'])
+
+    await rm(dir, { recursive: true })
+  })
 })

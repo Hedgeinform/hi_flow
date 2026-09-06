@@ -12,6 +12,7 @@ const STYLE_HUB = 'fill:#fce5f3,stroke:#c2185b'
 interface MermaidResult {
   overall: string | null
   foundation: string | null
+  foundationSkipped: boolean
   layered: string | null
   layeredDetected: boolean
   foundationModules: string[]
@@ -101,15 +102,16 @@ function buildOverall(
   const { cycleEdges, criticalEdges, highMedBoundaryEdges } = classifyEdges(findings)
 
   const nodes = [...allModules].filter(m => !excludeModules.has(m))
+  const visibleNodes = new Set(nodes)
   for (const m of nodes) {
     lines.push(`    ${escId(m)}`)
   }
 
   const edgeKinds: EdgeKind[] = []
   for (const [src, targets] of Object.entries(graph)) {
-    if (excludeModules.has(src)) continue
+    if (!visibleNodes.has(src)) continue
     for (const tgt of targets) {
-      if (excludeModules.has(tgt)) continue
+      if (!visibleNodes.has(tgt)) continue
       const eid = `${escId(src)}-${escId(tgt)}`
       let arrow = '-->'
       let kind: EdgeKind = 'default'
@@ -132,7 +134,7 @@ function buildOverall(
   })
 
   // Hub-module classDef (only if any visible hub).
-  const visibleHubs = hubModules.filter(m => !excludeModules.has(m))
+  const visibleHubs = hubModules.filter(m => visibleNodes.has(m))
   if (visibleHubs.length) {
     lines.push(`    classDef hubModule ${STYLE_HUB}`)
     for (const m of visibleHubs) {
@@ -141,6 +143,18 @@ function buildOverall(
   }
 
   return lines.join('\n')
+}
+
+function findFoundationViewModules(graph: DepGraph, foundationModules: string[]): Set<string> {
+  const foundation = new Set(foundationModules)
+  const viewModules = new Set(foundationModules)
+  for (const [source, targets] of Object.entries(graph)) {
+    if (foundation.has(source)) {
+      for (const target of targets) viewModules.add(target)
+    }
+    if (targets.some(target => foundation.has(target))) viewModules.add(source)
+  }
+  return viewModules
 }
 
 function buildClusters(findings: Finding[], _graph: DepGraph): Record<string, string> {
@@ -273,8 +287,10 @@ export function generateMermaid(report: D8AuditReport): MermaidResult {
     : buildOverall(graph, report.findings, allModules, hubModules, focusedExclude)
 
   // Foundation diagram — only the foundation modules + their direct neighbors.
-  const foundation = foundationModules.length
-    ? buildOverall(graph, report.findings, foundationModules, hubModules, new Set())
+  const foundationViewModules = findFoundationViewModules(graph, foundationModules)
+  const foundationSkipped = foundationModules.length > 0 && foundationViewModules.size > MERMAID_OVERALL_CAP
+  const foundation = foundationModules.length && !foundationSkipped
+    ? buildOverall(graph, report.findings, foundationViewModules, hubModules, new Set())
     : null
 
   // Layered diagram — same as overall but always rendered if layered detected.
@@ -284,5 +300,5 @@ export function generateMermaid(report: D8AuditReport): MermaidResult {
 
   const clusters = buildClusters(report.findings, graph)
 
-  return { overall, foundation, layered, layeredDetected, foundationModules, hubModules, clusters }
+  return { overall, foundation, foundationSkipped, layered, layeredDetected, foundationModules, hubModules, clusters }
 }

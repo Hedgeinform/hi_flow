@@ -101,6 +101,23 @@ describe('enrich-findings', () => {
     expect(result[0]!.reason.explanation).toBe('Test edge: a → b.')
   })
 
+  it('interpolates the barrel target owner without leaving an unsupported placeholder', () => {
+    const raw: RawFinding = {
+      rule_id: 'barrel-file',
+      raw_severity: 'warn',
+      type: 'boundary',
+      source: { module: 'consumer', file: 'src/consumer/one.ts' },
+      target: { module: 'owner', file: 'src/owner/index.ts' },
+      extras: { barrel_file: 'src/owner/index.ts', importing_modules: ['consumer'] },
+    }
+
+    const result = enrichFindings({ rawFindings: [raw], baselineRules: baseline, projectRules: emptyProjectRules })
+    expect(result[0]!.reason.explanation).toBe(
+      'Module owner has a barrel index file (src/owner/index.ts) imported by sibling modules (consumer). Barrels obscure the real dependency graph; prefer explicit deep imports.',
+    )
+    expect(result[0]!.reason.explanation).not.toMatch(/\{[^}]+\}/)
+  })
+
   it('leaves unknown {key} placeholders unchanged (visible gap signal)', () => {
     const raw: RawFinding = {
       rule_id: 'high-fanout',

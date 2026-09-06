@@ -45,7 +45,7 @@ Layered structure не detected — closed list имён слоёв (domain / co
 
 ### f-001 — baseline:barrel-file (MEDIUM)
 **Source → Target:** `bar` → `foo`
-**Reason:** barrel-discipline — Module {module} has a barrel index file (src/foo/index.ts) imported by sibling modules (bar). Barrels obscure the real dependency graph; prefer explicit deep imports.
+**Reason:** barrel-discipline — Module foo has a barrel index file (src/foo/index.ts) imported by sibling modules (bar). Barrels obscure the real dependency graph; prefer explicit deep imports.
 
 ## Cluster suggestions
 

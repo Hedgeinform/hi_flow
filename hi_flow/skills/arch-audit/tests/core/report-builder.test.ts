@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mkdtemp, mkdir, writeFile, rm, readFile, access } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { buildReport, renderReportFromDisk } from '../../core/report-builder.ts'
+import { buildReport, formatMarkdownDetails, renderReportFromDisk } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 import { fixturePath } from '../test-paths.ts'
 
@@ -18,6 +18,23 @@ const cannedDepcruiseOutput = JSON.stringify({
 })
 
 describe('report-builder', () => {
+  it('formats nested detail numbers for Markdown without mutating raw evidence', () => {
+    const extras = {
+      nccd: 1.6666666666666667,
+      nested: { ratio: 0.5, whole: 3.0 },
+      values: [2.345, 4.0],
+    }
+
+    expect(formatMarkdownDetails(extras)).toBe(
+      '{"nccd":1.67,"nested":{"ratio":0.5,"whole":3},"values":[2.35,4]}',
+    )
+    expect(extras).toEqual({
+      nccd: 1.6666666666666667,
+      nested: { ratio: 0.5, whole: 3.0 },
+      values: [2.345, 4.0],
+    })
+  })
+
   it('produces audit-report.json + audit-report.md from a tiny synthetic project', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'rb-'))
     await mkdir(join(dir, 'src/a'), { recursive: true })
