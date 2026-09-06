@@ -100,6 +100,41 @@ describe('d8-schema-validator', () => {
     }))
   })
 
+  it('rejects a no-orphans finding for a module with incoming graph dependencies', () => {
+    const report = {
+      ...validReport,
+      findings: [{
+        id: 'f-001',
+        rule_id: 'baseline:no-orphans',
+        type: 'coupling',
+        severity: 'MEDIUM',
+        source: { module: 'app', file: 'src/app/storage-key.ts' },
+        reason: { principle: 'dead-code-elimination', explanation: 'Module is not imported.' },
+      }],
+      metrics: {
+        ...validReport.metrics,
+        per_module: {
+          api: { Ca: 0, Ce: 1, I: 1, LOC: 1 },
+          app: { Ca: 1, Ce: 0, I: 0, LOC: 2 },
+        },
+        severity_counts: { CRITICAL: 0, HIGH: 0, MEDIUM: 1, LOW: 0 },
+        dep_graph: { api: ['app'], app: [] },
+      },
+    }
+
+    const result = validateD8Report(report, {
+      canonicalPrincipleIds: new Set(['dead-code-elimination']),
+      knownRuleIds: new Set(['baseline:no-orphans']),
+    })
+
+    expect(result.valid).toBe(false)
+    expect(result.errors).toContainEqual(expect.objectContaining({
+      path: '/findings/0/source/module',
+      keyword: 'semantic',
+      message: expect.stringContaining('incoming'),
+    }))
+  })
+
   it('rejects a cycle without graph-valid module members', () => {
     const report = {
       ...validReport,
