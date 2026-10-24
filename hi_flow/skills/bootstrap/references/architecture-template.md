@@ -2,6 +2,9 @@
 
 Use this template when `hi_flow:bootstrap` creates the initial project architecture
 snapshot. Keep it compact: this file is current architectural shape, not history.
+Reading, maintenance and migration follow
+`hi_flow/references/architecture-snapshot.md`. Preserve existing project-native
+contract and issue owners; include pointers for their nonstandard locations.
 
 ```markdown
 # Architecture
@@ -39,6 +42,9 @@ baselines here; they live in `hi_flow/references/stacks/`.
 ## Active Issues
 
 Known violations of accepted contracts that should be fixed.
+
+If an existing external issue file is the project's current source, link it here
+instead of creating a second editable list.
 
 | ID | Issue | Contract violated | Current impact | Next action |
 |---|---|---|---|---|

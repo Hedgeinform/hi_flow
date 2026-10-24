@@ -80,7 +80,7 @@ Do not announce "project-state event detected". Do not append state proposals to
 
 ## Startup Use
 
-At the start of a hi_flow session, read `PROJECT_STATE.md` if it exists. If the next action is unclear, read only the needed source artifacts named by the state file.
+At the start of a hi_flow session, read `PROJECT_STATE.md` if it exists. If the next action is unclear, read only the needed source artifacts named by the state file. For architectural work, read the compact architecture snapshot and affected current sources using `hi_flow/references/architecture-snapshot.md`. Project State does not make historical documents authoritative or own their architecture maintenance.
 
 Typical startup response:
 

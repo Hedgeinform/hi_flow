@@ -109,10 +109,15 @@ Required items:
 - final verification commands, including behavior gate when a Behavior Registry exists;
 - isolated review requirement before claiming completion;
 - architecture audit requirement after implementation review, or an explicit recorded skip reason when there is no architecture impact and no architecture contract changed;
+- executor-owned refresh of affected `ARCHITECTURE.md` topology, ownership, principles/exception pointers and issue status from the verified result, following `hi_flow/references/architecture-snapshot.md`; record no change when the snapshot is unaffected;
 - `PROJECT_STATE.md` update requirement: current phase, last completed artifact, verification state, blockers/open items, and next hi_flow action;
 - rule that signed feature-specs are historical decision artifacts and are not rewritten just to match changed registry entries.
 
 If the project lacks `PROJECT_STATE.md`, the plan must include creating it from `hi_flow:project-state`'s template as part of close-out rather than silently skipping the update.
+
+For a declared project-native architecture contract, use its actual validation
+and apply route from `hi_flow/references/target-architecture-contract.md`. Do not
+claim the bundled audit checked a rules file it does not consume.
 
 ## Task Requirements
 

@@ -1,48 +1,46 @@
 # Project State
 
-This document is the current operational dashboard for the project. It is not a history log, intake, backlog, behavior registry, architecture contract, or implementation report.
+Текущее состояние работы; не история решений и не второй реестр контрактов.
 
 ## Current Focus
 
-- **Focus:** Ship ArchAudit `0.15.9` no-orphans granularity repair: an unused file can no longer make an imported module look orphaned.
-- **Phase:** release PR #27 open; awaiting review and merge
-- **Owner/session:** `codex/arch-audit-no-orphans-module-granularity`
+- **Focus:** завершение зависимости от legacy `architecture`: общий порядок поддержки снимка и сохранение действующих требований при миграции.
+- **Phase:** HiFlow `0.15.10` подготовлен в [PR #28](https://github.com/Hedgeinform/hi_flow/pull/28); слияние, установка и глобальное отключение legacy ещё не выполнены.
+- **Base:** `656069aeeaf8e37b570c19bf444153efe18f55cf` (`origin/master`, `0.15.9`).
 
 ## Last Completed
 
-- ArchAudit `0.15.8` correction set merged as PR #26.
+- ArchAudit `0.15.9` с исправлением гранулярности no-orphans слит в master (PR #27). Прежний статус «ожидает merge» устарел.
+- Подготовлен общий `architecture-snapshot.md`, маршруты чтения/обновления и обязательства исполнителя при завершении изменения.
+- Собственный старый ARCHITECTURE сохранён дословно; действующие нормы, исключения и открытые вопросы перенесены к текущим владельцам.
 
 ## Ready Next
 
-- Review and merge [PR #27](https://github.com/Hedgeinform/hi_flow/pull/27) for the `0.15.9` patch release.
-- Refresh the official marketplace plugin locally and on Codex VPS after merge.
-- Start new Codex sessions before relying on the updated ArchAudit runtime.
+- После проверки и публикации `0.15.10` обновить установленный плагин на нужных хостах.
+- Интегрировать проверенные документационные миграции проектов и затем убрать глобальный маршрут/обнаружение legacy-скилла.
+- Начать новые чаты и проверить фактически доступные инструкции. Текущий загруженный контекст сам от редактирования исходников не меняется.
 
 ## Waiting / Blocked
 
-- Operator merge of PR #27 is required before official marketplace installation.
+- Реализация приложения не требуется. До доступности обновлённого пакета legacy глобально не отключён.
+- Публикация плагина, интеграция проектных документов и локальная установка оператора — отдельные состояния; их завершение пока не заявляется.
 
 ## Latest Verification
 
-- The no-orphans false module finding reproduced RED: `storage-key.ts` produced a finding while `office-integration-app` had `Ca=2` and two incoming module edges.
-- Full ArchAudit suite passed 227/227 across 31 test files on 2026-09-06; typecheck, reproducible build, and `build:check` passed.
-- Initial isolated review found missing end-to-end preservation proof for a real orphan; the fixture and test now cover it. Scoped re-review found no remaining issues.
-- Claude Code, Codex, Cursor, and marketplace manifests are synchronized at `0.15.9`; internal ArchAudit package is `0.3.9`.
+- Изолированная проверка нашла и устранила три дефекта: потерю порога D26, преждевременное закрытие OQ1 и конфликт приоритета кода/принятых требований в bug-fix.
+- Сценарии: обновление топологии при завершении работы, прямое обновление документа, собственный формат audit-rules потребителя, непокрытые подписанные требования при частичном Behavior Registry.
+- Подробные результаты и границы проверки — в текущем отчёте ниже. Прикладные тесты не подменяются проверками Markdown.
 
 ## Active Artifacts
 
-- Product backlog: not used for this contract-restoration bug fix
-- Intake: `INTAKE.md`
-- Behavior Registry: project-wide references under `hi_flow/references/behavior-registry/`
-- Current design: baseline and report contracts in `hi_flow/skills/arch-audit/references/baseline-rules.md` and `hi_flow/skills/arch-audit/references/self-review-checklist.md`
-- Current plan/report: `docs/superpowers/plans/2026-09-06-arch-audit-no-orphans-module-granularity-bug-fix.md`, `docs/superpowers/plans/2026-09-06-arch-audit-no-orphans-module-granularity-bug-fix-report.md`
-- Architecture snapshot: `ARCHITECTURE.md`
+- План: [architecture-retirement](docs/superpowers/plans/2026-10-24-hi-flow-architecture-retirement.md).
+- Отчёт: [architecture-retirement-report](docs/superpowers/plans/2026-10-24-hi-flow-architecture-retirement-report.md).
+- Текущая архитектура: [ARCHITECTURE.md](ARCHITECTURE.md).
+- Текущие нормы и их владельцы: [current-contracts.md](docs/architecture/current-contracts.md).
+- Intake: `INTAKE.md` ещё не создан; подтверждённые дефекты/открытые проверки: [active-issues.md](docs/active-issues.md).
+- Полного собственного Behavior Registry нет. [behavior-registry.md](hi_flow/references/behavior-registry.md) — общий контракт формата для проектов-потребителей, не реестр поведения этого репозитория.
 
 ## Update Notes
 
-- Keep this file current-state only.
-- Move raw untriaged problems and ideas to `INTAKE.md`.
-- Move desired future behavior to backlog.
-- Move accepted behavior details to Behavior Registry.
-- Move architecture defects to `docs/active-issues.md`.
-- Move accepted architecture debt to `ARCHITECTURE.md` Known Drift.
+Хранить здесь только текущий фокус, факты поставки и следующий шаг. История,
+принятые требования, известные дефекты и принятые исключения остаются у своих владельцев.

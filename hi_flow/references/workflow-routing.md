@@ -14,6 +14,12 @@ For human-originated raw capture requests like "зафиксируй пробл�
 
 For "where are we?", "what should I do next?", "resume this project", "update project state", or Russian equivalents like «где мы остановились» / «что сейчас по проекту» / «обнови состояние проекта», route to `hi_flow:project-state`. Do not route these requests to architecture design/audit/redesign skills.
 
+For document-only architecture refresh or migration of an old architecture
+document, follow `hi_flow/references/architecture-snapshot.md` directly. The agent
+doing the work maintains the affected current sources; no separate legacy
+`architecture` / `living-architecture` skill is required. An audit request still
+routes to `hi_flow:arch-audit`; an actual design change follows arch-spec/redesign.
+
 ## Skill priority
 
 When the operator explicitly asks for a hi_flow artifact, hi_flow wins over competing generic skills:
@@ -23,6 +29,7 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 | human-originated raw observed problem, parked idea, or intake work-selection request | `hi_flow:intake` | `hi_flow:feature-spec` / `hi_flow:bug-fix` / `hi_flow:arch-audit` |
 | product / feature spec, feature behavior, feature forks | `hi_flow:feature-spec` | `superpowers:brainstorming` |
 | current project status, resume point, next action, project state refresh | `hi_flow:project-state` | `hi_flow:arch-spec` / `hi_flow:arch-audit` / `hi_flow:arch-redesign` |
+| refresh/migrate the architecture document without changing architecture | `hi_flow/references/architecture-snapshot.md` directly | legacy `architecture`, unsolicited audit or redesign |
 | migrate an existing project to Behavior Registry / BDD / harness rails | `hi_flow:behavior-migration` | `hi_flow:bootstrap` unless only empty foundation is requested |
 | Active Issue, regression, or bug in already accepted behavior/architecture with fix planning requested | `hi_flow:bug-fix` | `hi_flow:feature-spec` unless expected behavior changes; `hi_flow:intake` unless the operator only wants capture |
 | new project needs empty Behavior Registry / behavior gate foundation | `hi_flow:bootstrap` | `hi_flow:behavior-migration` |

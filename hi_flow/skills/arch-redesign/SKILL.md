@@ -120,7 +120,7 @@ After this step, the cluster shape is settled.
 For each cluster, three mutually exclusive options:
 
 - **In campaign** (default).
-- **Accept as drift** — record as Accepted Drift in `ARCHITECTURE.md` through explicit architecture-document maintenance. This does not change the Target Architecture Contract. Do not route to an operator-personal `architecture` skill.
+- **Accept as drift** — record the approved exception and re-review trigger in the project's single Accepted Drift source, following `hi_flow/references/architecture-snapshot.md`. This does not change the Target Architecture Contract. Do not route to an operator-personal `architecture` skill.
 - **Defer** — to the next campaign.
 
 Recommend based on severity + size + cascade effect; operator confirms or overrides.

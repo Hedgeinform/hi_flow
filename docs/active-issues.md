@@ -13,26 +13,7 @@
 
 ## HIGH
 
-### arch-spec amendment (B + C + D + E) — находки первого боевого прогона REH ERP
-
-**Status:** implemented 2026-06-03 (B+C+D+E в SKILL.md + 3 references; isolated review PASS; report `...-amendment-design-report.md`). Остался release (version bump + commit, D16). Запись удаляется после release.
-
-**Локация:** `hi_flow/skills/arch-spec/SKILL.md` + `references/rules-patch-template.yaml`.
-
-**Источник:** первый боевой прогон arch-spec (REH ERP audit, green field, 2026-05-31). Фидбек: `docs/feedback/hi_flow-arch-spec-feedback.md` + `docs/feedback/hi_flow-session-retro-2026-05-31.md`. Roadmap: `docs/handoffs/2026-06-01-arch-spec-feedback-roadmap-handoff.md`.
-
-**Scope finalized 2026-06-02** (после impl bootstrap — C переоценён, B/D scope уточнён):
-
-- **B (High)** — §10 «Delegated to implementation» развести: (а) code-sight forks → writing-plans; (б) **deployment-bound bindings → отдельный канал** (рекомендованный дефолт + констрейнт + «разблокируется при фиксации deployment-модели»). **Граница после bootstrap:** §10-(б) = deployment-bound привязки ВНУТРИ зафиксированной оси (конкретный scheduler, blob-backend AWS-S3/MinIO), НЕ фиксация самой оси (та теперь в bootstrap). Тест: «разрешается ли разглядыванием кода?». Независим, зрелый, главный.
-- **C (Low — схлопнулся после bootstrap)** — bootstrap забрал app-stack fixation + таксономию инфра-осей (живёт в `hi_flow/skills/bootstrap/references/axis-taxonomy.md`). arch-spec C сводится к **чистому сигналу**: «фича форсирует инфра-ось, не зафиксирована → запусти bootstrap». НЕ фиксирует стек, НЕ дублирует таксономию. Мостовое бремя снято. Из High-мостовой → Low-сигнал.
-- **D (Low-Med, scope уточнён)** — composition-root exemption логичнее в **baseline depcruise-config** (project-level — bootstrap-wired / typescript-baseline), + arch-spec rules-patch gen aware (не генерит «только X→Y», ломающие composition-root `src/main.ts`/`src/bootstrap/`). REH решил на baseline-уровне (.yaml+.cjs) — образец есть.
-- **E (Medium, OQ12) — развилка** — пометка security-critical инвариантов §8 «trust-chain review required» vs D14 boundary-clause (review methodology = superpowers). Не зависит от bootstrap.
-
-**Trigger:** отдельная arch-spec amendment сессия (P4). Объём меньше изначального — C схлопнулся (тривиальный сигнал), B главный, D частично baseline-territory. Implementation — отдельная сессия (P2/P5).
-
-**Связи:** D11 (rules-patch контракт), D14 (boundary с superpowers — для E), D20 (bootstrap забрал C-территорию), D21 (arch-spec), OQ12 (E).
-
----
+(none)
 
 ## MEDIUM
 
@@ -43,7 +24,7 @@
 **Источник:** D13 (2026-04-29) — фиксирует контракт «что требуется от TS-проекта», но `Where checked` явно помечен как «preflight check planned, не реализован». Эмпирический trigger — zhenka 0.2.3 кейс с false findings из-за отсутствия `allowImportingTsExtensions`.
 
 **План:**
-1. Реализовать helper по образцу commit `f5ede31` (Q-1.5 depcruise version preflight). Валидирует 5 обязательных tsconfig-опций из `~/.claude/architecture/stacks/typescript.md` § Cross-tool contracts.
+1. Реализовать helper по образцу commit `f5ede31` (Q-1.5 depcruise version preflight). Валидирует 5 обязательных tsconfig-опций из `hi_flow/references/stacks/typescript.md` § Cross-tool contracts.
 2. Сообщения warning'ов попадают в `metadata.warnings[]` audit-report'а. Если поле в D8 schema отсутствует — добавить (минимальный schema bump).
 3. Fixtures: TS-проект с намеренно сломанным tsconfig (нет `allowImportingTsExtensions` при `.ts`-imports, как zhenka 0.2.3) → ожидаем warning. Зелёная fixture — корректный tsconfig.
 4. SKILL.md arch-audit упоминает preflight в разделе про preconditions, ссылается на canonical контракт в stack-файле, не дублирует список.
@@ -59,13 +40,13 @@
 
 **План:**
 1. Установить biome (`npm install --save-dev --save-exact @biomejs/biome`).
-2. Создать `hi_flow/skills/arch-audit/biome.json` по канону из `~/.claude/architecture/stacks/references/typescript-baseline.md` § 3.
+2. Создать `hi_flow/skills/arch-audit/biome.json` по канону из `hi_flow/references/stacks/references/typescript-baseline.md` § 3.
 3. Расширить `package.json` scripts: `lint`, `lint:fix`, `audit`, `gates` aggregate (`npm run typecheck && npm run lint && npm run test && npm run audit`).
 4. Адаптировать `tsconfig.json` под канон baseline § 2 (если уже не соответствует — проверить опции strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes, allowImportingTsExtensions).
 5. Создать CI workflow `.github/workflows/ci.yml` per baseline § 6 (Node-вариант, поскольку arch-audit на Node, не Bun).
 6. Прогнать `npm run gates` локально, починить всё, что вылезет.
 
-**Связи:** D10 amendment (scope включает hygiene baseline distribution), D14 (self-consistency как infrastructure layer), `~/.claude/architecture/stacks/references/typescript-baseline.md` (canonical reference). Опосредованно — это OQ6 critical path подход (когда baseline переедет внутрь плагина, надо чтобы сам плагин ему соответствовал).
+**Связи:** D10 amendment (scope включает hygiene baseline distribution), D14 (self-consistency как infrastructure layer), `hi_flow/references/stacks/references/typescript-baseline.md` (canonical reference). Опосредованно — это OQ6 critical path подход (когда baseline переедет внутрь плагина, надо чтобы сам плагин ему соответствовал).
 
 ### v0.7.0 product-spec retrospective improvements — implementation deferred до next product-spec trigger event
 
@@ -128,14 +109,6 @@ Implementation deferred до **trigger event = «следующая реальн
 
 ## LOW
 
-### Version drift arch-audit: package.json 0.3.0 vs ARCHITECTURE Module Map v0.2.6
-
-**Локация:** `hi_flow/skills/arch-audit/package.json` (0.3.0) vs `ARCHITECTURE.md` Module Map / Current Status (v0.2.6).
-
-**Источник:** graph-core code review 2026-05-31. package.json bump'нулся до 0.3.0 (barrel detection), Module Map не синхронизирован.
-
-**План:** синхронизировать счётчик версии в ARCHITECTURE.md Module Map arch-audit (v0.2.6 → 0.3.0). Тривиально, при следующем касании ARCHITECTURE.md.
-
 ### Нет runtime-валидации overrides в `.audit-rules.yaml` (silent fallback на опечатку)
 
 **Локация:** `hi_flow/skills/arch-audit/core/project-rules.ts:25-31` (`loadProjectRules` — `overrides: parsed.overrides` без проверки полей/значений).
@@ -145,3 +118,39 @@ Implementation deferred до **trigger event = «следующая реальн
 **План:** единый проход валидации overrides при загрузке (допустимые поля + enum-значения), warning в `metadata.warnings[]` при невалидном значении (тот же паттерн, что MEDIUM «tsconfig preflight»). НЕ точечная проверка только `profile` (была бы непоследовательна — отметил ревьюер).
 
 **Связи:** global принцип 5, MEDIUM «tsconfig preflight check» (паттерн warning в metadata), frontend-slice-governance amendment (ввёл первый enum-field `profile`), D8 schema (`metadata.warnings`).
+
+
+## Сохранённые открытые вопросы и триггеры
+
+Перенесены из прежнего ARCHITECTURE.md при смене формата 2026-10-24. Это очередь
+решений и проверок, а не утверждение о реализованной функциональности. Детальные
+исторические предложения — в [архиве](architecture/history/2026-10-24-architecture-v2.md).
+
+- **OQ8 — кампании аудита.** Не смешивать сохранённые initial/final snapshots,
+  результаты редизайна и временный live output. Отдельная схема campaigns/roadmap
+  остаётся предложением для дизайна, не новым обязательным форматом текущего runtime.
+- **OQ1 — полный прогон ERP-фичи.** Backend Slice 1 проверен; bootstrap разблокировал
+  frontend-фундамент. Полное закрытие требует подтверждённого прохождения audit-ui
+  через arch-spec → план → реализацию. Наличие шаблонов или симуляции этого не доказывает.
+- **OQ10 — согласованность backlog.** Вернуться к двунаправленной сверке при первом
+  расхождении формата или заметном росте downstream-вкладов.
+- **OQ11 — размер дистрибутива.** Тесты остаются внутри git-пакета. Вопрос их
+  исключения не закрыт. Старое требование устанавливать runtime зависимости
+  потребителю снято поставляемым dist; см. README и standalone-runtime report.
+- **OQ13 — боевой прогон Ops.** Не выдавать старую симуляцию шести сценариев за
+  проверенный запуск доставки. При следующем соответствующем onboarding сверить
+  реальные результаты и обновить покрытие.
+- **OQ14 — CD stub.** Сейчас Ops создаёт/достраивает CD. Автоматический stub из
+  bootstrap не вводить без решения при реальном недостатке существующего пути.
+- **OQ15 — fullstack.** Смешанное src требует отдельного решения о subtree audit;
+  первый реальный shared package под packages/ — триггер пересмотра per-tree
+  предположений. Аудит всего monorepo одной командой остаётся отдельным предложением.
+- **Pending 2026-04-29 — проверяемость refactor-планов.** Каждый audit-шаг должен
+  иметь конкретную команду и место проверки ожидаемого результата. Сверить при
+  следующем изменении шаблона refactor-плана; общий implementation-plan уже требует
+  точных команд. Старый прогноз «планировщик отсутствует» больше не актуален.
+
+Закрыты как устаревшие основания: OQ9 «feature-spec ещё не прошёл реальный
+прогон» — собственные отчёты и архив уже фиксируют прогон ERP; OQ6 перенос личных
+stack-файлов — выполнен июльским изменением. Завершение снятия зависимости от
+legacy skill отдельно отслеживается текущим планом и PROJECT_STATE.
