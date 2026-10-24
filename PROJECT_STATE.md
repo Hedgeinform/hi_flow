@@ -5,7 +5,7 @@
 ## Current Focus
 
 - **Focus:** завершение зависимости от legacy `architecture`: общий порядок поддержки снимка и сохранение действующих требований при миграции.
-- **Phase:** HiFlow `0.15.10` подготовлен в `codex/architecture-retirement`; публикация, установка и глобальное отключение legacy ещё не выполнены.
+- **Phase:** HiFlow `0.15.10` подготовлен в [PR #28](https://github.com/Hedgeinform/hi_flow/pull/28); слияние, установка и глобальное отключение legacy ещё не выполнены.
 - **Base:** `656069aeeaf8e37b570c19bf444153efe18f55cf` (`origin/master`, `0.15.9`).
 
 ## Last Completed

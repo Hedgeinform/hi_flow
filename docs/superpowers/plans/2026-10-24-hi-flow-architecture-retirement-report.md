@@ -2,7 +2,7 @@
 
 **Spec:** `../specs/2026-07-07-hi_flow-project-state-architecture-notes.md`; текущий план `2026-10-24-hi-flow-architecture-retirement.md`
 **Date:** 2026-10-24
-**Status:** partial — изменения подготовлены; публикация и активация ещё не выполнены.
+**Status:** partial — изменения подготовлены в [PR #28](https://github.com/Hedgeinform/hi_flow/pull/28); выпуск и активация ещё не выполнены.
 
 ## What was done
 
