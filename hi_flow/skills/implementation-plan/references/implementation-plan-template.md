@@ -205,6 +205,18 @@ Run `hi_flow:arch-audit` after implementation review when architecture changed, 
 
 If skipped, record the reason in the implementation report and `PROJECT_STATE.md`.
 
+For declared project-native enforcement, run the project's actual contract check
+and record its scope; a bundled baseline-only audit is not proof that those rules
+passed. Follow `hi_flow/references/target-architecture-contract.md`.
+
+- [ ] **Architecture snapshot refreshed from verified implementation**
+
+The executor updates affected topology, domain ownership and current issue/exception
+pointers using `hi_flow/references/architecture-snapshot.md`. Preserve accepted
+requirements and distinguish unimplemented target changes from observed state.
+If no snapshot section changed, record that conclusion in the report. Do not
+invoke the legacy `architecture` skill or rewrite historical specs.
+
 - [ ] **Project State updated**
 
 Update `PROJECT_STATE.md` (create from `hi_flow:project-state` template if missing) with:

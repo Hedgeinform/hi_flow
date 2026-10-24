@@ -31,7 +31,7 @@ The operator wants the project's technical foundation fixed before implementatio
 - «продуктовая спека», «давай продумаем фичу X» — product/feature behavior is `hi_flow:feature-spec` / `hi_flow:product-spec`. bootstrap does not touch behavior.
 - «напиши план», «implementation plan» - that is `hi_flow:implementation-plan` inside the hi_flow chain. bootstrap stops at "repo is ready to accept a plan".
 - «что сейчас по проекту», «где мы остановились», «обнови состояние проекта» - that is `hi_flow:project-state`. bootstrap creates the initial state file during init, but does not own ongoing state refresh.
-- «обнови архитектуру», «найди drift» — not bootstrap. Use `hi_flow:arch-audit` for current-state audit, `hi_flow:arch-spec` for feature architecture, or `hi_flow:arch-redesign` for corrective redesign. Bootstrap creates the initial `ARCHITECTURE.md` and fixes stack/foundation; document-only maintenance is outside bootstrap.
+- «обнови архитектуру», «найди drift» — not bootstrap. Use `hi_flow:arch-audit` for an audit, `hi_flow:arch-spec` for feature architecture, or `hi_flow:arch-redesign` for corrective redesign. For document-only refresh or legacy-document migration, follow `hi_flow/references/architecture-snapshot.md` directly. Bootstrap creates the initial snapshot and fixes stack/foundation.
 
 ## Scope
 
@@ -221,6 +221,7 @@ An axis marked **`unmanaged`** (forced-now but uncovered — see Coverage) has n
 - `references/axis-taxonomy.md` — the working vocabulary: the fixed set of 8 infrastructure axes, the slicing criterion, axes ≠ toolchain components, and the per-axis probe-class. Pointer, not duplicated here.
 - `references/coverage-manifest.md` — the SSoT of coverage (`axis → technology → { stack-file, baseline, audit-adapter, scaffold-template, probe-class }`). Read dynamically; coverage-gated probing reads it. Pointer, not duplicated here.
 - `references/architecture-template.md` - compact `ARCHITECTURE.md` template created by bootstrap.
+- `hi_flow/references/architecture-snapshot.md` - source authority, ongoing snapshot maintenance and legacy-document migration.
 - `references/scaffold-templates/` — the green-skeleton + convention reference patterns per technology (owned by other bootstrap tasks). The atom's scaffold step lays the template named for the chosen technology in the coverage-manifest.
 - `hi_flow/references/feature-backbone-convention.md` — the feature-backbone convention (module-monolith). bootstrap **owns** it and seeds its canonical principle into a new backend-service/fullstack project's `## Project-specific принципы` (forward carrier). Read for the canonical stance + what to seed.
 - `hi_flow/references/behavior-registry.md` - behavior registry source-of-truth and entry convention. bootstrap owns only the empty registry path/convention; feature-spec proposes changes and implementation-plan maps scenario-specific registry/harness/code tasks.

@@ -138,9 +138,18 @@ Review against this bug-fix plan and the accepted contract. Fix blocking finding
 
 Run `hi_flow:arch-audit` if the fix touches architecture boundaries or the Target Architecture Contract. If skipped, record why.
 
+For a declared project-native contract, use its actual validation/apply procedure
+and state its scope. A bundled audit does not implicitly consume another rules
+format; follow `hi_flow/references/target-architecture-contract.md`.
+
 - [ ] **Living artifacts updated**
 
 Update `PROJECT_STATE.md`, affected existing Behavior Registry mapping/status, and Active Issues according to the verified outcome.
+
+The executor also refreshes affected topology/ownership and current issue or
+exception pointers in `ARCHITECTURE.md`, following
+`hi_flow/references/architecture-snapshot.md`. Keep an existing external issue
+file as the single owner. If the snapshot is unchanged, record that result.
 ````
 
 ## Filling notes

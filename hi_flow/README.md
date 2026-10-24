@@ -18,6 +18,11 @@ Use `behavior-migration` when an existing project needs to be brought onto
 Behavior Registry / behavior harness rails before the next feature.
 Use `project-state` when returning to a project, asking what to do next, or
 refreshing the current operational state.
+For architecture-document refresh or migration, follow the shared
+`references/architecture-snapshot.md` directly. The agent completing a change
+updates the affected current snapshot after verification. Historical architecture
+documents remain available for provenance; the legacy `architecture` skill is
+not part of this lifecycle.
 Use `intake` when the operator wants to quickly capture, triage, or select work
 from a human-originated observed problem or parked idea without launching a spec,
 audit, fix plan, or implementation.
@@ -122,6 +127,8 @@ For solo/agent-first projects, the default is a project-native harness.
 ## References
 
 - `hi_flow/references/workflow-routing.md`
+- `hi_flow/references/architecture-snapshot.md`
+- `hi_flow/references/target-architecture-contract.md`
 - `hi_flow/references/behavior-registry.md`
 - `hi_flow/references/behavior-harness.md`
 - `hi_flow/references/stacks/typescript.md`

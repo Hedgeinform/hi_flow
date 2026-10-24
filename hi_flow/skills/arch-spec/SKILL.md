@@ -400,7 +400,7 @@ Escalation discipline — "when to bother the operator" — lives **in the sessi
 
 arch-spec is **decoupled** (variant 2, OQ6): it emits a spec with decisions as facts and **does not depend on** any operator-personal `architecture` / `living-architecture` skill. The signed spec remains the human-readable design handoff to `hi_flow:implementation-plan`; the rules-patch is the machine-checkable Target Architecture Contract delta consumed by `hi_flow:arch-audit`.
 
-The single obligation: provide a clear point **"spec signed = decisions are final"**, so any future consumer has a stable moment of pickup. Feature-level decisions are consumed directly by implementation-plan, graph-formalizable deltas are exported as rules-patches, and selected human-readable topology/domain updates may later be reflected in the project's `ARCHITECTURE.md` through explicit architecture-document maintenance. Decisions about hi_flow itself are a separate meta-session concern.
+Provide a clear point **"spec signed = decisions are final"**, so consumers have a stable handoff. Feature-level decisions are consumed by implementation-plan and graph-formalizable deltas are exported as rules-patches. Follow `hi_flow/references/architecture-snapshot.md` for current source maintenance: the executor refreshes verified topology/ownership at close-out; immediately effective project principles or exceptions are updated at approval. A signed future topology is not presented as already implemented. Decisions about hi_flow itself remain a separate meta-session concern.
 
 ## Closure backlog-sync
 

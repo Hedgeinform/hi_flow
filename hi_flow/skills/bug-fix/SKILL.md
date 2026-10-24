@@ -44,7 +44,7 @@ If no accepted-contract source exists:
 
 ## Planning Flow
 
-1. **Read current state first.** Inspect code, tests, Behavior Registry, `ARCHITECTURE.md`, relevant reports, and failing evidence. Do not trust old specs over code.
+1. **Read current state first.** Inspect code, tests, Behavior Registry, `ARCHITECTURE.md`, relevant reports, and failing evidence. Code proves implementation, not acceptance. Resolve accepted expectations through `hi_flow/references/architecture-snapshot.md`: migrated registry entries supersede old expectations in their scope; uncovered signed requirements remain authoritative until explicitly superseded. A mismatch may be the regression being fixed.
 2. **Identify the violated contract.** Name exact scenario IDs, Active Issue IDs, audit rule IDs, or signed artifact sections. If expectation is ambiguous, stop and route upstream.
 3. **Classify the fix.** Behavior regression, architecture-contract violation, implementation deviation, harness/test defect, or mixed.
 4. **Map registry and harness impact.**
@@ -59,6 +59,12 @@ If no accepted-contract source exists:
 ## Active Issue Handling
 
 If the bug is already listed in `ARCHITECTURE.md` Active Issues, the plan must reference the row ID and tell the executor how to update it after verification.
+
+If the snapshot points to an existing external issue file, update that single
+source instead. Refresh affected architecture facts at close-out using
+`hi_flow/references/architecture-snapshot.md`; the executor owns the update.
+Keep a declared project-native architecture contract on its real validation/apply
+route from `hi_flow/references/target-architecture-contract.md`.
 
 If the issue is discovered during planning and will not be fully fixed by this plan, add or propose an Active Issue row. If the plan intends to fix it immediately, the implementation report is enough only when completion is verified. The plan must say: if execution ends `partial` or `blocked`, create or keep an Active Issue row before close-out.
 

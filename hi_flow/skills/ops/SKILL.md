@@ -26,7 +26,7 @@ ops is the **owner of the last mile** in the hi_flow family — making a built p
 
 - «напиши план фичи», «implementation plan» — that is `hi_flow:implementation-plan`: the implementation plan for a **feature** over a ready codebase. ops is the last mile, orthogonal to feature planning.
 - «настрой фундамент», «зафиксируй стек» — that is `hi_flow:bootstrap`: the project's technical **foundation** (stack, scaffold, CI gates). bootstrap builds; ops delivers. (Note: «зафиксируй **сервер** / профиль» → ops; «зафиксируй **стек** / фундамент» → bootstrap — the object noun disambiguates.)
-- «обнови архитектуру» — not ops. Use `hi_flow:arch-audit`, `hi_flow:arch-spec`, or `hi_flow:arch-redesign` depending on the architecture intent. ops does not write ARCHITECTURE.md; deployment state is recorded in `docs/ops/` and summarized in `PROJECT_STATE.md`.
+- «обнови архитектуру» — not ops. For document-only refresh use `hi_flow/references/architecture-snapshot.md`; for an audit/design/redesign use the corresponding `hi_flow:*` skill. ops owns deployment records in `docs/ops/` and their operational summary in `PROJECT_STATE.md`; snapshot maintenance reads those records for high-level delivery facts.
 - «посмотреть фронт локально», local preview — **not ops** ("your machine"). Local preview is outside the scope line, already covered by the bootstrap scaffold.
 
 ## Two operations

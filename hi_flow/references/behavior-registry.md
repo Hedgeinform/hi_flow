@@ -2,6 +2,13 @@
 
 The Behavior Registry is the living source of truth for current product behavior. Signed feature specs are historical decision records; they explain why behavior changed, but they are not rewritten when later features change that behavior.
 
+This authority is scoped to migrated scenarios. For an uncovered domain in a
+partial registry, specific accepted specs and later accepted amendments still
+define requirements; absence from the registry does not cancel them. For a
+migrated scenario, superseded prose must not override its current registry
+expectation. Keep signed but unapplied change-sets distinct from implemented
+behavior. The shared source-reading rules are in `architecture-snapshot.md`.
+
 ## Artifact roles
 
 - `feature-spec.md` proposes a `Behavior Registry Changes` change-set and records product reasoning for operator review.

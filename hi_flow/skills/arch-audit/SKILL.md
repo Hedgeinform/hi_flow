@@ -26,7 +26,7 @@ Output is consumed downstream by `arch-redesign` (cluster-mode and triage-mode) 
 - Dependency hygiene (unresolvable imports, deprecated packages) — standalone `depcruise --validate` + `npm audit`.
 - Security scans, performance profiling, integration testing.
 - Authoring architectural principles — the D9 library is imported from industry; the skill reads it, does not create it.
-- Project-wide ARCHITECTURE.md maintenance — outside this audit runtime. arch-audit produces reports/rules evidence; explicit document maintenance or the relevant Hi-Flow architecture phase consumes that evidence.
+- Project-wide ARCHITECTURE.md maintenance — outside this audit runtime. arch-audit produces reports/rules evidence; its consumer maintains confirmed issues and approved exceptions using `hi_flow/references/architecture-snapshot.md`.
 - Making architecture decisions or silently promoting current code to target truth. The observed graph is evidence only; target-contract changes require an explicit rules-patch apply.
 - Onboarding tooling setup — separate family mechanism.
 
@@ -97,6 +97,12 @@ Auto-detect by structural project signals, in priority order:
 - `pom.xml` / `build.gradle` → java adapter (not implemented in v1).
 
 Do **not** read `PROJECT_META.md` — it's an operator-personal artifact, unavailable in the distributed plugin.
+
+If the project's snapshot names a different existing rules file and consumer,
+follow `hi_flow/references/target-architecture-contract.md` before claiming its
+contract is audited. This runtime does not discover alternative rules paths.
+Use the declared project-native check, or report the missing compatible wiring;
+a baseline-only run is not validation of rules this runtime did not load.
 
 **Recovery flow.** If multiple stacks are detected (polyglot) or none are detected — interactive prompt:
 
