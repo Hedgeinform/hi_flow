@@ -63,7 +63,7 @@
 - [x] Prepare the global routing change and reversible skill deactivation; keep the old skill files as history.
 - [x] Verify all selected project entry points resolve to current sources before activation.
 - [x] Distinguish prepared branch changes, merged/released plugin, installed plugin and newly loaded chat context. Do not claim a deployment from a source edit.
-- [ ] Activate only when the replacement is available to consumers; record any host that remains unchanged.
+- [x] Activate only when the replacement is available to consumers; record any host that remains unchanged.
 
 ## Completion protocol
 
@@ -77,3 +77,6 @@
 
 - 2026-10-24: HiFlow remote refreshed; base `656069aeeaf8e37b570c19bf444153efe18f55cf` (0.15.9), clean branch `codex/architecture-retirement`. The previous `codex/intake-skill` branch is retained.
 - Read-only consumer assessments found existing behavior rails in the two larger projects. Targeted comparison resolved the apparent local decision conflicts without changing product decisions. Existing dirty checkouts remain untouched.
+
+- 2026-10-24: PR #28 merged as `8b5a0e3`; HiFlow 0.15.10 installed on Codex VPS through marketplace upgrade/plugin add. Global legacy route replaced and old skill directory archived outside discovery. Fresh `skills/list` returned 12 enabled HiFlow skills at 0.15.10 and no legacy architecture in four project contexts.
+- One consumer migration remains a draft by explicit operator choice: its documentation merge would trigger an automatic application deployment. Existing accepted requirements remain current until that migration is released. The local operator computer and old dirty project checkouts were not rewritten.
