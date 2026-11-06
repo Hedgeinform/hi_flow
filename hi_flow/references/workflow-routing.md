@@ -8,6 +8,8 @@ Use hi_flow for feature-and-above work, human-originated raw project-signal inta
 
 hi_flow is intentionally heavier than a plain bugfix loop. It is the right tool when the work changes product behavior, introduces or changes Behavior Registry entries, carries architectural risk, needs a durable behavior harness, or fixes a known violation of an accepted Behavior Registry / architecture contract. For local bugfixes, test fixes, small refactors, and tightly scoped technical cleanup with no hi_flow contract impact, route directly to the implementation workflow.
 
+Use [`hi_flow:simplify-code`](../skills/simplify-code/SKILL.md) to investigate what work can safely be removed from a named module or scenario. The result can be a bounded implementation handoff or a reason to retain the candidate. When the operator asks to apply an already specified local change, use the implementation workflow directly. Use `hi_flow:arch-redesign` to design remediation from D8 audit findings.
+
 For existing projects that predate the Behavior Registry, route "migrate to BDD", "bring this project onto behavior harness rails", or similar requests to `hi_flow:behavior-migration` before the next large feature. That skill retrofits registry/harness rails from current code, tests, and legacy specs. It does not replace `hi_flow:bootstrap` for new-project foundation or `hi_flow:ops` for deployment.
 
 For human-originated raw capture requests like "зафиксируй проблему", "зафиксируй ошибку", "запаркуй идею", "не забыть фичу", "add this to intake", or similar, route to `hi_flow:intake`. Also route "посмотри intake", "разбери intake", "что брать в работу", or similar work-selection requests to `hi_flow:intake`. Intake records or classifies the signal in `INTAKE.md` without launching feature-spec, bug-fix, arch-audit, implementation, or code work by itself. Later triage may promote entries into Product Backlog or `ARCHITECTURE.md` Active Issues, then removes the processed intake entry. Agent-originated findings go to formal artifacts or the current report unless the operator explicitly asks to park them in intake.
@@ -34,6 +36,7 @@ When the operator explicitly asks for a hi_flow artifact, hi_flow wins over comp
 | Active Issue, regression, or bug in already accepted behavior/architecture with fix planning requested | `hi_flow:bug-fix` | `hi_flow:feature-spec` unless expected behavior changes; `hi_flow:intake` unless the operator only wants capture |
 | new project needs empty Behavior Registry / behavior gate foundation | `hi_flow:bootstrap` | `hi_flow:behavior-migration` |
 | architecture spec or "do we need architecture?" for a signed feature-spec | `hi_flow:arch-spec` | ad-hoc technical brainstorming |
+| investigate unnecessary work in a named module or scenario | `hi_flow:simplify-code` | `hi_flow:arch-audit` / `hi_flow:arch-redesign` |
 | implementation plan from signed hi_flow specs | `hi_flow:implementation-plan` | `superpowers:writing-plans` |
 | execute an already-written plan | recommended: `superpowers:subagent-driven-development`; fallback: `superpowers:executing-plans` | rewriting the plan during execution |
 | small bugfix / local technical change with no accepted hi_flow contract impact | Superpowers directly, if installed | hi_flow unless the operator asks for it |

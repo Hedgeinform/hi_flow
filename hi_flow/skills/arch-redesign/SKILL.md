@@ -223,6 +223,8 @@ Show cluster scope: list of violations, root cause from audit reason fields (via
 
 Pull typical alternatives for the named principle from the principles library. Show 2-3 alternatives with short pros and cons.
 
+If an alternative removes or reuses an existing mechanism, use the [candidate analysis in `simplify-code`](../simplify-code/SKILL.md#разбор-кандидата) to check that alternative within the audited cluster.
+
 **If the operator passed context about a previous attempt** (for example, «мы пробовали extract transport/, на impl-сессии вылезла скрытая зависимость X») — exclude failed alternatives from display, explicitly factor the discovered constraint into the formulation of remaining ones.
 
 ### Step 2 — Select alternative

@@ -16,9 +16,10 @@
 
 ## Technical Topology
 
-Двенадцать скиллов обслуживают продуктовую декомпозицию, фичи, приём сигналов,
+Тринадцать скиллов обслуживают продуктовую декомпозицию, фичи, приём сигналов,
 состояние проекта, миграцию поведения, исправление нарушенного контракта,
-архитектурный аудит/дизайн/редизайн, план реализации, фундамент и доставку.
+архитектурный аудит/дизайн/редизайн, адресное упрощение кода, план реализации,
+фундамент и доставку.
 Точный маршрут задаёт [workflow-routing.md](hi_flow/references/workflow-routing.md).
 
 ArchAudit строит наблюдаемый граф и проверяет его по явно заданным правилам.
@@ -32,6 +33,7 @@ ArchAudit строит наблюдаемый граф и проверяет е�
 | Область | Владелец и текущий источник |
 |---|---|
 | Маршруты семейства и граница с исполнителем | [workflow-routing.md](hi_flow/references/workflow-routing.md) |
+| Разбор лишней работы в конкретном модуле или сценарии | [simplify-code](hi_flow/skills/simplify-code/SKILL.md) |
 | Продуктовая декомпозиция и backlog | `product-spec`; [backlog-integration.md](hi_flow/references/backlog-integration.md) для вкладов downstream |
 | Форма текущих поведенческих контрактов | [behavior-registry.md](hi_flow/references/behavior-registry.md); сценарии живут в проектах-потребителях |
 | Исполнимая проверка поведения | [behavior-harness.md](hi_flow/references/behavior-harness.md), project-native mapping/runner |

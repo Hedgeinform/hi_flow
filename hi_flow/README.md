@@ -30,6 +30,9 @@ audit, fix plan, or implementation.
 Use `bug-fix` when an Active Issue or regression violates already accepted
 behavior or architecture. Use a generic implementation workflow directly for
 small local bugfixes and isolated code changes with no hi_flow contract impact.
+Use `simplify-code` to investigate unnecessary work in a named module or scenario
+and decide what can be safely removed or reused while making the code easier to
+understand and change. It can conclude that a repeated operation is necessary.
 For implementation, hi_flow recommends Superpowers as the execution layer,
 especially `superpowers:subagent-driven-development`,
 `superpowers:test-driven-development`, and `superpowers:verification-before-completion`.
@@ -67,6 +70,7 @@ and must be shipped to a non-local target.
   regressions.
 - `hi_flow:arch-audit` - architecture snapshot and rule validation.
 - `hi_flow:arch-redesign` - corrective refactor campaign planning.
+- `hi_flow:simplify-code` - targeted review of unnecessary work in code.
 - `hi_flow:arch-spec` - architecture gate and per-feature architecture design.
 - `hi_flow:implementation-plan` - behavior-first implementation plan compatible
   with Superpowers execution skills.
