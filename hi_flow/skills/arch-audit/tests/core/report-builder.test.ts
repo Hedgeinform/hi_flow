@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mkdtemp, mkdir, writeFile, rm, readFile, access } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { buildReport, formatMarkdownDetails, renderReportFromDisk } from '../../core/report-builder.ts'
+import { buildReport, buildReportData, formatMarkdownDetails, renderReportFromDisk } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 import { fixturePath } from '../test-paths.ts'
 
@@ -18,6 +18,31 @@ const cannedDepcruiseOutput = JSON.stringify({
 })
 
 describe('report-builder', () => {
+  it('builds report from collected input without depcruise', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rb-collector-'))
+    await mkdir(join(dir, 'src/core'), { recursive: true })
+    await mkdir(join(dir, 'src/engine'), { recursive: true })
+    await writeFile(join(dir, 'src/core/core.cpp'), 'int core;\n')
+    await writeFile(join(dir, 'src/engine/engine.cpp'), 'int engine;\n')
+    const collector = {
+      name: 'fixture',
+      async collect() {
+        return {
+          findings: [], dep_graph: { core: [], engine: ['core'] },
+          per_module_raw: { core: { ca: 1, ce: 0, loc: 0 }, engine: { ca: 0, ce: 1, loc: 0 } },
+          source_files_by_module: { core: ['src/core/core.cpp'], engine: ['src/engine/engine.cpp'] }, sdk_edges: [], module_names: ['core', 'engine'],
+          tooling_version: 'fixture-collector@1', operator_notes: [],
+        }
+      },
+      async detectStructural() { return [] },
+    }
+    const data = await buildReportData(collector, dir, { auditSha: 'test-sha', d9MdPath: fixturePath('d9-sample.md') })
+    expect(data.report.metrics.dep_graph).toEqual({ core: [], engine: ['core'] })
+    expect(data.report.metadata.audit_tooling_version).toBe('fixture-collector@1')
+    expect(data.report.metadata.schema_version).toBe('1.2')
+    await rm(dir, { recursive: true })
+  })
+
   it('formats nested detail numbers for Markdown without mutating raw evidence', () => {
     const extras = {
       nccd: 1.6666666666666667,

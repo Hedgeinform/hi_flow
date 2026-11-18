@@ -1,3 +1,9 @@
+import type { AuditAdapter, CollectionOptions, AuditInput } from '../core/audit-adapter.ts'
+import { checkDepcruiseVersion } from '../core/preflight.ts'
+import { resolveRuntimeRoot, runBundledDepcruise } from '../core/depcruise-runtime.ts'
+import { generateDepcruiseConfig } from '../helpers/generate-depcruise-config.ts'
+import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
+import { buildSourceScanGlob } from '../core/source-scope.ts'
 import { access } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ToolingRequirement, DepGraph, RawFinding, ProjectRules } from '../core/types.ts'
@@ -9,7 +15,7 @@ export interface ModuleInfo {
   path: string
 }
 
-export interface TypescriptDepcruiseAdapter {
+export interface TypescriptDepcruiseAdapter extends AuditAdapter {
   // Identity
   readonly name: string
   readonly version: string
@@ -94,6 +100,22 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
     channelSdkList,
     layerNamingMap,
     defaultModulePattern: 'src/*/',
+
+    async collect(options: CollectionOptions): Promise<AuditInput> {
+      const { projectRoot, moduleRoot, projectRules, baselineRules, depcruiseVersion } = options
+      if (!depcruiseVersion) throw new Error('Dependency-cruiser version is required for the TypeScript adapter.')
+      checkDepcruiseVersion(depcruiseVersion, this.requiredTooling[0]!)
+      const module_names = (await this.identifyModules(projectRoot, moduleRoot)).map(module => module.name)
+      const config = await generateDepcruiseConfig({ baselineRules, projectRules, projectRoot })
+      const runtimeRoot = resolveRuntimeRoot(import.meta.url)
+      const runner = options.runDepcruise ?? ((cfg: string, src: string) => runBundledDepcruise(runtimeRoot, projectRoot, cfg, src))
+      const parsed = parseDepcruiseOutput(runner(config, buildSourceScanGlob(moduleRoot)), moduleRoot)
+      if (Object.keys(parsed.per_module_raw).length === 0) {
+        throw new Error(`Dependency-cruiser returned no production modules for '${moduleRoot}/'. Audit aborted to prevent an empty successful D8 snapshot.`)
+      }
+      this.setDetectedDepcruiseVersion(depcruiseVersion)
+      return { ...parsed, module_names, tooling_version: this.getToolingVersionString(), operator_notes: [] }
+    },
 
     async detect(projectPath: string): Promise<boolean> {
       try {
