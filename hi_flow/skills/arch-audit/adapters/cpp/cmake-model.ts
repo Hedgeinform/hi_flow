@@ -8,7 +8,7 @@ import { evaluateConfiguredLinks } from './configured-links.ts'
 
 const exec = promisify(execFile)
 export interface CmakeTarget { name: string; type: string; sources: { path: string; generated: boolean }[]; includeRoots: string[]; modules: string[]; external: boolean; owner?: string; declarationFile?: string; declarationLine?: number }
-export interface CmakeModel { targets: CmakeTarget[]; links: {from: string; to: string}[]; translationUnits: string[]; externalTargets: { name: string; includeRoots: string[] }[]; configuration: string }
+export interface CmakeModel { targets: CmakeTarget[]; links: {from: string; to: string}[]; linkLocations: { from: string; to: string; file: string; line: number }[]; translationUnits: string[]; externalTargets: { name: string; includeRoots: string[] }[]; configuration: string; multiConfig: boolean }
 
 export async function readCmakeModel(projectRoot: string, buildDir: string, configuration?: string, moduleRoot = 'src'): Promise<CmakeModel> {
   const root = resolve(projectRoot), build = resolve(buildDir)
@@ -40,7 +40,7 @@ export async function readCmakeModel(projectRoot: string, buildDir: string, conf
     if (target.type === 'UTILITY') continue
     const sources = (target.sources ?? []).map((source: any) => ({ path: isAbsolute(source.path) ? source.path : resolve(root, source.path), generated: source.isGenerated === true }))
     const includeRoots = [...new Set<string>((target.compileGroups ?? []).flatMap((group: any) => (group.includes ?? []).map((include: any) => include.path as string)))]
-    const modules = [...new Set<string>(sources.filter((source: {generated: boolean}) => !source.generated).map((source: {path: string}) => fileToModule(relative(root, source.path), moduleRoot)).filter((name: string | null): name is string => !!name))]
+    const modules = [...new Set<string>(sources.filter((source: {generated: boolean; path: string}) => !source.generated && /\.(c|cc|cpp|cxx|m|mm|h|hh|hpp|hxx|inl|inc)$/i.test(source.path)).map((source: {path: string}) => fileToModule(relative(root, source.path), moduleRoot)).filter((name: string | null): name is string => !!name))]
     const declaration = target.backtraceGraph?.nodes?.[target.backtrace]
     const declarationPath = target.backtraceGraph?.files?.[declaration?.file]
     const sourceDirectory = resolve(root, target.paths?.source ?? '.')
@@ -142,10 +142,20 @@ export async function readCmakeModel(projectRoot: string, buildDir: string, conf
       if (active && !active.some(value => (aliases.get(value) ?? value) === edge.to)) links.splice(i, 1)
     }
   }
+  const linkLocations: CmakeModel['linkLocations'] = []
+  for (const record of records) {
+    if (record.cmd?.toLowerCase() !== 'target_link_libraries' || !Array.isArray(record.args) || typeof record.file !== 'string' || typeof record.line !== 'number') continue
+    const [source, ...args] = record.args as string[]
+    for (const arg of args) {
+      const from = aliases.get(source!) ?? source
+      const to = aliases.get(arg) ?? arg
+      if (from && links.some(link => link.from === from && link.to === to)) linkLocations.push({ from, to, file: resolve(record.file), line: record.line })
+    }
+  }
   const sourceRoot = resolve(root, moduleRoot)
   const translationUnits = [...new Set(targets.flatMap(target => target.sources.filter(source => !source.generated && source.path.startsWith(sourceRoot + '/') && !source.path.startsWith(build + '/') && /\.(c|cc|cpp|cxx|m|mm)$/i.test(source.path)).map(source => source.path)))]
   const commands = await readCompileCommands(build)
   const commandFiles = new Set(commands.map(command => resolve(command.directory, command.file)))
   for (const unit of translationUnits) if (!commandFiles.has(unit)) throw new Error(`Missing compile command for translation unit ${unit}`)
-  return { targets, links, translationUnits, externalTargets, configuration: selected.name }
+  return { targets, links, linkLocations, translationUnits, externalTargets, configuration: selected.name, multiConfig: configurations.length > 1 }
 }

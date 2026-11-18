@@ -27,6 +27,7 @@ describe('CMake model', () => {
       expect(model.targets.find(target => target.name === 'core')?.declarationLine).toBe(1)
       expect(model.targets.find(target => target.name === 'engine')?.modules).toEqual(['engine'])
       expect(model.links).toContainEqual({ from: 'engine', to: 'core' })
+      expect(model.linkLocations).toContainEqual(expect.objectContaining({ from: 'engine', to: 'core', file: join(root, 'CMakeLists.txt'), line: expect.any(Number) }))
       expect(model.links).toContainEqual({ from: 'engine', to: 'headers' })
       expect(model.links).toContainEqual({ from: 'headers', to: 'core' })
       expect(model.links).toContainEqual({ from: 'core', to: 'external' })

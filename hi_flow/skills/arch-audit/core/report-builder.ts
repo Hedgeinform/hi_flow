@@ -18,6 +18,8 @@ import { countSourceLoc } from './source-metrics.ts'
 export interface BuildOpts {
   auditSha?: string
   depcruiseVersion?: string
+  buildDir?: string
+  configuration?: string
   d9MdPath?: string
   clusterProsefn?: ClusterProseFn
   runDepcruise?: (configPath: string, srcPath: string) => string
@@ -131,7 +133,7 @@ export async function buildReportData(
   const d9 = await loadD9(opts.d9MdPath ?? resolveBundledD9Path(runtimeRoot))
   const projectRules = await loadProjectRules(projectRoot, { d9 })
   const moduleRoot = normalizeModuleRoot(projectRules.overrides?.module_pattern ?? 'src')
-  const parsed = await adapter.collect({ projectRoot, moduleRoot, projectRules, baselineRules, depcruiseVersion: opts.depcruiseVersion, runDepcruise: opts.runDepcruise })
+  const parsed = await adapter.collect({ projectRoot, moduleRoot, projectRules, baselineRules, buildDir: opts.buildDir, configuration: opts.configuration, depcruiseVersion: opts.depcruiseVersion, runDepcruise: opts.runDepcruise })
   const modulesList = parsed.module_names
   const locByModule = await countSourceLoc(projectRoot, parsed.source_files_by_module)
   for (const [module, raw] of Object.entries(parsed.per_module_raw)) {
