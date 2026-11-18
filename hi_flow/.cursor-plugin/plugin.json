@@ -2,7 +2,7 @@
   "name": "hi_flow",
   "displayName": "hi_flow",
   "description": "Behavior-first human-originated intake, feature, project-state, bug-fix, architecture, and targeted code simplification workflow for agentic development.",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "author": {
     "name": "viessedo",
     "email": "viessedo@proton.me"

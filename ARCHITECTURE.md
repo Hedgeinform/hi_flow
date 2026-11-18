@@ -9,7 +9,7 @@
 ## Stack
 
 - Инструкции скиллов: Markdown и YAML frontmatter, общие для Codex, Claude Code и Cursor.
-- Исполняемый ArchAudit: TypeScript/Node.js, Vitest; исходники в `hi_flow/skills/arch-audit/`.
+- Исполняемый ArchAudit: TypeScript/Node.js, Vitest; исходники в `hi_flow/skills/arch-audit/`. Адаптеры: TS/JS через dependency-cruiser и C++/CMake через конфигурацию сборки и Linux GCC.
 - Поставляемый runtime: готовые Node.js ES modules в `hi_flow/skills/arch-audit/dist/`, включая dependency-cruiser. Потребителю не требуется установка пакетов в кэш плагина.
 - Упаковка: три plugin manifest в `hi_flow/` и marketplace в корне репозитория; версии сверяются при выпуске.
 - Состав и команды runtime: [package.json](hi_flow/skills/arch-audit/package.json); размещение пакета — [README](hi_flow/README.md).
@@ -23,6 +23,8 @@
 Точный маршрут задаёт [workflow-routing.md](hi_flow/references/workflow-routing.md).
 
 ArchAudit строит наблюдаемый граф и проверяет его по явно заданным правилам.
+C++-адаптер и [стековые правила](hi_flow/references/stacks/cpp.md) поддерживают существующие проекты; Bootstrap для C++ отложен, покрытие частичное. Машинный аудит возвращает ошибку при неполных данных, а архитектурные находки сохраняет в отчёте.
+
 `arch-spec` и `arch-redesign` предлагают изменения целевого контракта; принятие
 наблюдаемой реализации за норму запрещено. Методология выполнения планов
 остаётся у Superpowers либо совместимого исполнителя. Для документов скиллов

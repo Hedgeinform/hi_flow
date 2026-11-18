@@ -1,3 +1,10 @@
+import { detectMetricFindings } from '../core/metric-findings.ts'
+import type { AuditAdapter, CollectionOptions, AuditInput } from '../core/audit-adapter.ts'
+import { checkDepcruiseVersion } from '../core/preflight.ts'
+import { resolveRuntimeRoot, runBundledDepcruise } from '../core/depcruise-runtime.ts'
+import { generateDepcruiseConfig } from '../helpers/generate-depcruise-config.ts'
+import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
+import { buildSourceScanGlob } from '../core/source-scope.ts'
 import { access } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ToolingRequirement, DepGraph, RawFinding, ProjectRules } from '../core/types.ts'
@@ -9,7 +16,7 @@ export interface ModuleInfo {
   path: string
 }
 
-export interface TypescriptDepcruiseAdapter {
+export interface TypescriptDepcruiseAdapter extends AuditAdapter {
   // Identity
   readonly name: string
   readonly version: string
@@ -95,6 +102,22 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
     layerNamingMap,
     defaultModulePattern: 'src/*/',
 
+    async collect(options: CollectionOptions): Promise<AuditInput> {
+      const { projectRoot, moduleRoot, projectRules, baselineRules, depcruiseVersion } = options
+      if (!depcruiseVersion) throw new Error('Dependency-cruiser version is required for the TypeScript adapter.')
+      checkDepcruiseVersion(depcruiseVersion, this.requiredTooling[0]!)
+      const module_names = (await this.identifyModules(projectRoot, moduleRoot)).map(module => module.name)
+      const config = await generateDepcruiseConfig({ baselineRules, projectRules, projectRoot })
+      const runtimeRoot = resolveRuntimeRoot(import.meta.url)
+      const runner = options.runDepcruise ?? ((cfg: string, src: string) => runBundledDepcruise(runtimeRoot, projectRoot, cfg, src))
+      const parsed = parseDepcruiseOutput(runner(config, buildSourceScanGlob(moduleRoot)), moduleRoot)
+      if (Object.keys(parsed.per_module_raw).length === 0) {
+        throw new Error(`Dependency-cruiser returned no production modules for '${moduleRoot}/'. Audit aborted to prevent an empty successful D8 snapshot.`)
+      }
+      this.setDetectedDepcruiseVersion(depcruiseVersion)
+      return { ...parsed, module_names, tooling_version: this.getToolingVersionString(), operator_notes: [] }
+    },
+
     async detect(projectPath: string): Promise<boolean> {
       try {
         await access(join(projectPath, 'package.json'))
@@ -139,47 +162,7 @@ export function createTypescriptDepcruiseAdapter(): TypescriptDepcruiseAdapter {
       const { depGraph, perModuleRaw, projectRules } = args
       const findings: RawFinding[] = []
       const modules = Object.keys(perModuleRaw)
-      const N = modules.length
-      const hubThreshold = Math.max(0.2 * N, 10)
-
-      for (const m of modules) {
-        const { ca, ce, loc } = perModuleRaw[m]!
-
-        // god-object: Ca>10 AND Ce>10 AND LOC>300
-        // Module-property finding — describes m itself, not an edge. target omitted.
-        if (ca > 10 && ce > 10 && loc > 300) {
-          findings.push({
-            rule_id: 'god-object',
-            raw_severity: 'error',
-            type: 'coupling',
-            source: { module: m, file: '' },
-            extras: { ca, ce, loc },
-          })
-        }
-
-        // dependency-hub: Ca > max(20% N, 10) — module-property
-        if (ca > hubThreshold) {
-          findings.push({
-            rule_id: 'dependency-hub',
-            raw_severity: 'error',
-            type: 'coupling',
-            source: { module: m, file: '' },
-            extras: { ca, threshold: hubThreshold },
-          })
-        }
-
-        // high-fanout: Ce > 15 — module-property
-        const HIGH_FANOUT_THRESHOLD = 15
-        if (ce > HIGH_FANOUT_THRESHOLD) {
-          findings.push({
-            rule_id: 'high-fanout',
-            raw_severity: 'warn',
-            type: 'coupling',
-            source: { module: m, file: '' },
-            extras: { ce, threshold: HIGH_FANOUT_THRESHOLD },
-          })
-        }
-      }
+      findings.push(...detectMetricFindings(depGraph, perModuleRaw))
 
       // inappropriate-intimacy: 2-cycles in depGraph
       for (const [src, tgts] of Object.entries(depGraph)) {

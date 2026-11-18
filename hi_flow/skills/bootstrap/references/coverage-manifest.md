@@ -38,6 +38,21 @@ Stack files and baselines are plugin-internal references under `hi_flow/referenc
 
 Toolchain components (linter = Biome, formatter = Biome, test-runner = bun test / vitest, CI = GitHub Actions, arch-audit-config = depcruise) are **silent-baseline wire sub-steps** of this axis, configured from the baseline above. They are not separate rows — see `axis-taxonomy.md` (axes ≠ toolchain components).
 
+### language & runtime (C++ / CMake)
+
+**Status: PARTIAL → treated as NOT covered.** Existing projects can use the
+stack rules, CMake adapter and staged gate example. Bootstrap/scaffolding for a
+new C++ project remains deferred; do not present this row as full coverage.
+
+| Field | Value |
+|---|---|
+| technology | C++ / CMake, Linux GCC |
+| stack-file | `hi_flow/references/stacks/cpp.md` |
+| baseline | `hi_flow/references/stacks/references/cpp-baseline.md` |
+| audit-adapter | `hi_flow/skills/arch-audit/adapters/cpp-cmake.ts` + shipped runtime |
+| scaffold-template | absent (pending) |
+| probe-class | buy-in |
+
 ### database (relational / primary state store)
 
 **Status: PARTIAL → treated as NOT covered** (loud signal; not a full set).
@@ -94,7 +109,7 @@ Partial coverage falls under coverage-honesty: "axis covered partially — fixin
 
 | Axis | Coverage |
 |---|---|
-| language & runtime | covered |
+| language & runtime | TypeScript covered; C++ / CMake partial → not covered |
 | database | partial → not covered (loud signal) |
 | interface / frontend | covered (React) |
 | file storage | not covered |

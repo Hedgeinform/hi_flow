@@ -1,26 +1,27 @@
 import { writeFile, mkdir, readFile, rename } from 'node:fs/promises'
 import { basename, join } from 'node:path'
-import type { TypescriptDepcruiseAdapter } from '../adapters/typescript-depcruise.ts'
+import { randomUUID } from 'node:crypto'
+import type { AuditAdapter } from './audit-adapter.ts'
 import type { D8AuditReport, Finding, SeverityCounts, ModuleMetrics, RawFinding, D9Index, ProjectRules } from './types.ts'
 import { getBaselineRules } from './baseline-rules.ts'
 import { loadProjectRules } from './project-rules.ts'
 import { loadD9, resolveBundledD9Path } from './d9-loader.ts'
 import { validateD8Report } from './d8-schema-validator.ts'
 import { applySuppression } from './suppression.ts'
-import { generateDepcruiseConfig } from '../helpers/generate-depcruise-config.ts'
-import { parseDepcruiseOutput } from '../helpers/parse-depcruise-output.ts'
 import { computeNCCD, instability } from './graph-core.ts'
 import { enrichFindings } from '../helpers/enrich-findings.ts'
 import { generateMermaid, MERMAID_OVERALL_CAP } from '../helpers/generate-mermaid.ts'
-import { checkDepcruiseVersion } from './preflight.ts'
 import { resolveAuditSha } from './audit-sha.ts'
-import { resolveRuntimeRoot, runBundledDepcruise } from './depcruise-runtime.ts'
-import { buildSourceScanGlob, normalizeModuleRoot } from './source-scope.ts'
+import { resolveRuntimeRoot } from './depcruise-runtime.ts'
+import { normalizeModuleRoot } from './source-scope.ts'
 import { countSourceLoc } from './source-metrics.ts'
 
 export interface BuildOpts {
   auditSha?: string
-  depcruiseVersion: string
+  depcruiseVersion?: string
+  buildDir?: string
+  configuration?: string
+  check?: boolean
   d9MdPath?: string
   clusterProsefn?: ClusterProseFn
   runDepcruise?: (configPath: string, srcPath: string) => string
@@ -120,13 +121,17 @@ export interface ReportData {
  * cluster, then calls renderReport() for phase 2.
  */
 export async function buildReportData(
-  adapter: TypescriptDepcruiseAdapter,
+  adapter: AuditAdapter,
   projectRoot: string,
   opts: BuildOpts,
 ): Promise<ReportData> {
   const outDir = opts.outDir ?? join(projectRoot, 'audit-report')
   await mkdir(outDir, { recursive: true })
-  await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(), 'utf-8')
+  for (const filename of ['audit-report.json', 'clusters-input.json']) {
+    try { await rename(join(outDir, filename), join(outDir, `${filename}.previous-${randomUUID()}`)) }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+  }
+  if (!opts.check) await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(), 'utf-8')
 
   const auditSha = opts.auditSha ?? resolveAuditSha(projectRoot)
   const baselineRules = getBaselineRules()
@@ -134,23 +139,9 @@ export async function buildReportData(
   const d9 = await loadD9(opts.d9MdPath ?? resolveBundledD9Path(runtimeRoot))
   const projectRules = await loadProjectRules(projectRoot, { d9 })
   const moduleRoot = normalizeModuleRoot(projectRules.overrides?.module_pattern ?? 'src')
-  const modulesList = (await adapter.identifyModules(projectRoot, moduleRoot)).map(module => module.name)
-
-  checkDepcruiseVersion(opts.depcruiseVersion, adapter.requiredTooling[0]!)
-
-  const configPath = await generateDepcruiseConfig({ baselineRules, projectRules, projectRoot })
-
-  const runner = opts.runDepcruise ?? ((cfg: string, src: string) =>
-    runBundledDepcruise(runtimeRoot, projectRoot, cfg, src))
-  const depcruiseOut = runner(configPath, buildSourceScanGlob(moduleRoot))
-
-  const parsed = parseDepcruiseOutput(depcruiseOut, moduleRoot)
-  if (Object.keys(parsed.per_module_raw).length === 0) {
-    throw new Error(
-      `Dependency-cruiser returned no production modules for '${moduleRoot}/'. ` +
-      'Audit aborted to prevent an empty successful D8 snapshot.',
-    )
-  }
+  const parsed = await adapter.collect({ projectRoot, moduleRoot, projectRules, baselineRules, buildDir: opts.buildDir, configuration: opts.configuration, depcruiseVersion: opts.depcruiseVersion, runDepcruise: opts.runDepcruise })
+  if (opts.check && parsed.parsing_errors?.length) throw new Error(`Incomplete audit: parsing failed for ${parsed.parsing_errors.map(item => item.file).join(', ')}`)
+  const modulesList = parsed.module_names
   const locByModule = await countSourceLoc(projectRoot, parsed.source_files_by_module)
   for (const [module, raw] of Object.entries(parsed.per_module_raw)) {
     raw.loc = locByModule[module] ?? 0
@@ -165,6 +156,7 @@ export async function buildReportData(
     barrelImports: parsed.barrel_imports,
     modulesList,
     moduleRoot,
+    entryModules: parsed.entry_modules,
   })
 
   const nccd = computeNCCD(parsed.dep_graph)
@@ -198,6 +190,8 @@ export async function buildReportData(
     enrichedFindings.length - findings.length,
   )
 
+  operatorNotes.push(...parsed.operator_notes)
+
   const clusters = new Map<string, Finding[]>()
   for (const f of findings) {
     const key = f.reason.principle
@@ -213,7 +207,6 @@ export async function buildReportData(
   const severity_counts: SeverityCounts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 }
   for (const f of findings) severity_counts[f.severity]++
 
-  adapter.setDetectedDepcruiseVersion(opts.depcruiseVersion)
   const knownRuleIds = [
     ...baselineRules.map(rule => rule.id),
     ...projectRules.forbidden.map(rule => rule.name),
@@ -224,7 +217,7 @@ export async function buildReportData(
     metadata: {
       audit_sha: auditSha,
       audit_timestamp: new Date().toISOString(),
-      audit_tooling_version: adapter.getToolingVersionString(),
+      audit_tooling_version: parsed.tooling_version,
       schema_version: '1.2',
       project_name: basename(projectRoot),
       module_root: moduleRoot,
@@ -254,7 +247,7 @@ export async function buildReportData(
 
   const json_path = join(outDir, 'audit-report.json')
   await writeFile(json_path, JSON.stringify(report, null, 2), 'utf-8')
-  await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(auditSha), 'utf-8')
+  if (!opts.check) await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(auditSha), 'utf-8')
 
   // Side artifact: clusters-input.json — the prose-generation contract for the skill agent.
   // Lists each cluster with its principle id, finding ids, and affected modules so the agent
@@ -304,7 +297,7 @@ export async function renderReport(
  * Kept for tests and direct programmatic use. Production flow uses the two-phase split.
  */
 export async function buildReport(
-  adapter: TypescriptDepcruiseAdapter,
+  adapter: AuditAdapter,
   projectRoot: string,
   opts: BuildOpts,
 ): Promise<{ json_path: string; md_path: string }> {
@@ -388,7 +381,9 @@ function renderMarkdownReport(
 
   lines.push('## Scope')
   lines.push('')
-  lines.push('arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
+  lines.push(report.metadata.audit_tooling_version?.startsWith('cpp-cmake@')
+    ? 'arch-audit covers architecture-level dependency boundaries, cycles and coupling metrics. Run the CMake build, CTest, clang-format and clang-tidy as complementary quality checks.'
+    : 'arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
   lines.push('')
 
   // Severity roll-up

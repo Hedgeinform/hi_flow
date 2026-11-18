@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.25)
+project(cpp_audit_fixture LANGUAGES CXX)
+add_library(core src/core/core.cpp src/core/Core.h)
+add_library(engine src/engine/engine.cpp)
+target_link_libraries(engine PRIVATE core)

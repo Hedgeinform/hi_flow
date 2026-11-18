@@ -1,100 +1,80 @@
 #!/usr/bin/env node
-import { resolve } from 'node:path'
+import { access } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createTypescriptDepcruiseAdapter } from '../adapters/typescript-depcruise.ts'
+import { createCppCmakeAdapter } from '../adapters/cpp-cmake.ts'
 import { readBundledDepcruiseVersion, resolveRuntimeRoot } from '../core/depcruise-runtime.ts'
 import { buildReportData, renderReport, type ClusterProseFn } from '../core/report-builder.ts'
+import type { SeverityCounts } from '../core/types.ts'
 
-/**
- * Phase 1 entrypoint — produces audit-report.json + clusters-input.json.
- *
- * Returns the data structure needed by phase 2. The CLI form writes JSON and prints paths;
- * the agent then generates per-cluster prose and invokes `npm run render-md` for phase 2.
- *
- * Programmatic callers can pass `clusterProsefn` to render the markdown in a single call
- * (legacy single-shot mode — used by tests). Production agent flow is two-phase.
- *
- * `outDir` overrides the default output directory (`<projectRoot>/audit-report/`). Use this
- * when the project has its own tooling that writes to `audit-report/` to avoid namespace
- * collision (e.g. existing `depgraph-audit.mjs` baselines + patches ledgers).
- */
+export interface AuditOptions { stack?: 'typescript' | 'cpp-cmake'; buildDir?: string; configuration?: string; check?: boolean }
+async function exists(path: string): Promise<boolean> {
+  try { await access(path); return true } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false; throw error }
+}
 export async function runAudit(
   projectRoot: string,
   d9MdPath?: string,
   clusterProsefn?: ClusterProseFn,
   outDir?: string,
-): Promise<{ json_path: string; md_path: string | null; clusters_input_path: string }> {
-  const runtimeRoot = resolveRuntimeRoot(import.meta.url)
-  const depcruiseVersion = readBundledDepcruiseVersion(runtimeRoot)
-
-  const adapter = createTypescriptDepcruiseAdapter()
-  const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath, outDir })
-  const clusters_input_path = `${data.outDir}/clusters-input.json`
-
-  if (clusterProsefn) {
-    const { md_path } = await renderReport(data, clusterProsefn)
-    return { json_path: data.json_path, md_path, clusters_input_path }
-  }
-
-  return { json_path: data.json_path, md_path: null, clusters_input_path }
+  options: AuditOptions = {},
+): Promise<{ json_path: string; md_path: string | null; clusters_input_path: string; severity_counts: SeverityCounts }> {
+  const [hasTs, hasCmake] = await Promise.all([exists(join(projectRoot, 'package.json')), exists(join(projectRoot, 'CMakeLists.txt'))])
+  if (!options.stack && hasTs && hasCmake) throw new Error('Mixed project requires explicit --stack selection')
+  const stack = options.stack ?? (hasCmake ? 'cpp-cmake' : 'typescript')
+  if (stack === 'cpp-cmake' && !options.buildDir) throw new Error('C++/CMake requires --build-dir')
+  const adapter = stack === 'cpp-cmake' ? createCppCmakeAdapter() : createTypescriptDepcruiseAdapter()
+  const depcruiseVersion = stack === 'typescript' ? readBundledDepcruiseVersion(resolveRuntimeRoot(import.meta.url)) : undefined
+  const reportOut = outDir ?? (options.check ? (options.buildDir ? join(options.buildDir, 'arch-audit', 'check') : join(projectRoot, 'audit-report-check')) : undefined)
+  if (options.check && reportOut && await exists(join(reportOut, 'audit-report.md'))) throw new Error('Machine check requires a separate output directory without an existing full Markdown report')
+  const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath, outDir: reportOut, buildDir: options.buildDir, configuration: options.configuration, check: options.check })
+  const clusters_input_path = join(data.outDir, 'clusters-input.json')
+  const md_path = clusterProsefn && !options.check ? (await renderReport(data, clusterProsefn)).md_path : null
+  return { json_path: data.json_path, md_path, clusters_input_path, severity_counts: data.report.metrics.severity_counts }
 }
-
-interface ParsedCliArgs {
-  projectRoot?: string
-  d9MdPath?: string
-  outDir?: string
-  help: boolean
-}
-
-function parseCliArgs(argv: string[]): ParsedCliArgs {
+export interface ParsedCliArgs extends AuditOptions { projectRoot?: string; d9MdPath?: string; outDir?: string; help: boolean }
+export function parseCliArgs(argv: string[]): ParsedCliArgs {
   const out: ParsedCliArgs = { help: false }
   const positional: string[] = []
   for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]!
-    if (a === '--out-dir' || a === '-o') {
-      out.outDir = argv[++i]
-    } else if (a === '--help' || a === '-h') {
-      out.help = true
-    } else if (a.startsWith('--out-dir=')) {
-      out.outDir = a.slice('--out-dir='.length)
-    } else {
-      positional.push(a)
-    }
+    const arg = argv[i]!
+    if (arg === '--help' || arg === '-h') { out.help = true; continue }
+    if (arg === '--check') { out.check = true; continue }
+    const [name, inline] = arg.startsWith('--') && arg.includes('=') ? [arg.slice(0, arg.indexOf('=')), arg.slice(arg.indexOf('=') + 1)] : [arg, undefined]
+    if (['--out-dir', '-o', '--stack', '--build-dir', '--configuration'].includes(name!)) {
+      const value = inline ?? argv[++i]
+      if (!value || value.startsWith('-')) throw new Error(`Missing value for ${name}`)
+      if (name === '--stack') {
+        if (value !== 'typescript' && value !== 'cpp-cmake') throw new Error(`Unknown stack: ${value}`)
+        out.stack = value
+      } else if (name === '--build-dir') out.buildDir = value
+      else if (name === '--configuration') out.configuration = value
+      else out.outDir = value
+    } else if (arg.startsWith('-')) throw new Error(`Unknown option: ${arg}`)
+    else positional.push(arg)
   }
+  if (positional.length > 2) throw new Error('Too many positional arguments')
   out.projectRoot = positional[0]
   out.d9MdPath = positional[1]
   return out
 }
-
-// CLI entry: invoked via `npm run audit -- [--out-dir <path>] <project-root> [d9-md-path]`
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const args = parseCliArgs(process.argv.slice(2))
-  if (args.help || !args.projectRoot) {
-    console.error('Usage: npm run audit -- [--out-dir <path>] <project-root> [d9-md-path]')
-    console.error('')
-    console.error('Options:')
-    console.error('  --out-dir, -o <path>   Override default output directory (default: <project-root>/audit-report).')
-    console.error('                          Use this when the project already has tooling writing to audit-report/.')
-    process.exit(args.help ? 0 : 1)
-  }
-  runAudit(
-    resolve(args.projectRoot),
-    args.d9MdPath ? resolve(args.d9MdPath) : undefined,
-    undefined,
-    args.outDir ? resolve(args.outDir) : undefined,
-  )
-    .then(({ json_path, clusters_input_path }) => {
-      console.log('audit-report.json:    ', json_path)
-      console.log('clusters-input.json:  ', clusters_input_path)
-      console.log('')
+  void (async () => {
+    const args = parseCliArgs(process.argv.slice(2))
+    if (args.help || !args.projectRoot) {
+      console.error('Usage: audit [--stack typescript|cpp-cmake] [--build-dir path] [--configuration name] [--check] [--out-dir path] <project-root> [d9-md-path]')
+      if (!args.help) process.exitCode = 1
+      return
+    }
+    const result = await runAudit(resolve(args.projectRoot), args.d9MdPath ? resolve(args.d9MdPath) : undefined, undefined,
+      args.outDir ? resolve(args.outDir) : undefined,
+      { stack: args.stack, buildDir: args.buildDir ? resolve(args.buildDir) : undefined, configuration: args.configuration, check: args.check })
+    console.log('audit-report.json:    ', result.json_path)
+    console.log('clusters-input.json:  ', result.clusters_input_path)
+    if (args.check) console.log('Findings:', JSON.stringify(result.severity_counts))
+    else {
       console.log('Phase 1 data complete. The architecture gate remains INCOMPLETE until Phase 2 succeeds.')
-      console.log('  1. Read clusters-input.json — list of cluster ids + finding ids + affected modules.')
-      console.log('  2. Generate per-cluster prose: { "<principle-id>": { "name": "...", "root_cause": "..." }, ... }')
-      console.log('  3. Write the prose to <out-dir>/cluster-prose.json.')
-      console.log('  4. Run npm run render-md -- <audit-report.json> <cluster-prose.json> [d9-md-path] to validate and replace the INCOMPLETE audit-report.md.')
-    })
-    .catch((err: unknown) => {
-      console.error('ERROR:', err instanceof Error ? err.message : String(err))
-      process.exit(1)
-    })
+      console.log('Generate cluster-prose.json from clusters-input.json, then run render-md.')
+    }
+  })().catch((error: unknown) => { console.error('ERROR:', error instanceof Error ? error.message : String(error)); process.exitCode = 1 })
 }

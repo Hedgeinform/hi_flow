@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mkdtemp, mkdir, writeFile, rm, readFile, access } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { buildReport, formatMarkdownDetails, renderReportFromDisk } from '../../core/report-builder.ts'
+import { buildReport, buildReportData, formatMarkdownDetails, renderReportFromDisk } from '../../core/report-builder.ts'
 import { createTypescriptDepcruiseAdapter } from '../../adapters/typescript-depcruise.ts'
 import { fixturePath } from '../test-paths.ts'
 
@@ -18,6 +18,50 @@ const cannedDepcruiseOutput = JSON.stringify({
 })
 
 describe('report-builder', () => {
+  it('renders legacy D8 1.1 without an optional tooling version', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'legacy-d8-'))
+    try {
+      const jsonPath = join(dir, 'audit-report.json'), prosePath = join(dir, 'cluster-prose.json')
+      await writeFile(jsonPath, JSON.stringify({ metadata: { audit_sha: 'old', schema_version: '1.1' }, findings: [], metrics: { per_module: { core: { Ca: 0, Ce: 0, I: 0, LOC: 1 } }, dep_graph: { core: [] }, nccd: 1, nccd_threshold: 1, severity_counts: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 } } }))
+      await writeFile(prosePath, '{}')
+      const result = await renderReportFromDisk(jsonPath, prosePath)
+      expect(await readFile(result.md_path, 'utf8')).toContain('# Audit Report')
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('rejects parsing errors in machine-only mode', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'partial-check-'))
+    try {
+      await mkdir(join(dir, 'src/core'), { recursive: true })
+      await writeFile(join(dir, 'src/core/a.ts'), 'export const a = 1\n')
+      const collector = { name: 'partial', async collect() { return { findings: [], dep_graph: { core: [] }, per_module_raw: { core: { ca: 0, ce: 0, loc: 0 } }, source_files_by_module: { core: ['src/core/a.ts'] }, sdk_edges: [], module_names: ['core'], tooling_version: 'test', operator_notes: [], parsing_errors: [{ file: 'src/core/a.ts', error: 'invalid' }] } }, async detectStructural() { return [] } }
+      await expect(buildReportData(collector, dir, { auditSha: 'test', check: true })).rejects.toThrow(/incomplete.*parsing/i)
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('builds report from collected input without depcruise', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'rb-collector-'))
+    await mkdir(join(dir, 'src/core'), { recursive: true })
+    await mkdir(join(dir, 'src/engine'), { recursive: true })
+    await writeFile(join(dir, 'src/core/core.cpp'), 'int core;\n')
+    await writeFile(join(dir, 'src/engine/engine.cpp'), 'int engine;\n')
+    const collector = {
+      name: 'fixture',
+      async collect() {
+        return {
+          findings: [], dep_graph: { core: [], engine: ['core'] },
+          per_module_raw: { core: { ca: 1, ce: 0, loc: 0 }, engine: { ca: 0, ce: 1, loc: 0 } },
+          source_files_by_module: { core: ['src/core/core.cpp'], engine: ['src/engine/engine.cpp'] }, sdk_edges: [], module_names: ['core', 'engine'],
+          tooling_version: 'fixture-collector@1', operator_notes: [],
+        }
+      },
+      async detectStructural() { return [] },
+    }
+    const data = await buildReportData(collector, dir, { auditSha: 'test-sha', d9MdPath: fixturePath('d9-sample.md') })
+    expect(data.report.metrics.dep_graph).toEqual({ core: [], engine: ['core'] })
+    expect(data.report.metadata.audit_tooling_version).toBe('fixture-collector@1')
+    expect(data.report.metadata.schema_version).toBe('1.2')
+    await rm(dir, { recursive: true })
+  })
+
   it('formats nested detail numbers for Markdown without mutating raw evidence', () => {
     const extras = {
       nccd: 1.6666666666666667,
