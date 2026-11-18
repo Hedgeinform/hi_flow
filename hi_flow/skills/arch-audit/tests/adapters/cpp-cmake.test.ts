@@ -119,11 +119,12 @@ describe.skipIf(!hasCppTools)('C++ CMake audit', () => {
       await writeFile(join(root, 'src/core/Exported.h'), '#pragma once\n#include "../engine/Engine.h"\n')
       await writeFile(join(root, 'src/engine/Engine.h'), '#pragma once\n')
       await writeFile(join(root, 'src/engine/engine.cpp'), 'int engine;\n')
-      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(generated LANGUAGES CXX)\nfile(WRITE ${CMAKE_BINARY_DIR}/generated.cpp "#include \\"${CMAKE_SOURCE_DIR}/src/core/Exported.h\\"\\n")\nset_source_files_properties(${CMAKE_BINARY_DIR}/generated.cpp PROPERTIES GENERATED TRUE)\nadd_library(core src/core/core.cpp src/core/Exported.h ${CMAKE_BINARY_DIR}/generated.cpp)\nadd_library(engine src/engine/engine.cpp src/engine/Engine.h)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(generated LANGUAGES CXX)\nfile(WRITE ${CMAKE_BINARY_DIR}/generated.cpp "#include \\"${CMAKE_SOURCE_DIR}/src/core/Exported.h\\"\\n#include \\"${CMAKE_SOURCE_DIR}/src/engine/Engine.h\\"\\n")\nset_source_files_properties(${CMAKE_BINARY_DIR}/generated.cpp PROPERTIES GENERATED TRUE)\nadd_library(core src/core/core.cpp src/core/Exported.h ${CMAKE_BINARY_DIR}/generated.cpp)\nadd_library(engine src/engine/engine.cpp src/engine/Engine.h)\n')
       await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-engine\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not depend on engine"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^src/engine/"\nrequired: []\n')
       execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
       const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
       expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-engine', source: { module: 'core', file: 'src/core/Exported.h' } }))
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-engine', source: { module: 'core', file: 'src/core/core.cpp' }, extras: expect.objectContaining({ evidence_file: 'build/generated.cpp' }) }))
     } finally { await rm(root, { recursive: true, force: true }) }
   }, 30_000)
 
@@ -159,6 +160,85 @@ describe.skipIf(!hasCppTools)('C++ CMake audit', () => {
     } finally { await rm(root, { recursive: true, force: true }) }
   }, 30_000)
 
+  it('keeps libc headers unowned when linked packages share the system root', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-shared-system-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <fcntl.h>\n#include <unistd.h>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(shared LANGUAGES CXX)\nadd_library(A::A INTERFACE IMPORTED)\nadd_library(B::B INTERFACE IMPORTED)\ntarget_include_directories(A::A INTERFACE /usr/include)\ntarget_include_directories(B::B INTERFACE /usr/include)\nadd_library(core src/core/core.cpp)\ntarget_link_libraries(core PRIVATE A::A B::B)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.metadata.operator_notes?.join(' ')).toMatch(/unresolved|unowned|не установлен/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it.each(['-I${CMAKE_SOURCE_DIR}/vendor', '-I ${CMAKE_SOURCE_DIR}/vendor', '-isystem ${CMAKE_SOURCE_DIR}/vendor', '-Wp,-I,${CMAKE_SOURCE_DIR}/vendor'])('does not lose unknown raw include option %s', async option => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-raw-include-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'vendor'))
+      await writeFile(join(root, 'vendor/foreign.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <foreign.h>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.25)\nproject(raw LANGUAGES CXX)\nadd_library(core src/core/core.cpp)\nset(CMAKE_CXX_FLAGS "${option}")\n`)
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/external include.*target/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('detects QtGui through a raw nested include option', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-raw-qt-')), build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'sdk/QtGui/private'), { recursive: true })
+      await writeFile(join(root, 'sdk/QtGui/private/QRaw.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <QRaw.h>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(rawqt LANGUAGES CXX)\nadd_library(Qt6::Gui INTERFACE IMPORTED)\ntarget_include_directories(Qt6::Gui INTERFACE ${CMAKE_SOURCE_DIR}/sdk/QtGui)\nadd_library(core src/core/core.cpp)\nset(CMAKE_CXX_FLAGS "-I${CMAKE_SOURCE_DIR}/sdk/QtGui/private")\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-gui\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: no gui\n    from:\n      path: "^src/core/"\n    to:\n      path: "^Qt6::Gui$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-gui', extras: expect.objectContaining({ kind: 'include', sdk: 'Qt6::Gui' }) }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('fails if an ambiguous system owner matters to a project rule', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-system-rule-')), build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <unistd.h>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(shared LANGUAGES CXX)\nadd_library(A::A INTERFACE IMPORTED)\nadd_library(B::B INTERFACE IMPORTED)\ntarget_include_directories(A::A INTERFACE /usr/include)\ntarget_include_directories(B::B INTERFACE /usr/include)\nadd_library(core src/core/core.cpp)\ntarget_link_libraries(core PRIVATE A::A B::B)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-a\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: no a\n    from:\n      path: "^src/core/"\n    to:\n      path: "^A::A$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/ambiguous external include.*project rule/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('rejects an unknown header included directly by relative path', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-relative-foreign-')), build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true }); await mkdir(join(root, 'vendor'))
+      await writeFile(join(root, 'vendor/foreign.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include "../../vendor/foreign.h"\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(relative LANGUAGES CXX)\nadd_library(core src/core/core.cpp)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/external include.*target/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('rejects ambiguous Qt ownership even when another candidate is linked', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-shared-qt-')), build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true }); await mkdir(join(root, 'sdk'))
+      await writeFile(join(root, 'sdk/QGuiApplication'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <QGuiApplication>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(sharedqt LANGUAGES CXX)\nadd_library(Qt6::Gui INTERFACE IMPORTED)\nadd_library(Other::Other INTERFACE IMPORTED)\ntarget_include_directories(Qt6::Gui INTERFACE ${CMAKE_SOURCE_DIR}/sdk)\ntarget_include_directories(Other::Other INTERFACE ${CMAKE_SOURCE_DIR}/sdk)\nadd_library(core src/core/core.cpp)\ntarget_link_libraries(core PRIVATE Other::Other)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-gui\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: no gui\n    from:\n      path: "^src/core/"\n    to:\n      path: "^Qt6::Gui$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/ambiguous external include.*project rule/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
   it('maps imported include roots set through both CMake APIs and bare external links', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cpp-external-'))
     const build = join(root, 'build')
@@ -172,7 +252,7 @@ describe.skipIf(!hasCppTools)('C++ CMake audit', () => {
       await writeFile(join(root, 'vendor/a/private/GuiC.h'), '#pragma once\n')
       await writeFile(join(root, 'src/core/core.cpp'), '#include <vector>\n#include <GuiA.h>\n#include <GuiB.h>\n#include <GuiC.h>\nint core;\n')
       await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_library(core core.cpp)\ntarget_include_directories(core PRIVATE ${CMAKE_SOURCE_DIR}/vendor/a/private)\ntarget_link_libraries(core PRIVATE Vendor::Gui avformat)\n')
-      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(external LANGUAGES CXX)\nadd_library(Vendor::Gui INTERFACE IMPORTED)\nadd_library(Vendor::Unrelated INTERFACE IMPORTED)\nadd_library(Vendor::SystemA INTERFACE IMPORTED)\nadd_library(Vendor::SystemB INTERFACE IMPORTED)\ntarget_include_directories(Vendor::SystemA INTERFACE /usr/include)\ntarget_include_directories(Vendor::SystemB INTERFACE /usr/include)\ntarget_include_directories(Vendor::Unrelated INTERFACE vendor/a)\ntarget_include_directories(Vendor::Gui INTERFACE vendor/a)\nset_property(TARGET Vendor::Gui APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/vendor/b)\nadd_subdirectory(src/core)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(external LANGUAGES CXX)\nadd_library(Vendor::Gui INTERFACE IMPORTED)\nadd_library(Vendor::SystemA INTERFACE IMPORTED)\nadd_library(Vendor::SystemB INTERFACE IMPORTED)\ntarget_include_directories(Vendor::SystemA INTERFACE /usr/include)\ntarget_include_directories(Vendor::SystemB INTERFACE /usr/include)\ntarget_include_directories(Vendor::Gui INTERFACE vendor/a)\nset_property(TARGET Vendor::Gui APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/vendor/b)\nadd_subdirectory(src/core)\n')
       await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-gui\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use GUI"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^Vendor::Gui$"\n  - name: core-no-avformat\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use avformat"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^avformat$"\nrequired: []\n')
       execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
       const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })

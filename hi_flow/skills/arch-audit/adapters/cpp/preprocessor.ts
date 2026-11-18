@@ -6,7 +6,7 @@ import type { CompileCommand } from './compile-commands.ts'
 
 const exec = promisify(execFile)
 export interface IncludeEdge { from: string; to: string; line?: number; spelling: string }
-export interface IncludeResult { translationUnit: string; edges: IncludeEdge[]; visitedFiles: string[]; compilerVersion: string; includeSearchRoots: string[] }
+export interface IncludeResult { translationUnit: string; edges: IncludeEdge[]; visitedFiles: string[]; compilerVersion: string; includeSearchRoots: string[]; implicitSearchRoots: string[]; explicitSearchRoots: string[] }
 interface Pending { from: string; line: number; spelling: string; quoted: boolean; next: boolean }
 
 function preprocessingArguments(argv: string[]): string[] {
@@ -53,6 +53,33 @@ async function resolveSkipped(pending: Pending, paths: { quoted: string[]; syste
 
   throw new Error(`Cannot resolve include ${pending.spelling} in ${pending.from}:${pending.line}`)
 }
+function includeOptions(command: CompileCommand): string[] {
+  const roots: string[] = []
+  const separate = new Set(['-I', '-iquote', '-isystem', '-idirafter'])
+  for (let i = 1; i < command.argv.length; i++) {
+    const arg = command.argv[i]!
+    let value: string | undefined
+    if (separate.has(arg)) value = command.argv[++i]
+    else for (const prefix of ['-iquote', '-isystem', '-idirafter', '-I']) {
+      if (arg.startsWith(prefix) && arg.length > prefix.length) { value = arg.slice(prefix.length); break }
+    }
+    if (value) roots.push(resolve(command.directory, value))
+    else if (separate.has(arg)) throw new Error(`Missing include directory for ${arg}`)
+  }
+  return roots
+}
+function compilerProbeOptions(argv: string[]): string[] {
+  const result: string[] = []
+  for (let i = 1; i < argv.length; i++) {
+    const arg = argv[i]!
+    if (['--sysroot', '-isysroot', '-target', '--target'].includes(arg)) {
+      const value = argv[++i]
+      if (!value) throw new Error(`Missing compiler option value: ${arg}`)
+      result.push(arg, value)
+    } else if (/^(--sysroot=|--target=|-m(?:32|64|x32)$|-nostdinc(?:\+\+)?$|-stdlib=)/.test(arg)) result.push(arg)
+  }
+  return result
+}
 export async function collectIncludes(command: CompileCommand): Promise<IncludeResult> {
   if (!command.argv.length) throw new Error(`Missing compiler for ${command.file}`)
   const tool = command.argv[0]!
@@ -67,6 +94,15 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
   if (/^#pragma GCC pch_preprocess/m.test(stdout)) throw new Error(`Precompiled header hides include dependencies for ${translationUnit}`)
   const paths = searchPaths(stderr, command.directory)
   const compiler = ['ccache', 'sccache'].includes(basename(tool)) ? command.argv[1]! : tool
+  const languageIndex = command.argv.lastIndexOf('-x')
+  const language = languageIndex >= 0 && command.argv[languageIndex + 1] !== 'none' ? command.argv[languageIndex + 1]! : command.file.endsWith('.c') ? 'c' : 'c++'
+  let implicitSearchRoots: string[]
+  try {
+    const probe = await exec(compiler, [...compilerProbeOptions(command.argv), '-E', '-x', language, '/dev/null', '-v'], { cwd: command.directory, maxBuffer: 8 * 1024 * 1024 })
+    const implicit = searchPaths(probe.stderr, command.directory)
+    implicitSearchRoots = [...implicit.quoted, ...implicit.system]
+  } catch (error) { throw new Error(`Cannot determine implicit compiler include paths for ${translationUnit}`, { cause: error }) }
+  const explicitSearchRoots = includeOptions(command)
   let compilerVersion: string
   try { compilerVersion = (await exec(compiler, ['--version'], { cwd: command.directory })).stdout.split('\n')[0]! }
   catch (error) { throw new Error(`Cannot determine compiler version for ${translationUnit}`, { cause: error }) }
@@ -122,5 +158,5 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
   await flush()
   if (!sawTranslationUnit) throw new Error(`Compiler output did not contain translation unit ${translationUnit}`)
   visited.add(translationUnit)
-  return { translationUnit, edges, visitedFiles: [...visited], compilerVersion, includeSearchRoots: [...paths.quoted, ...paths.system] }
+  return { translationUnit, edges, visitedFiles: [...visited], compilerVersion, includeSearchRoots: [...paths.quoted, ...paths.system], implicitSearchRoots, explicitSearchRoots }
 }
