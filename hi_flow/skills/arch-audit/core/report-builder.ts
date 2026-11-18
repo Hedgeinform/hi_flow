@@ -1,5 +1,6 @@
 import { writeFile, mkdir, readFile, rename } from 'node:fs/promises'
 import { basename, join } from 'node:path'
+import { randomUUID } from 'node:crypto'
 import type { AuditAdapter } from './audit-adapter.ts'
 import type { D8AuditReport, Finding, SeverityCounts, ModuleMetrics, RawFinding, D9Index, ProjectRules } from './types.ts'
 import { getBaselineRules } from './baseline-rules.ts'
@@ -20,6 +21,7 @@ export interface BuildOpts {
   depcruiseVersion?: string
   buildDir?: string
   configuration?: string
+  check?: boolean
   d9MdPath?: string
   clusterProsefn?: ClusterProseFn
   runDepcruise?: (configPath: string, srcPath: string) => string
@@ -125,7 +127,11 @@ export async function buildReportData(
 ): Promise<ReportData> {
   const outDir = opts.outDir ?? join(projectRoot, 'audit-report')
   await mkdir(outDir, { recursive: true })
-  await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(), 'utf-8')
+  for (const filename of ['audit-report.json', 'clusters-input.json']) {
+    try { await rename(join(outDir, filename), join(outDir, `${filename}.previous-${randomUUID()}`)) }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+  }
+  if (!opts.check) await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(), 'utf-8')
 
   const auditSha = opts.auditSha ?? resolveAuditSha(projectRoot)
   const baselineRules = getBaselineRules()
@@ -240,7 +246,7 @@ export async function buildReportData(
 
   const json_path = join(outDir, 'audit-report.json')
   await writeFile(json_path, JSON.stringify(report, null, 2), 'utf-8')
-  await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(auditSha), 'utf-8')
+  if (!opts.check) await writeFile(join(outDir, 'audit-report.md'), incompleteMarkdown(auditSha), 'utf-8')
 
   // Side artifact: clusters-input.json — the prose-generation contract for the skill agent.
   // Lists each cluster with its principle id, finding ids, and affected modules so the agent
@@ -374,7 +380,9 @@ function renderMarkdownReport(
 
   lines.push('## Scope')
   lines.push('')
-  lines.push('arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
+  lines.push(report.metadata.audit_tooling_version.startsWith('cpp-cmake@')
+    ? 'arch-audit covers architecture-level dependency boundaries, cycles and coupling metrics. Run the CMake build, CTest, clang-format and clang-tidy as complementary quality checks.'
+    : 'arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
   lines.push('')
 
   // Severity roll-up

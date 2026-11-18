@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { createCppCmakeAdapter } from '../../adapters/cpp-cmake.ts'
-import { buildReportData } from '../../core/report-builder.ts'
+import { buildReportData, renderReport } from '../../core/report-builder.ts'
 import { fixturePath } from '../test-paths.ts'
 
 describe('C++ CMake audit', () => {
@@ -19,6 +19,7 @@ describe('C++ CMake audit', () => {
       await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: engine-no-core\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Engine must not depend on core"\n    from:\n      path: "^src/engine/"\n    to:\n      path: "^src/core/"\nrequired: []\n')
       execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
       const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.metadata.audit_tooling_version).toMatch(/^cpp-cmake@1\.0\.0; cmake=.+; compiler=.+; configuration=/)
       expect(data.report.metrics.dep_graph).toEqual({ core: [], engine: ['core'] })
       expect(data.report.metadata.operator_notes?.join(' ')).toContain('baseline:not-to-test-from-prod')
       expect(data.report.metadata.operator_notes?.join(' ')).toContain('baseline:frontend-layer-cycle')
@@ -26,6 +27,11 @@ describe('C++ CMake audit', () => {
       const finding = data.report.findings.find(item => item.rule_id === 'project:engine-no-core')
       expect(finding).toMatchObject({ severity: 'HIGH', source: { module: 'engine' }, target: { module: 'core' } })
       expect(JSON.parse(await readFile(data.json_path, 'utf8')).metadata.schema_version).toBe('1.2')
+      const rendered = await renderReport(data, () => ({ name: 'Test', root_cause: 'Test cause' }))
+      const markdown = await readFile(rendered.md_path, 'utf8')
+      expect(markdown).toContain('CTest')
+      expect(markdown).toContain('clang-tidy')
+      expect(markdown).not.toContain('npx depcruise --validate')
     } finally { await rm(root, { recursive: true, force: true }) }
   }, 30_000)
   it('selects the requested multi-config compiler commands', async () => {

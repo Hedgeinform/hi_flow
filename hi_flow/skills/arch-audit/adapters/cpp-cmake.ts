@@ -1,4 +1,6 @@
 import { relative, resolve, sep } from 'node:path'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import type { AuditAdapter, AuditInput } from '../core/audit-adapter.ts'
 import type { DepGraph, RawFinding } from '../core/types.ts'
 import { computeCoupling, findCycles } from '../core/graph-core.ts'
@@ -34,6 +36,8 @@ export function createCppCmakeAdapter(): AuditAdapter {
       if (!options.buildDir) throw new Error('C++/CMake audit requires an explicit configured build directory')
       const root = resolve(options.projectRoot), build = resolve(options.buildDir)
       const model = await readCmakeModel(root, build, options.configuration, options.moduleRoot)
+      const cmakeVersion = (await promisify(execFile)('cmake', ['--version'])).stdout.split('\n')[0]?.replace(/^cmake version /, '')
+      if (!cmakeVersion) throw new Error('Cannot determine CMake version')
       const commands = await readCompileCommands(build)
       const moduleFiles = new Map<string, Set<string>>()
       const sourceLocators = new Map<string, { module: string; file: string }>()
@@ -113,7 +117,7 @@ export function createCppCmakeAdapter(): AuditAdapter {
       const source_files_by_module = Object.fromEntries(module_names.map(name => [name, [...moduleFiles.get(name)!].sort()]))
       return {
         findings: matchCppProjectRules([...unique.values()], options.projectRules, [...sourceLocators.values()]), dep_graph, per_module_raw,
-        source_files_by_module, sdk_edges: [], module_names, tooling_version: `cpp-cmake (${[...versions].join('; ')})`,
+        source_files_by_module, sdk_edges: [], module_names, tooling_version: `cpp-cmake@1.0.0; cmake=${cmakeVersion}; compiler=${[...versions].join(', ') || 'none'}; configuration=${model.configuration || 'default'}`,
         operator_notes: ['Правила, не применённые в C++ аудите: baseline:no-orphans, baseline:not-to-test-from-prod, baseline:barrel-file, baseline:layered-respect, baseline:domain-no-channel-sdk, baseline:port-adapter-direction, baseline:architectural-layer-cycle, baseline:vertical-slice-respect, baseline:frontend-layered-respect, baseline:frontend-layer-cycle.'],
       }
     },

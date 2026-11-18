@@ -1,5 +1,5 @@
-import { execFileSync } from 'node:child_process'
-import { cp, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { access, cp, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, relative, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { PACKAGE_ROOT, withTempDir } from '../test-paths.ts'
@@ -107,4 +107,38 @@ describe('standalone installed runtime', () => {
       expect(JSON.parse(await readFile(join(tempRoot, 'd9-sample-index.json'), 'utf-8')).principles).toBeDefined()
     })
   }, 60_000)
+  it('runs the shipped C++ audit without plugin dependencies and distinguishes findings from errors', async () => {
+    await withTempDir('arch-audit-cpp-installed-', async tempRoot => {
+      const plugin = join(tempRoot, 'hi_flow')
+      await cp(PLUGIN_ROOT, plugin, { recursive: true, filter(source) { return !relative(PLUGIN_ROOT, source).split(sep).includes('node_modules') } })
+      const runtime = join(plugin, 'skills/arch-audit/dist/cli-run-audit.mjs')
+      const project = join(tempRoot, 'cpp-project'), build = join(project, 'build'), out = join(tempRoot, 'machine')
+      await cp(join(PACKAGE_ROOT, 'tests/fixtures/cpp-cmake-project'), project, { recursive: true })
+      execFileSync('cmake', ['-S', project, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const rule = (severity: string) => `forbidden:\n  - name: engine-no-core\n    severity: ${severity}\n    principle: layered-architecture-respect\n    comment: "Engine must not depend on core"\n    from:\n      path: "^src/engine/"\n    to:\n      path: "^src/core/"\nrequired: []\n`
+      const run = (...extra: string[]) => spawnSync(process.execPath, [runtime, '--stack', 'cpp-cmake', '--build-dir', build, '--out-dir', out, ...extra, project], { encoding: 'utf8' })
+      for (const severity of ['HIGH', 'CRITICAL']) {
+        await writeFile(join(project, '.audit-rules.yaml'), rule(severity))
+        const result = run('--check')
+        expect(result.status, result.stderr).toBe(0)
+        const report = JSON.parse(await readFile(join(out, 'audit-report.json'), 'utf8'))
+        expect(report.findings.some((item: { severity: string }) => item.severity === severity)).toBe(true)
+      }
+      const full = run()
+      expect(full.status, full.stderr).toBe(0)
+      expect(await readFile(join(out, 'audit-report.md'), 'utf8')).toContain('INCOMPLETE')
+      const clusters = JSON.parse(await readFile(join(out, 'clusters-input.json'), 'utf8'))
+      const prose = Object.fromEntries(Object.keys(clusters).map(id => [id, { name: id, root_cause: 'Test cause' }]))
+      await writeFile(join(out, 'cluster-prose.json'), JSON.stringify(prose))
+      execFileSync(process.execPath, [join(plugin, 'skills/arch-audit/dist/cli-render-md.mjs'), join(out, 'audit-report.json'), join(out, 'cluster-prose.json')])
+      expect(await readFile(join(out, 'audit-report.md'), 'utf8')).toContain('CTest')
+      execFileSync('cmake', ['-S', project, '-B', build, '-DCMAKE_EXPORT_COMPILE_COMMANDS=OFF'])
+      await writeFile(join(build, 'compile_commands.json'), '[]')
+      const failed = run('--check')
+      expect(failed.status).toBe(1)
+      expect(failed.stderr).toMatch(/Missing compile command/)
+      await expect(access(join(out, 'audit-report.json'))).rejects.toBeTruthy()
+    })
+  }, 60_000)
+
 })
