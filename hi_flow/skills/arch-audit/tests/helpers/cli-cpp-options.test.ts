@@ -37,4 +37,16 @@ describe('audit CLI options', () => {
     } finally { await rm(root, { recursive: true, force: true }) }
   })
 
+  it('rejects machine output into an existing full-report directory', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'audit-check-output-'))
+    try {
+      await writeFile(join(root, 'package.json'), '{}')
+      const out = join(root, 'reports')
+      await mkdir(out)
+      await writeFile(join(out, 'audit-report.md'), '# completed')
+      await expect(runAudit(root, undefined, undefined, out, { stack: 'typescript', check: true })).rejects.toThrow(/separate.*directory/i)
+      expect(await readFile(join(out, 'audit-report.md'), 'utf8')).toBe('# completed')
+    } finally { await rm(root, { recursive: true, force: true }) }
+  })
+
 })

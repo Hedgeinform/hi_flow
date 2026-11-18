@@ -4,7 +4,7 @@ import { isAbsolute, join, resolve } from 'node:path'
 export interface CompileCommand { directory: string; file: string; argv: string[]; output?: string }
 
 // Parse shell-style compiler arguments, never execute shell syntax.
-function splitArguments(input: string): string[] {
+function splitArguments(input: string, responseFile = false): string[] {
   const result: string[] = []
   let token = '', quote = '', started = false
   for (let i = 0; i < input.length; i++) {
@@ -14,9 +14,12 @@ function splitArguments(input: string): string[] {
     if (!quote && ch === "'") { quote = "'"; started = true; continue }
     if (ch === '\\') {
       if (++i >= input.length) throw new Error('Invalid trailing escape in compiler command')
-      token += input[i]; started = true; continue
+      const escaped = input[i]!
+      if (!responseFile && escaped === '\n') continue
+      if (!responseFile && quote === '"' && !['$', '`', '"', '\\'].includes(escaped)) token += '\\'
+      token += escaped; started = true; continue
     }
-    if ((quote === '"' && /[`$]/.test(ch)) || (!quote && /[|;&<>`$\n]/.test(ch))) throw new Error('Shell operators are not supported in compiler command')
+    if (!responseFile && ((quote === '"' && /[`$]/.test(ch)) || (!quote && /[|;&<>`$\n]/.test(ch)))) throw new Error('Shell operators are not supported in compiler command')
     if (!quote && /\s/.test(ch)) { if (started) { result.push(token); token = ''; started = false }; continue }
     token += ch; started = true
   }
@@ -31,7 +34,7 @@ async function expand(argv: string[], directory: string, stack: Set<string>): Pr
     const path = await realpath(resolve(directory, arg.slice(1)))
     if (stack.has(path)) throw new Error(`Cyclic response file: ${path}`)
     const next = new Set(stack); next.add(path)
-    out.push(...await expand(splitArguments(await readFile(path, 'utf8')), directory, next))
+    out.push(...await expand(splitArguments(await readFile(path, 'utf8'), true), directory, next))
   }
   return out
 }

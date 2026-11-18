@@ -8,10 +8,18 @@ describe('compile database', () => {
   it('preserves quoted arguments and expands response files', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'cpp database '))
     try {
-      await writeFile(join(dir, 'args.rsp'), '-I"include dir" -DNAME="hello world"')
+      await writeFile(join(dir, 'args.rsp'), '-I"include dir"\n-DNAME="hello world"\n')
       await writeFile(join(dir, 'compile_commands.json'), JSON.stringify([{ directory: dir, file: 'main.cpp', command: 'c++ @args.rsp -c main.cpp -o main.o' }]))
       const [command] = await readCompileCommands(dir)
       expect(command?.argv).toEqual(['c++', '-Iinclude dir', '-DNAME=hello world', '-c', 'main.cpp', '-o', 'main.o'])
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('preserves backslashes before ordinary characters inside double quotes', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'cpp-quoted-'))
+    try {
+      await writeFile(join(dir, 'compile_commands.json'), JSON.stringify([{ directory: dir, file: 'main.cpp', command: 'c++ "-DNAME=a\\q" -c main.cpp' }]))
+      const [command] = await readCompileCommands(dir)
+      expect(command?.argv).toContain('-DNAME=a\\q')
     } finally { await rm(dir, { recursive: true, force: true }) }
   })
   it('rejects shell pipelines and recursive response files', async () => {

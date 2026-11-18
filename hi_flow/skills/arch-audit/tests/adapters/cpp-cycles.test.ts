@@ -8,4 +8,11 @@ describe('C++ module cycles', () => {
     const findings = await createCppCmakeAdapter().detectStructural({ projectPath: '/project', depGraph, perModuleRaw: raw, projectRules: { forbidden: [], required: [] } })
     expect(findings.filter(item => item.type === 'cycle').map(item => item.extras?.members)).toEqual([['a', 'b'], ['b', 'c']])
   })
+  it('fails explicitly instead of exhausting resources on too many cycles', async () => {
+    const names = Array.from({ length: 9 }, (_, i) => `m${i}`)
+    const depGraph = Object.fromEntries(names.map(name => [name, names.filter(other => other !== name)]))
+    const raw = Object.fromEntries(names.map(name => [name, { ca: 8, ce: 8, loc: 1 }]))
+    await expect(createCppCmakeAdapter().detectStructural({ projectPath: '/project', depGraph, perModuleRaw: raw, projectRules: { forbidden: [], required: [] } })).rejects.toThrow(/too many.*cycles/i)
+  })
+
 })

@@ -1,3 +1,4 @@
+import { hasGcc } from '../cpp-tools.ts'
 import { describe, it, expect } from 'vitest'
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -5,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { collectIncludes } from '../../adapters/cpp/preprocessor.ts'
 
-describe('C++ preprocessor', () => {
+describe.skipIf(!hasGcc)('C++ preprocessor', () => {
   it('retains direct guarded and macro includes with owners and source lines', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'cpp-preprocess-'))
     try {
@@ -18,7 +19,7 @@ describe('C++ preprocessor', () => {
       await writeFile(join(dir, 'Macro.h'), '#pragma once\n')
       await writeFile(join(dir, 'quoted/Same.h'), '#pragma once\n')
       await writeFile(join(dir, 'system/Same.h'), '#pragma once\n')
-      const result = await collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-iquote', 'quoted', '-I', 'system', '-c', 'main.cpp', '-o', 'main.o'] })
+      const result = await collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-g', '-iquote', 'quoted', '-I', 'system', '-c', 'main.cpp', '-o', 'main.o'] })
       expect(result.edges).toEqual(expect.arrayContaining([
         expect.objectContaining({ from: join(dir, 'A.h'), to: join(dir, 'Shared.h'), line: 3 }),
         expect.objectContaining({ from: join(dir, 'B.h'), to: join(dir, 'Shared.h'), line: 5 }),
@@ -43,6 +44,8 @@ describe('C++ preprocessor', () => {
         expect.objectContaining({ from: join(dir, 'forced.h'), to: join(dir, 'nested.h'), line: 1 }),
       ]))
       expect(result.visitedFiles).toContain(join(dir, 'forced.h'))
+      const joined = await collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-includeforced.h', '-c', 'main.cpp'] })
+      expect(joined.edges).toEqual(expect.arrayContaining([expect.objectContaining({ from: join(dir, 'main.cpp'), to: join(dir, 'forced.h') })]))
     } finally { await rm(dir, { recursive: true, force: true }) }
   })
   it('handles real standard library headers and include_next directives', async () => {
@@ -51,6 +54,17 @@ describe('C++ preprocessor', () => {
       await writeFile(join(dir, 'main.cpp'), '#include <vector>\nstd::vector<int> v;\n')
       const result = await collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-std=c++17', '-c', 'main.cpp'] })
       expect(result.edges.some(edge => edge.from === join(dir, 'main.cpp') && edge.to.endsWith('/vector'))).toBe(true)
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('rejects ambiguous include_next resolution instead of producing a false edge', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'cpp-next-ambiguous-'))
+    try {
+      await mkdir(join(dir, 'includes/nested'), { recursive: true })
+      await mkdir(join(dir, 'fallback'))
+      await writeFile(join(dir, 'fallback/Header.h'), '#pragma once\n')
+      await writeFile(join(dir, 'includes/nested/Header.h'), '#include_next <Header.h>\n')
+      await writeFile(join(dir, 'main.cpp'), `#include "${join(dir, 'fallback/Header.h')}"\n#include <Header.h>\n`)
+      await expect(collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-I', 'includes', '-I', 'includes/nested', '-I', 'fallback', '-c', 'main.cpp'] })).rejects.toThrow(/ambiguous.*include_next/i)
     } finally { await rm(dir, { recursive: true, force: true }) }
   })
   it('rejects a precompiled header when it hides nested includes', async () => {
@@ -69,6 +83,15 @@ describe('C++ preprocessor', () => {
       await writeFile(join(dir, 'main.cpp'), 'int main_value;\n')
       await writeFile(join(dir, 'other.cpp'), 'int other_value;\n')
       await expect(collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-c', 'other.cpp'] })).rejects.toThrow(/translation unit/i)
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('rejects logical file remapping that would hide the physical include owner', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'cpp-line-remap-'))
+    try {
+      await writeFile(join(dir, 'main.cpp'), '#line 40 "virtual.cpp"\n#include <stddef.h>\n')
+      await expect(collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-c', 'main.cpp'] })).rejects.toThrow(/remap/i)
+      await writeFile(join(dir, 'main.cpp'), '#line 40 \"<virtual>\"\n#include <stddef.h>\n')
+      await expect(collectIncludes({ directory: dir, file: 'main.cpp', argv: ['g++', '-c', 'main.cpp'] })).rejects.toThrow(/remap/i)
     } finally { await rm(dir, { recursive: true, force: true }) }
   })
   it('fails on a missing header', async () => {

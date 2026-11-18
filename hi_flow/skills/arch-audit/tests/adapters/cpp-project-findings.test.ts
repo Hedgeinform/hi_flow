@@ -22,4 +22,9 @@ describe('C++ project rules', () => {
     expect(findings[2]?.source.file).toBe('src/engine/B.h')
     expect(findings[2]?.type).toBe('coupling')
   })
+  it('rejects invalid rule regex even when no source matches', () => {
+    const rules: ProjectRules = { forbidden: [{ name: 'project:bad', severity: 'HIGH', principle: 'p', from: { path: '^never/' }, to: { path: '[' } }], required: [] }
+    expect(() => matchCppProjectRules([], rules)).toThrow(/regular expression|regex/i)
+  })
+
 })

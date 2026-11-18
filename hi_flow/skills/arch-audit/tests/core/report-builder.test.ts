@@ -18,6 +18,25 @@ const cannedDepcruiseOutput = JSON.stringify({
 })
 
 describe('report-builder', () => {
+  it('renders legacy D8 1.1 without an optional tooling version', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'legacy-d8-'))
+    try {
+      const jsonPath = join(dir, 'audit-report.json'), prosePath = join(dir, 'cluster-prose.json')
+      await writeFile(jsonPath, JSON.stringify({ metadata: { audit_sha: 'old', schema_version: '1.1' }, findings: [], metrics: { per_module: { core: { Ca: 0, Ce: 0, I: 0, LOC: 1 } }, dep_graph: { core: [] }, nccd: 1, nccd_threshold: 1, severity_counts: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 } } }))
+      await writeFile(prosePath, '{}')
+      const result = await renderReportFromDisk(jsonPath, prosePath)
+      expect(await readFile(result.md_path, 'utf8')).toContain('# Audit Report')
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
+  it('rejects parsing errors in machine-only mode', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'partial-check-'))
+    try {
+      await mkdir(join(dir, 'src/core'), { recursive: true })
+      await writeFile(join(dir, 'src/core/a.ts'), 'export const a = 1\n')
+      const collector = { name: 'partial', async collect() { return { findings: [], dep_graph: { core: [] }, per_module_raw: { core: { ca: 0, ce: 0, loc: 0 } }, source_files_by_module: { core: ['src/core/a.ts'] }, sdk_edges: [], module_names: ['core'], tooling_version: 'test', operator_notes: [], parsing_errors: [{ file: 'src/core/a.ts', error: 'invalid' }] } }, async detectStructural() { return [] } }
+      await expect(buildReportData(collector, dir, { auditSha: 'test', check: true })).rejects.toThrow(/incomplete.*parsing/i)
+    } finally { await rm(dir, { recursive: true, force: true }) }
+  })
   it('builds report from collected input without depcruise', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'rb-collector-'))
     await mkdir(join(dir, 'src/core'), { recursive: true })

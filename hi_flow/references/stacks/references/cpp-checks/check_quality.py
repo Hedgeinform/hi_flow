@@ -35,15 +35,21 @@ def changed_files(root, base):
     result = run(['git', 'diff', '--name-only', '-z', '--diff-filter=ACMR', base, 'HEAD', '--'], root)
     return {str((root / item).resolve()) for item in result.stdout.split('\0') if item}
 
-def project_files(root):
-    result = run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', 'src'], root)
+def project_files(root, configured_paths):
+    paths = [item.strip() for item in configured_paths.split(',') if item.strip()]
+    if not paths:
+        raise CheckError('--format-paths must name at least one project path')
+    for path in paths:
+        if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):
+            raise CheckError(f'Formatting path must stay inside project: {path}')
+    result = run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', *paths], root)
     return sorted({(root / item).resolve() for item in result.stdout.split('\0') if item and Path(item).suffix.lower() in SOURCE_EXTENSIONS and (root / item).is_file()})
 
 def format_step(args, changed):
     tool = 'clang-format-18'
     version(tool, args.project_root)
     blocked = False
-    for path in project_files(args.project_root):
+    for path in project_files(args.project_root, args.format_paths):
         result = run([tool, '--output-replacements-xml', str(path)], args.project_root)
         try:
             xml = ET.fromstring(result.stdout)
@@ -53,7 +59,16 @@ def format_step(args, changed):
             raise CheckError(f'Incomplete clang-format result for {path}')
         replacements = xml.findall('replacement')
         if replacements:
-            print(f'{path}: formatting changes: {len(replacements)}', flush=True)
+            content = path.read_bytes()
+            lines = set()
+            for replacement in replacements:
+                try:
+                    offset = int(replacement.attrib['offset'])
+                    if offset < 0 or offset > len(content): raise ValueError('offset outside file')
+                except (KeyError, ValueError) as error:
+                    raise CheckError(f'Invalid clang-format replacement for {path}: {error}') from error
+                lines.add(content[:offset].count(b'\n') + 1)
+            for line in sorted(lines): print(f'{path}:{line}: formatting changes', flush=True)
         selected = args.format_scope == 'all' or (changed is not None and str(path) in changed)
         if args.stage >= 2 and selected:
             dry = run([tool, '--dry-run', '--Werror', str(path)], args.project_root, allow_failure=True)
@@ -91,7 +106,7 @@ def tidy_step(args, changed):
         raise CheckError('Set --tidy-errors to the checks approved for stage 3')
     blocked = False
     for unit in compilation_units(args.project_root, args.build_dir):
-        result = run([tool, str(unit), '-p', str(args.build_dir), '--warnings-as-errors=-*', '--use-color=false', '--header-filter=^' + re.escape(str(args.project_root / 'src')) + '/'], args.project_root, allow_failure=True)
+        result = run([tool, str(unit), '-p', str(args.build_dir), '--warnings-as-errors=-*', '--use-color=false', '--header-filter=' + (args.tidy_header_filter or '^' + re.escape(str(args.project_root / 'src')) + '/')], args.project_root, allow_failure=True)
         output = result.stdout + result.stderr
         print(output, end='' if output.endswith('\n') or not output else '\n', flush=True)
         if result.returncode:
@@ -124,6 +139,8 @@ def main():
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--stage', type=int, choices=[1, 2, 3], default=1)
     parser.add_argument('--format-scope', choices=['changed', 'all'], default='changed')
+    parser.add_argument('--format-paths', default='src')
+    parser.add_argument('--tidy-header-filter', default='')
     parser.add_argument('--tidy-scope', choices=['changed', 'all'], default='changed')
     parser.add_argument('--base', default='')
     parser.add_argument('--tidy-errors', default='')
@@ -131,7 +148,7 @@ def main():
     args = parser.parse_args()
     args.project_root, args.build_dir = args.project_root.resolve(), args.build_dir.resolve()
     if args.hiflow_root: args.hiflow_root = args.hiflow_root.resolve()
-    print(f'stage={args.stage}; base={args.base or "not set"}; format={args.format_scope}; tidy={args.tidy_scope}', flush=True)
+    print(f'stage={args.stage}; base={args.base or "not set"}; format={args.format_scope} ({args.format_paths}); tidy={args.tidy_scope}; header-filter={args.tidy_header_filter or "project src"}', flush=True)
     if args.step == 'architecture': return architecture_step(args)
     needs_base = (args.step == 'format' and args.stage >= 2 and args.format_scope == 'changed') or (args.step == 'tidy' and args.stage >= 3 and args.tidy_scope == 'changed')
     if needs_base and not args.base:

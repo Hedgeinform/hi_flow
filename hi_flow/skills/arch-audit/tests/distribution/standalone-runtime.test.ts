@@ -1,3 +1,4 @@
+import { hasCppTools } from '../cpp-tools.ts'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { access, cp, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, relative, sep } from 'node:path'
@@ -107,7 +108,7 @@ describe('standalone installed runtime', () => {
       expect(JSON.parse(await readFile(join(tempRoot, 'd9-sample-index.json'), 'utf-8')).principles).toBeDefined()
     })
   }, 60_000)
-  it('runs the shipped C++ audit without plugin dependencies and distinguishes findings from errors', async () => {
+  it.skipIf(!hasCppTools)('runs the shipped C++ audit without plugin dependencies and distinguishes findings from errors', async () => {
     await withTempDir('arch-audit-cpp-installed-', async tempRoot => {
       const plugin = join(tempRoot, 'hi_flow')
       await cp(PLUGIN_ROOT, plugin, { recursive: true, filter(source) { return !relative(PLUGIN_ROOT, source).split(sep).includes('node_modules') } })
@@ -134,10 +135,13 @@ describe('standalone installed runtime', () => {
       expect(await readFile(join(out, 'audit-report.md'), 'utf8')).toContain('CTest')
       execFileSync('cmake', ['-S', project, '-B', build, '-DCMAKE_EXPORT_COMPILE_COMMANDS=OFF'])
       await writeFile(join(build, 'compile_commands.json'), '[]')
-      const failed = run('--check')
+      const failureOut = join(tempRoot, 'failed-machine')
+      await mkdir(failureOut)
+      await writeFile(join(failureOut, 'audit-report.json'), '{\"stale\":true}')
+      const failed = spawnSync(process.execPath, [runtime, '--stack', 'cpp-cmake', '--build-dir', build, '--out-dir', failureOut, '--check', project], { encoding: 'utf8' })
       expect(failed.status).toBe(1)
-      expect(failed.stderr).toMatch(/Missing compile command/)
-      await expect(access(join(out, 'audit-report.json'))).rejects.toBeTruthy()
+      expect(failed.stderr).toMatch(/CMAKE_EXPORT_COMPILE_COMMANDS/)
+      await expect(access(join(failureOut, 'audit-report.json'))).rejects.toBeTruthy()
     })
   }, 60_000)
 

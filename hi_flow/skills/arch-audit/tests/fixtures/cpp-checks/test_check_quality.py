@@ -14,6 +14,8 @@ class QualityChecks(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix='cpp-gates-')
         self.root = Path(self.temp.name)
         (self.root / 'src').mkdir()
+        (self.root / 'tests').mkdir()
+        (self.root / 'tests/extra.cpp').write_text('// test code\n')
         (self.root / 'build').mkdir()
         (self.root / 'bin').mkdir()
         for name in ('a.cpp', 'b.cpp', 'header.h', 'old.cpp', 'rename.cpp'):
@@ -24,6 +26,7 @@ class QualityChecks(unittest.TestCase):
         self.base = self.git('rev-parse', 'HEAD').stdout.strip()
         (self.root / 'src/a.cpp').write_text('// changed\n')
         (self.root / 'src/header.h').write_text('// changed\n')
+        (self.root / 'tests/extra.cpp').write_text('// changed test\n')
         (self.root / 'src/new.cpp').write_text('// new\n')
         self.git('mv', 'src/rename.cpp', 'src/renamed.cpp')
         self.git('add', '.')
@@ -41,6 +44,7 @@ print('<?xml version="1.0"?><replacements incomplete_format="false">' + ('<repla
 import os,sys
 if '--version' in sys.argv: print('clang-tidy 18'); sys.exit(0)
 if not any(arg.startswith('--header-filter=') for arg in sys.argv): print('missing header filter', file=sys.stderr); sys.exit(3)
+if os.environ.get('EXPECTED_FILTER') and '--header-filter=' + os.environ['EXPECTED_FILTER'] not in sys.argv: print('wrong header filter', file=sys.stderr); sys.exit(3)
 with open(os.environ['TIDY_LOG'], 'a') as f: f.write(sys.argv[1] + '\\n')
 print(os.environ['TIDY_FILE'] + ':1:1: warning: sample [modernize-example]')
 if os.environ.get('TIDY_FAIL'): sys.exit(2)
@@ -56,14 +60,18 @@ if os.environ.get('TIDY_FAIL'): sys.exit(2)
     def run_step(self, name, stage, *extra, env=None):
         return subprocess.run([sys.executable, str(RUNNER), name, '--project-root', str(self.root), '--build-dir', str(self.root / 'build'), '--stage', str(stage), '--format-scope', 'changed', '--tidy-scope', 'changed', '--base', self.base, '--tidy-errors', 'modernize-*', *extra], text=True, capture_output=True, env=env or self.env)
     def test_stages_changed_header_and_tool_failure(self):
-        self.assertEqual(self.run_step('format', 1).returncode, 0)
+        format_report = self.run_step('format', 1)
+        self.assertEqual(format_report.returncode, 0)
+        self.assertIn('a.cpp:1:', format_report.stdout)
         self.assertEqual(self.run_step('format', 2).returncode, 1)
         for filename in ('new.cpp', 'renamed.cpp'):
             self.assertEqual(self.run_step('format', 2, env=dict(self.env, FORMAT_FILE=filename)).returncode, 1)
         format_failure = self.run_step('format', 2, env=dict(self.env, FORMAT_FAIL='1'))
         self.assertNotEqual(format_failure.returncode, 0)
         self.assertIn('clang-format dry-run failed', format_failure.stderr)
+        self.assertEqual(self.run_step('format', 2, '--format-paths', 'src,tests', env=dict(self.env, FORMAT_FILE='extra.cpp')).returncode, 1)
         self.assertEqual(self.run_step('tidy', 2).returncode, 0)
+        self.assertEqual(self.run_step('tidy', 2, '--tidy-header-filter', 'src/(core|engine)/.*', env=dict(self.env, EXPECTED_FILTER='src/(core|engine)/.*')).returncode, 0)
         (self.root / 'tidy.log').write_text('')
         self.assertEqual(self.run_step('tidy', 3).returncode, 1)
         self.assertEqual(len((self.root / 'tidy.log').read_text().splitlines()), 2)
@@ -101,7 +109,6 @@ if os.environ.get('TIDY_FAIL'): sys.exit(2)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('base', result.stderr.lower())
 
-if __name__ == '__main__': unittest.main()
 
 @unittest.skipUnless(shutil.which('clang-format-18') and shutil.which('clang-tidy-18'), 'Clang 18 is required for real-tool checks')
 class RealClangChecks(unittest.TestCase):
@@ -169,3 +176,5 @@ class RealClangChecks(unittest.TestCase):
             self.assertIn('100% tests passed', result.stdout)
             report = json.loads((build / 'arch-audit/check/audit-report.json').read_text())
             self.assertEqual(report['metrics']['dep_graph']['engine'], ['core'])
+
+if __name__ == '__main__': unittest.main()

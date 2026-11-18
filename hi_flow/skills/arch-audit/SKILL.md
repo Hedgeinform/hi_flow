@@ -54,7 +54,7 @@ There is no auto-selection — both modes are signaled explicitly by the trigger
 
 | Thought | Reality |
 |---|---|
-| «Я и так знаю где архитектурные проблемы, audit избыточен» | Code review misses structural problems. Within its scope arch-audit is exhaustive — if a structural problem exists, it's in the report. Run it. |
+| «Я и так знаю где архитектурные проблемы, audit избыточен» | Code review misses structural problems. Аудит показывает только зависимости и правила, которые поддерживает выбранный адаптер. Неприменённые правила и неполные данные должны быть видимы. |
 | «Запущу arch-redesign напрямую, без audit» | arch-redesign cluster-mode without D8-compliant findings hallucinates clustering. Pre-condition is not bypassable. |
 | «Pending patches от прошлой сессии можно проигнорировать» | An audit without them shows state without contract deltas already designed. Apply before audit, or skip explicitly with a warning in the report. |
 | «Раз текущий код так устроен, значит это и есть целевая архитектура» | Нет. Current code is the observed graph, not target truth. Violations become findings / Active Issues / Accepted Drift, never silent contract edits. |
@@ -89,48 +89,39 @@ If there are no pending patches, this step is silent — proceed to stack detect
 
 ### Stack detection
 
-Auto-detect by structural project signals, in priority order:
+Determine the project root and inspect its actual structural signals:
 
-- `package.json` + `tsconfig.json` → dependency-cruiser adapter with TypeScript options.
-- `package.json` without `tsconfig.json` → the same dependency-cruiser adapter without TypeScript-only options.
-- `pyproject.toml` / `requirements.txt` → python adapter (not implemented in v1).
-- `pom.xml` / `build.gradle` → java adapter (not implemented in v1).
+- `package.json` → TypeScript/JavaScript dependency-cruiser adapter.
+- `CMakeLists.txt` → C++/CMake adapter; use a configured build directory with
+  `compile_commands.json` and CMake File API. The supported collection path is Linux GCC.
+- Both signals → require explicit `--stack typescript` or `--stack cpp-cmake`;
+  audit each stack separately when both are in scope. Never silently pick one.
+- Python / Java adapter → not implemented. Report the unsupported stack and stop.
 
-Do **not** read `PROJECT_META.md` — it's an operator-personal artifact, unavailable in the distributed plugin.
-
-If the project's snapshot names a different existing rules file and consumer,
-follow `hi_flow/references/target-architecture-contract.md` before claiming its
-contract is audited. This runtime does not discover alternative rules paths.
-Use the declared project-native check, or report the missing compatible wiring;
-a baseline-only run is not validation of rules this runtime did not load.
-
-**Recovery flow.** If multiple stacks are detected (polyglot) or none are detected — interactive prompt:
-
-> Stack не определён в `<project-path>`. Не нашёл признаков:
-> - package.json + tsconfig.json (TS) / package.json (JS)
-> - pyproject.toml / requirements.txt (Python — adapter не реализован v1)
-> - pom.xml / build.gradle (Java — adapter не реализован v1)
->
-> Действия:
-> 1. Указать workspace root (например, `frontend/` если monorepo)
-> 2. Указать stack явно (typescript / javascript)
-> 3. Stack не поддерживается v1 — abort
-> 4. Это не код — abort
-
-After recovery — re-run auto-detect on the supplied path. A second failure → hard fail.
+Do not read `PROJECT_META.md`: it is an operator-personal artifact, unavailable
+in the distributed plugin. If no signal is found, ask for the actual workspace
+root or an explicit supported stack. Do not claim coverage of a different
+project-native rules file without following `hi_flow/references/target-architecture-contract.md`.
 
 ### Tool availability
 
-Check depcruise from the installed `arch-audit` skill directory:
-```
-npm run depcruise:version
-```
-- Success → continue.
-- Fail → hard fail with: «Поставляемый runtime `arch-audit` отсутствует или повреждён. Обнови плагин hi_flow и повтори запуск в новой сессии.» Do not run `npm install` inside the plugin cache.
+Run from the installed skill directory with Node.js 20+. For TS/JS, check the
+bundled dependency-cruiser with `npm run depcruise:version`; absence, corruption,
+or a version outside `>=16 <18` is a hard failure. Never install packages into
+the plugin cache.
 
-`npm run audit` performs the preflight version check (`core/preflight.ts → checkDepcruiseVersion`) against `requiredTooling[0]` from the adapter (currently `>= 16.0.0 < 18.0.0`; v16 and v17 explicitly tested). Out-of-range shipped runtime → hard fail with instructions to update hi_flow and retry in a new session.
+For C++/CMake, use CMake 3.25+, a configured Ninja or Ninja Multi-Config build, its freshly generated compile database,
+and the GCC compiler recorded there. Generated headers must be available. Paths
+in the build database must be accessible in their original environment; do not
+rewrite container paths by guessing. Fail on missing units, ambiguous ownership,
+unresolved includes or tool errors. Multi-config builds require `--configuration`;
+the current implementation rejects an existing `CMAKE_PROJECT_INCLUDE` setting
+for that path. Custom `CMakeGraphVizOptions.cmake`, unsupported interface file sets,
+unresolved external include ownership, and logical source-file remapping fail closed.
+See `hi_flow/references/stacks/cpp.md` and
+`hi_flow/references/stacks/references/cpp-baseline.md` for project gates.
 
-### Generate config + run depcruise
+### TS/JS: generate config + run depcruise
 
 Helper `generate-depcruise-config.ts`:
 - Reads the machine-checkable Target Architecture Contract: baseline rules (Layer A — 3 built-ins) + project rules (`<project>/.audit-rules.yaml`, if present).
@@ -150,7 +141,36 @@ node ./dist/dependency-cruise.mjs --output-type json --config <temp-config> '<mo
 - Timeout: 60s default, tunable via project rules.
 - Project-local `dependency-cruiser` is intentionally ignored: a broken audited project must not block `arch-audit` snapshot refresh.
 
-### Parse + normalize
+### C++/CMake collection
+
+For an existing configured build, run the shipped adapter with an explicit build
+path; choose `--stack cpp-cmake` when detection is ambiguous:
+
+```sh
+npm run audit -- --stack cpp-cmake --build-dir <build-dir> --out-dir <report-dir> <project-root>
+```
+
+Add `--configuration <name>` for a multi-config build. CMake refreshes its File
+API and direct target graph in the supplied build directory; GCC preprocessing
+resolves active direct includes. The adapter preserves generated/ownership data,
+checks every production unit and records unapplied baseline rules in operator
+notes. It reports errors on incomplete input rather than an empty successful graph.
+The graph is observed evidence, not the target architecture. QML imports are not
+collected by this adapter. Check macOS/Windows separately when a specific rule
+requires them.
+
+For CI, invoke the same builder with `--check` and an output directory under the
+build directory. A complete, valid machine report returns `0` even for HIGH or
+CRITICAL findings; extraction, tool or validation failure returns nonzero. This
+mode does not render Markdown and rejects an output directory containing an
+existing `audit-report.md`; use a separate directory for `--check`. For TS/JS,
+parsing errors make machine-only mode fail even when ordinary full mode can
+produce a marked partial report. The ordinary full mode still needs cluster prose
+and `render-md` before its Markdown report is complete. Previous JSON and cluster
+input are moved aside before a new collection so a failed run is not mistaken for
+new successful data.
+
+### TS/JS: parse + normalize
 
 Helper `parse-depcruise-output.js`:
 - Parse JSON.
@@ -159,9 +179,9 @@ Helper `parse-depcruise-output.js`:
 
 Helper `compute-nccd.js` computes NCCD from dep_graph (depcruise does not emit it directly).
 
-### Apply structural detection (core, not adapter)
+### Apply structural detection
 
-Detection algorithms live in `core/` (stack-agnostic). The adapter supplies stack-specific constants: `channelSdkList`, `layerNamingMap`, `defaultModulePattern`. (Note: the layered + frontend-layered detection currently lives in the adapter's `detectStructural`, not `core/` — a pre-existing core/adapter divergence, not resolved in this scope.)
+Shared metric and graph algorithms live in `core/`; each adapter collects stack-specific inputs and owns applicable structural detection. The TS/JS adapter owns its layered and frontend heuristics; the C++ adapter lists its unapplied rules in operator notes.
 
 Checks:
 - **Layered detection** — closed list of layer names + adapter-provided alias map. A second, **frontend** layer vocabulary (`pages → features → components → hooks → data-access → lib`) applies when the run is frontend-profiled — declared `overrides.profile: frontend`, or (fallback) ≥2 of `components/`, `hooks/`, `pages/`, `features/`; `overrides.profile: backend` opts out. In that case the backend layered rules are skipped (mutual exclusion, avoids false positives on `api/`/`app/`/`services/`).
@@ -185,9 +205,10 @@ Cluster prose is LLM-generated by the skill agent, the rest is deterministic. To
 **Phase 1 — data assembly (deterministic):**
 
 ```
-npm run audit -- [--out-dir <path>] <project-root> [d9-md-path]
+npm run audit -- [--stack typescript|cpp-cmake] [--build-dir <path>] [--configuration <name>] [--out-dir <path>] <project-root> [d9-md-path]
 ```
 
+This is the ordinary full mode, without `--check`. For C++ supply `--build-dir`.
 `--out-dir` overrides the default output location (`<project-root>/audit-report/`). Use it on projects that already have tooling writing to `audit-report/` (e.g. legacy `depgraph-audit.mjs` baselines + patches ledgers) to avoid namespace collision — pass something like `<project-root>/arch-audit-report/`.
 
 Produces:
@@ -227,7 +248,7 @@ Markdown structure: project header, scope reminder, severity roll-up with trigge
 
 ### LLM ↔ deterministic-code boundary
 
-**Deterministic (helpers + Bash):** running depcruise, parsing output, computing metrics (Ca/Ce/I/NCCD/LOC), severity normalization, suppression, Mermaid generation, patch validation/merge, D8 schema validation, cluster grouping structure.
+**Deterministic (helpers + Bash):** running the selected TS/JS or C++/CMake collector, parsing output, computing metrics (Ca/Ce/I/NCCD/LOC), severity normalization, suppression, Mermaid generation, patch validation/merge, D8 schema validation, cluster grouping structure.
 
 **LLM (skill agent):** cluster prose description (name + root cause), dialogue (pending prompts, recovery flow, transition), Self-Review judgment. Notes for operator are rendered deterministically from run metadata and explicit overrides.
 
@@ -362,9 +383,9 @@ Defaults: `project-root` = current working directory; `d9-md-path` resolves to t
 
 ## Stack adapter pattern (overview)
 
-The skill is split into a **stack-agnostic core** (reads D9 + baseline rules, validation, detection algorithms, suppression, artifact assembly) and a **stack-specific adapter** (tooling integration). v1 ships a single shared TypeScript/JavaScript dependency-cruiser adapter in the legacy-named file `typescript-depcruise.ts`.
+The skill is split into a **stack-agnostic core** (reads D9 + baseline rules, validation, detection algorithms, suppression, artifact assembly) and a **stack-specific adapter** (tooling integration). It ships TypeScript/JavaScript dependency-cruiser and Linux C++/CMake adapters.
 
-**The boundary (important):** detection algorithms live in core. The adapter only supplies stack-specific data (testFilePatterns, channelSdkList, layerNamingMap, defaultModulePattern) and tooling-specific methods (buildDepGraph, computeMetrics, validatePatch, mergePatch). The adapter does not own detection algorithms.
+**The boundary:** shared graph algorithms, enrichment, validation and report assembly live in core; adapters collect stack-specific inputs and perform the structural checks applicable to their stack.
 
 Full adapter interface — see the design spec and the implementation plan.
 
@@ -382,7 +403,7 @@ D8-compliant structured data. Full schema — `references/d8-schema.json`. Top-l
 
 ### audit-report.md
 
-Section structure — see workflow «Build artifacts» above plus `references/audit-report-template.md` (template). Visual reference of a complete report — `examples/zhenka-audit-report-mock.md`.
+Section structure — see workflow «Build artifacts» above and `references/audit-report-template.md`.
 
 ---
 
@@ -397,13 +418,13 @@ Run commands from the installed `arch-audit` skill directory with Node.js 20 or 
 ### Run
 
 ```
-npm run audit -- <project-root> [d9-md-path]
+npm run audit -- [--stack typescript|cpp-cmake] [--build-dir <path>] [--configuration <name>] [--check] [--out-dir <path>] <project-root> [d9-md-path]
 ```
 
 - `<project-root>` — absolute or relative path to the project being audited.
 - `[d9-md-path]` — optional path to a custom D9 architectural-principles markdown file. Defaults to the bundled `hi_flow/references/architectural-principles.md`.
 
-Phase 1 output (not a completed architecture gate):
+Ordinary full-mode phase 1 output (not a completed architecture gate; `--check` does not write Markdown):
 ```
 audit-report.json: <project-root>/audit-report/audit-report.json
 clusters-input.json: <project-root>/audit-report/clusters-input.json
@@ -435,4 +456,3 @@ The `arch-audit` runtime is intentionally self-contained: the shared plugin sour
 - `references/audit-report-template.md` — markdown template for header + sections.
 - `hi_flow/references/architectural-principles.md` — D9 library (catalog of principles with typical fix alternatives; owned by this skill).
 - `hi_flow/references/target-architecture-contract.md` — family-level ownership and SSoT rules for target contract vs observed graph.
-- `examples/zhenka-audit-report-mock.md` — example of a complete `audit-report.md` for visual reference.

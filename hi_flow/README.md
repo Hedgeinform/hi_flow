@@ -98,6 +98,12 @@ unavoidable.
 that runtime directly with Node.js and do not install packages into plugin
 caches or audited projects.
 
+The C++/CMake adapter audits configured Linux GCC builds and offers a machine-only
+`--check` mode; see `references/stacks/cpp.md` and
+`references/stacks/references/cpp-baseline.md`. The example stages formatting and
+clang-tidy adoption while build and CTest remain blocking. Bootstrap and new-project
+scaffolding for C++ are deferred, so coverage is partial.
+
 Cursor packaging currently declares the shared skills directory only. It does
 not declare hooks; add Cursor hooks only after a verified smoke test proves the
 runtime needs a session-start bootstrap.
@@ -143,3 +149,5 @@ For solo/agent-first projects, the default is a project-native harness.
 - `hi_flow/skills/intake/references/intake-template.md`
 - `hi_flow/skills/bootstrap/references/coverage-manifest.md`
 - `hi_flow/skills/bootstrap/references/architecture-template.md`
+- `hi_flow/references/stacks/cpp.md`
+- `hi_flow/references/stacks/references/cpp-baseline.md`

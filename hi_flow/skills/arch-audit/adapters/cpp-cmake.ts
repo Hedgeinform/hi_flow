@@ -1,4 +1,5 @@
-import { relative, resolve, sep } from 'node:path'
+import { relative, resolve, sep, join } from 'node:path'
+import { access } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { AuditAdapter, AuditInput } from '../core/audit-adapter.ts'
@@ -7,8 +8,7 @@ import { computeCoupling, findCycles } from '../core/graph-core.ts'
 import { canonicalCycleKey } from '../core/cycle-key.ts'
 import { detectMetricFindings } from '../core/metric-findings.ts'
 import { fileToModule } from '../core/source-scope.ts'
-import { readCmakeModel } from './cpp/cmake-model.ts'
-import { readCompileCommands } from './cpp/compile-commands.ts'
+import { readCmakeModel, type CmakeTarget } from './cpp/cmake-model.ts'
 import { collectIncludes } from './cpp/preprocessor.ts'
 import { matchCppProjectRules, type CppEdge } from './cpp/project-findings.ts'
 
@@ -21,7 +21,10 @@ function componentCycles(graph: DepGraph, component: string[]): string[][] {
         if (!allowed.has(next) || next < start) continue
         if (next === start && path.length > 1) {
           const key = canonicalCycleKey(path)
-          if (!found.has(key)) found.set(key, path)
+          if (!found.has(key)) {
+            if (found.size >= 10_000) throw new Error('Too many module cycles to enumerate completely; audit input is incomplete')
+            found.set(key, path)
+          }
         } else if (!path.includes(next)) walk(next, [...path, next])
       }
     }
@@ -38,7 +41,6 @@ export function createCppCmakeAdapter(): AuditAdapter {
       const model = await readCmakeModel(root, build, options.configuration, options.moduleRoot)
       const cmakeVersion = (await promisify(execFile)('cmake', ['--version'])).stdout.split('\n')[0]?.replace(/^cmake version /, '')
       if (!cmakeVersion) throw new Error('Cannot determine CMake version')
-      const commands = await readCompileCommands(build)
       const moduleFiles = new Map<string, Set<string>>()
       const sourceLocators = new Map<string, { module: string; file: string }>()
       const edges: CppEdge[] = []
@@ -56,15 +58,17 @@ export function createCppCmakeAdapter(): AuditAdapter {
       for (const target of model.targets.filter(target => !target.external)) {
         for (const source of target.sources) if (!source.generated) addSource(source.path)
       }
-      for (const unit of model.translationUnits) {
-        let matching = commands.filter(command => resolve(command.directory, command.file) === unit)
-        if (model.multiConfig) {
-          if (matching.some(command => !command.argv.some(arg => arg.startsWith('-DCMAKE_INTDIR=')))) throw new Error(`Cannot determine compile configuration for ${unit}`)
-          matching = matching.filter(command => command.argv.some(arg => arg === `-DCMAKE_INTDIR=\"${model.configuration}\"` || arg === `-DCMAKE_INTDIR=${model.configuration}`))
+      for (const { command, target: ownerName } of model.compilationCommands) {
+        const owner = model.targets.find(item => item.name === ownerName)!
+        const reachable = new Set([ownerName])
+        const queue = [ownerName]
+        for (let i = 0; i < queue.length; i++) {
+          for (const link of model.links) if (link.from === queue[i] && !reachable.has(link.to)) {
+            reachable.add(link.to)
+            queue.push(link.to)
+          }
         }
-        if (!matching.length) throw new Error(`Missing compile command for ${unit} in configuration ${model.configuration}`)
-        for (const command of matching) {
-          const result = await collectIncludes(command)
+        const result = await collectIncludes(command)
           versions.add(result.compilerVersion)
           for (const file of result.visitedFiles) addSource(file)
           for (const edge of result.edges) {
@@ -78,11 +82,28 @@ export function createCppCmakeAdapter(): AuditAdapter {
             }
             const matches = model.externalTargets.flatMap(target => target.includeRoots.filter(path => !path.includes('$<') && within(edge.to, resolve(path))).map(path => ({ name: target.name, length: resolve(path).length })))
             const longest = Math.max(0, ...matches.map(match => match.length))
-            const names = [...new Set(matches.filter(match => match.length === longest).map(match => match.name))]
+            const searchRootLength = Math.max(0, ...result.includeSearchRoots.filter(path => within(edge.to, path) && !owner.includeRoots.some(root => resolve(root) === path)).map(path => path.length))
+            if (longest > 0 && searchRootLength > longest) continue
+            let names = [...new Set(matches.filter(match => match.length === longest).map(match => match.name))]
+            if (names.length > 1) {
+              const linked = names.filter(name => reachable.has(name))
+              if (linked.length) names = linked
+              else if (searchRootLength >= longest) continue
+            }
             if (names.length > 1) throw new Error(`Ambiguous external include ${edge.to}: ${names.join(', ')}`)
+            if (names.length === 0 && !within(edge.to, build) && owner.includeRoots.some(path => within(edge.to, resolve(path)))) throw new Error(`External include ${edge.to} has no identifiable target for ${ownerName}`)
             if (names.length === 1) edges.push({ kind: 'include', source, target: { module: names[0]!, file: names[0]! }, line: edge.line, external: true })
           }
-        }
+      }
+      const locator = async (target: CmakeTarget, module: string): Promise<string> => {
+        const moduleDir = join(root, options.moduleRoot, module)
+        if (target.declarationFile && within(target.declarationFile, moduleDir)) return relative(root, target.declarationFile).split(sep).join('/')
+        const candidate = join(moduleDir, 'CMakeLists.txt')
+        try { await access(candidate); return relative(root, candidate).split(sep).join('/') }
+        catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+        const file = target.sources.find(source => !source.generated && moduleFor(source.path) === module)?.path
+        if (!file) throw new Error(`Cannot determine a file locator for module ${module}, target ${target.name}`)
+        return relative(root, file).split(sep).join('/')
       }
       const targetByName = new Map(model.targets.map(target => [target.name, target]))
       const external = new Set(model.externalTargets.map(target => target.name))
@@ -93,13 +114,13 @@ export function createCppCmakeAdapter(): AuditAdapter {
         if (to && !to.external && to.modules.length > 1) throw new Error(`Ambiguous module ownership for CMake target ${to.name}: ${to.modules.join(', ')}`)
         const locations = model.linkLocations.filter(location => location.from === link.from && location.to === link.to)
         const location = locations.length === 1 ? locations[0] : undefined
-        const sourceFile = relative(root, location?.file ?? from.declarationFile).split(sep).join('/')
+        const evidenceFile = relative(root, location?.file ?? from.declarationFile).split(sep).join('/')
         for (const sourceModule of from.modules) {
-          const source = { module: sourceModule, file: sourceFile }
+          const source = { module: sourceModule, file: await locator(from, sourceModule) }
           sourceLocators.set(`${source.module}\0${source.file}`, source)
           if (to && !to.external && to.declarationFile) {
-            for (const targetModule of to.modules) edges.push({ kind: 'link', source, target: { module: targetModule, file: relative(root, to.declarationFile).split(sep).join('/') }, line: location?.line })
-          } else if (external.has(link.to) || to?.external) edges.push({ kind: 'link', source, target: { module: link.to, file: link.to }, external: true, line: location?.line })
+            for (const targetModule of to.modules) edges.push({ kind: 'link', source, target: { module: targetModule, file: await locator(to, targetModule) }, line: location?.line, evidenceFile })
+          } else if (external.has(link.to) || to?.external || !to) edges.push({ kind: 'link', source, target: { module: link.to, file: link.to }, external: true, line: location?.line, evidenceFile })
         }
       }
       if (!moduleFiles.size) throw new Error(`CMake found no production modules under ${options.moduleRoot}/`)

@@ -1,5 +1,5 @@
+import { hasCppTools, hasQt } from '../cpp-tools.ts'
 import { describe, it, expect } from 'vitest'
-import { existsSync } from 'node:fs'
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -8,7 +8,7 @@ import { createCppCmakeAdapter } from '../../adapters/cpp-cmake.ts'
 import { buildReportData, renderReport } from '../../core/report-builder.ts'
 import { fixturePath } from '../test-paths.ts'
 
-describe('C++ CMake audit', () => {
+describe.skipIf(!hasCppTools)('C++ CMake audit', () => {
   it('reports a real forbidden include with a valid module graph and D8 result', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cpp-audit-'))
     const build = join(root, 'build')
@@ -57,7 +57,7 @@ describe('C++ CMake audit', () => {
     } finally { await rm(root, { recursive: true, force: true }) }
   }, 30_000)
 
-  it.skipIf(!existsSync('/usr/include/x86_64-linux-gnu/qt6/QtGui/QGuiApplication'))('maps a real QtGui include and link to its canonical external target', async () => {
+  it.skipIf(!hasQt)('maps a real QtGui include and link to its canonical external target', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cpp-qt-audit-'))
     const build = join(root, 'build')
     try {
@@ -106,6 +106,148 @@ describe('C++ CMake audit', () => {
       await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(owner LANGUAGES CXX)\nadd_library(mixed src/core/core.cpp src/engine/engine.cpp)\nadd_library(ui src/ui/ui.cpp)\ntarget_link_libraries(mixed PRIVATE ui)\n')
       execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
       await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/ambiguous.*mixed/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('finds dependencies in an own header reached only from a generated translation unit', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-generated-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'src/engine'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'src/core/Exported.h'), '#pragma once\n#include "../engine/Engine.h"\n')
+      await writeFile(join(root, 'src/engine/Engine.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/engine/engine.cpp'), 'int engine;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(generated LANGUAGES CXX)\nfile(WRITE ${CMAKE_BINARY_DIR}/generated.cpp "#include \\"${CMAKE_SOURCE_DIR}/src/core/Exported.h\\"\\n")\nset_source_files_properties(${CMAKE_BINARY_DIR}/generated.cpp PROPERTIES GENERATED TRUE)\nadd_library(core src/core/core.cpp src/core/Exported.h ${CMAKE_BINARY_DIR}/generated.cpp)\nadd_library(engine src/engine/engine.cpp src/engine/Engine.h)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-engine\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not depend on engine"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^src/engine/"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-engine', source: { module: 'core', file: 'src/core/Exported.h' } }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('matches module rules when links are declared in a parent CMake file', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-parent-link-'))
+    const build = join(root, 'build')
+    try {
+      for (const name of ['core', 'engine']) {
+        await mkdir(join(root, `src/${name}`), { recursive: true })
+        await writeFile(join(root, `src/${name}/${name}.cpp`), `int ${name};\n`)
+        await writeFile(join(root, `src/${name}/CMakeLists.txt`), `add_library(${name} ${name}.cpp)\n`)
+      }
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(parent_link LANGUAGES CXX)\nadd_subdirectory(src/core)\nadd_subdirectory(src/engine)\ntarget_link_libraries(core PRIVATE engine)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-engine\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not depend on engine"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^src/engine/"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-engine', source: { module: 'core', file: 'src/core/CMakeLists.txt' }, target: { module: 'engine', file: 'src/engine/CMakeLists.txt' }, extras: expect.objectContaining({ evidence_file: 'CMakeLists.txt', line: 5 }) }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('assigns an interface target to its declaring module and checks external links', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-interface-owner-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_library(core core.cpp)\nadd_library(core_gui INTERFACE)\ntarget_link_libraries(core_gui INTERFACE Vendor::Gui)\ntarget_link_libraries(core PRIVATE core_gui)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(interface_owner LANGUAGES CXX)\nadd_library(Vendor::Gui INTERFACE IMPORTED)\nadd_subdirectory(src/core)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-gui\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use GUI"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^Vendor::Gui$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-gui', source: { module: 'core', file: 'src/core/CMakeLists.txt' }, target: { module: 'Vendor::Gui', file: 'Vendor::Gui' } }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('maps imported include roots set through both CMake APIs and bare external links', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-external-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'vendor/a'), { recursive: true })
+      await mkdir(join(root, 'vendor/b'), { recursive: true })
+      await mkdir(join(root, 'vendor/a/private'), { recursive: true })
+      await writeFile(join(root, 'vendor/a/GuiA.h'), '#pragma once\n')
+      await writeFile(join(root, 'vendor/b/GuiB.h'), '#pragma once\n')
+      await writeFile(join(root, 'vendor/a/private/GuiC.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <vector>\n#include <GuiA.h>\n#include <GuiB.h>\n#include <GuiC.h>\nint core;\n')
+      await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_library(core core.cpp)\ntarget_include_directories(core PRIVATE ${CMAKE_SOURCE_DIR}/vendor/a/private)\ntarget_link_libraries(core PRIVATE Vendor::Gui avformat)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(external LANGUAGES CXX)\nadd_library(Vendor::Gui INTERFACE IMPORTED)\nadd_library(Vendor::Unrelated INTERFACE IMPORTED)\nadd_library(Vendor::SystemA INTERFACE IMPORTED)\nadd_library(Vendor::SystemB INTERFACE IMPORTED)\ntarget_include_directories(Vendor::SystemA INTERFACE /usr/include)\ntarget_include_directories(Vendor::SystemB INTERFACE /usr/include)\ntarget_include_directories(Vendor::Unrelated INTERFACE vendor/a)\ntarget_include_directories(Vendor::Gui INTERFACE vendor/a)\nset_property(TARGET Vendor::Gui APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/vendor/b)\nadd_subdirectory(src/core)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-gui\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use GUI"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^Vendor::Gui$"\n  - name: core-no-avformat\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use avformat"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^avformat$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      const gui = data.report.findings.filter(item => item.rule_id === 'project:core-no-gui')
+      expect(gui.filter(item => item.extras?.kind === 'include')).toHaveLength(3)
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:core-no-avformat', target: { module: 'avformat', file: 'avformat' } }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('uses an actual nested module CMake file as the rule locator', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-nested-link-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core/codec'), { recursive: true })
+      await mkdir(join(root, 'src/engine'), { recursive: true })
+      await writeFile(join(root, 'src/core/codec/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'src/engine/engine.cpp'), 'int engine;\n')
+      await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_subdirectory(codec)\n')
+      await writeFile(join(root, 'src/core/codec/CMakeLists.txt'), 'add_library(core core.cpp)\n')
+      await writeFile(join(root, 'src/engine/CMakeLists.txt'), 'add_library(engine engine.cpp)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(nested LANGUAGES CXX)\nadd_subdirectory(src/core)\nadd_subdirectory(src/engine)\ntarget_link_libraries(core PRIVATE engine)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: codec-no-engine\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Codec must not use engine"\n    from:\n      path: "^src/core/codec/CMakeLists.txt$"\n    to:\n      path: "^src/engine/"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      expect(data.report.findings).toContainEqual(expect.objectContaining({ rule_id: 'project:codec-no-engine', source: { module: 'core', file: 'src/core/codec/CMakeLists.txt' } }))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('fails when a project include root has no identifiable external target', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-unknown-external-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'vendor'), { recursive: true })
+      await writeFile(join(root, 'vendor/external.h'), '#pragma once\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <external.h>\nint core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(unknown_external LANGUAGES CXX)\nadd_library(core src/core/core.cpp)\ntarget_include_directories(core PRIVATE ${CMAKE_SOURCE_DIR}/vendor)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })).rejects.toThrow(/external include.*target/i)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('maps vendored CMake targets and their headers to external dependencies', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-vendored-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await mkdir(join(root, 'third_party/miniz'), { recursive: true })
+      await writeFile(join(root, 'third_party/miniz/miniz.h'), '#pragma once\n')
+      await writeFile(join(root, 'third_party/miniz/miniz.c'), 'int miniz;\n')
+      await writeFile(join(root, 'third_party/miniz/CMakeLists.txt'), 'add_library(lea_miniz miniz.c)\ntarget_include_directories(lea_miniz PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})\n')
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <miniz.h>\nint core;\n')
+      await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_library(core core.cpp)\ntarget_link_libraries(core PRIVATE lea_miniz)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(vendored LANGUAGES C CXX)\nadd_subdirectory(third_party/miniz)\nadd_subdirectory(src/core)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-vendor\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use vendor"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^lea_miniz$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      const findings = data.report.findings.filter(item => item.rule_id === 'project:core-no-vendor')
+      expect(findings.map(item => item.extras?.kind).sort()).toEqual(['include', 'link'])
+    } finally { await rm(root, { recursive: true, force: true }) }
+  }, 30_000)
+
+  it('recognizes a dependency and include root inside the CMake build tree', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cpp-fetched-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), '#include <rt.h>\nint core;\n')
+      await writeFile(join(root, 'src/core/CMakeLists.txt'), 'add_library(core core.cpp)\ntarget_link_libraries(core PRIVATE rtaudio)\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(fetched LANGUAGES C CXX)\nfile(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/rt-src)\nfile(WRITE ${CMAKE_BINARY_DIR}/_deps/rt-src/rt.h "#pragma once\\n")\nfile(WRITE ${CMAKE_BINARY_DIR}/_deps/rt-src/rt.c "int rt;\\n")\nfile(WRITE ${CMAKE_BINARY_DIR}/_deps/rt-src/CMakeLists.txt "add_library(rtaudio rt.c)\\ntarget_include_directories(rtaudio PUBLIC .)\\n")\nadd_subdirectory(${CMAKE_BINARY_DIR}/_deps/rt-src ${CMAKE_BINARY_DIR}/rt-build)\nadd_subdirectory(src/core)\n')
+      await writeFile(join(root, '.audit-rules.yaml'), 'forbidden:\n  - name: core-no-rt\n    severity: HIGH\n    principle: layered-architecture-respect\n    comment: "Core must not use rtaudio"\n    from:\n      path: "^src/core/"\n    to:\n      path: "^rtaudio$"\nrequired: []\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const data = await buildReportData(createCppCmakeAdapter(), root, { auditSha: 'test', buildDir: build })
+      const findings = data.report.findings.filter(item => item.rule_id === 'project:core-no-rt')
+      expect(findings.map(item => item.extras?.kind).sort()).toEqual(['include', 'link'])
     } finally { await rm(root, { recursive: true, force: true }) }
   }, 30_000)
 

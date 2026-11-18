@@ -25,7 +25,8 @@ export async function runAudit(
   if (stack === 'cpp-cmake' && !options.buildDir) throw new Error('C++/CMake requires --build-dir')
   const adapter = stack === 'cpp-cmake' ? createCppCmakeAdapter() : createTypescriptDepcruiseAdapter()
   const depcruiseVersion = stack === 'typescript' ? readBundledDepcruiseVersion(resolveRuntimeRoot(import.meta.url)) : undefined
-  const reportOut = outDir ?? (options.check && options.buildDir ? join(options.buildDir, 'arch-audit', 'check') : undefined)
+  const reportOut = outDir ?? (options.check ? (options.buildDir ? join(options.buildDir, 'arch-audit', 'check') : join(projectRoot, 'audit-report-check')) : undefined)
+  if (options.check && reportOut && await exists(join(reportOut, 'audit-report.md'))) throw new Error('Machine check requires a separate output directory without an existing full Markdown report')
   const data = await buildReportData(adapter, projectRoot, { depcruiseVersion, d9MdPath, outDir: reportOut, buildDir: options.buildDir, configuration: options.configuration, check: options.check })
   const clusters_input_path = join(data.outDir, 'clusters-input.json')
   const md_path = clusterProsefn && !options.check ? (await renderReport(data, clusterProsefn)).md_path : null

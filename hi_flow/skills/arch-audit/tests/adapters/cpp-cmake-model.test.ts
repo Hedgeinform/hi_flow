@@ -1,12 +1,12 @@
+import { hasCppTools, hasQt } from '../cpp-tools.ts'
 import { describe, it, expect } from 'vitest'
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
-import { readFile } from 'node:fs/promises'
 import { readCmakeModel } from '../../adapters/cpp/cmake-model.ts'
 
-describe('CMake model', () => {
+describe.skipIf(!hasCppTools)('CMake model', () => {
   it('loads own targets and direct link edges from a configured project', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cmake model '))
     const build = join(root, 'build')
@@ -22,7 +22,7 @@ describe('CMake model', () => {
       const model = await readCmakeModel(root, build)
       expect(model.targets.map(target => target.name).sort()).toEqual(['core', 'engine', 'headers'])
       expect(model.targets.find(target => target.name === 'core')?.modules).toEqual(['core'])
-      expect(model.targets.find(target => target.name === 'core')?.sources).toContainEqual({ path: join(build, 'generated.cpp'), generated: true })
+      expect(model.targets.find(target => target.name === 'core')?.sources).toContainEqual(expect.objectContaining({ path: join(build, 'generated.cpp'), generated: true }))
       expect(model.targets.find(target => target.name === 'core')?.declarationFile).toBe(join(root, 'src/core/CMakeLists.txt'))
       expect(model.targets.find(target => target.name === 'core')?.declarationLine).toBe(1)
       expect(model.targets.find(target => target.name === 'engine')?.modules).toEqual(['engine'])
@@ -38,13 +38,17 @@ describe('CMake model', () => {
       const otherRoot = join(root, 'other')
       await mkdir(otherRoot)
       await writeFile(join(otherRoot, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(other)\n')
+      const originalDatabase = await readFile(join(build, 'compile_commands.json'), 'utf8')
       await expect(readCmakeModel(otherRoot, build)).rejects.toThrow(/CMake refresh failed.*build/i)
+      expect(await readFile(join(build, 'compile_commands.json'), 'utf8')).toBe(originalDatabase)
       await writeFile(join(root, 'CMakeGraphVizOptions.cmake'), 'set(GRAPHVIZ_STATIC_LIBS FALSE)\n')
-      await expect(readCmakeModel(root, build)).rejects.toThrow(/Graphviz.*missing/i)
-      await writeFile(join(root, 'CMakeGraphVizOptions.cmake'), '')
+      await expect(readCmakeModel(root, build)).rejects.toThrow(/Graphviz.*(missing|unsupported)/i)
+      await writeFile(join(root, 'CMakeGraphVizOptions.cmake'), 'set(GRAPHVIZ_EXTERNAL_LIBS FALSE)\n')
+      await expect(readCmakeModel(root, build)).rejects.toThrow(/Graphviz.*(missing|unsupported)/i)
+      await rm(join(root, 'CMakeGraphVizOptions.cmake'))
       execFileSync('cmake', ['-S', root, '-B', build, '-DCMAKE_EXPORT_COMPILE_COMMANDS=OFF'])
       await writeFile(join(build, 'compile_commands.json'), '[]')
-      await expect(readCmakeModel(root, build)).rejects.toThrow(/Missing compile command.*core\.cpp/)
+      await expect(readCmakeModel(root, build)).rejects.toThrow(/CMAKE_EXPORT_COMPILE_COMMANDS/)
     } finally { await rm(root, { recursive: true, force: true }) }
   })
   it('retains a local header-only target without treating imported libraries as local', async () => {
@@ -62,7 +66,7 @@ describe('CMake model', () => {
       expect(model.links).toContainEqual({ from: 'core', to: 'headers' })
     } finally { await rm(root, { recursive: true, force: true }) }
   })
-  it('associates a generated Qt QML plugin with its backing target', async () => {
+  it.skipIf(!hasQt)('associates a generated Qt QML plugin with its backing target', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cmake-qml-'))
     const build = join(root, 'build')
     try {
@@ -105,6 +109,54 @@ describe('CMake model', () => {
       expect(release.links).toContainEqual({ from: 'core', to: 'releaselib' })
       expect(release.links).not.toContainEqual({ from: 'core', to: 'debuglib' })
       expect(await readFile(join(build, 'CMakeCache.txt'), 'utf8')).toBe(originalCache)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  })
+  it('detects a missing compile command for one target even when another compiles the same file', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cmake-missing-owner-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(missing_owner LANGUAGES CXX)\nadd_library(core_a src/core/core.cpp)\nadd_library(core_b src/core/core.cpp)\nset_property(TARGET core_b PROPERTY EXPORT_COMPILE_COMMANDS OFF)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      await expect(readCmakeModel(root, build)).rejects.toThrow(/core_b/)
+    } finally { await rm(root, { recursive: true, force: true }) }
+  })
+  it('does not demand a command for a source marked HEADER_FILE_ONLY', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cmake-header-only-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'src/core/metadata.cpp'), 'int ignored;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(header_only LANGUAGES CXX)\nset_source_files_properties(src/core/metadata.cpp PROPERTIES HEADER_FILE_ONLY TRUE)\nadd_library(core src/core/core.cpp src/core/metadata.cpp)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      const model = await readCmakeModel(root, build)
+      expect(model.translationUnits).toEqual([join(root, 'src/core/core.cpp')])
+    } finally { await rm(root, { recursive: true, force: true }) }
+  })
+  it('accepts export enabled by CMakeLists when cache value is empty', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cmake-export-local-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(local_export LANGUAGES CXX)\nset(CMAKE_EXPORT_COMPILE_COMMANDS ON)\nadd_library(core src/core/core.cpp)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja'])
+      const model = await readCmakeModel(root, build)
+      expect(model.translationUnits).toContain(join(root, 'src/core/core.cpp'))
+    } finally { await rm(root, { recursive: true, force: true }) }
+  })
+  it('rejects a stale database when export is disabled', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cmake-stale-'))
+    const build = join(root, 'build')
+    try {
+      await mkdir(join(root, 'src/core'), { recursive: true })
+      await writeFile(join(root, 'src/core/core.cpp'), 'int core;\n')
+      await writeFile(join(root, 'CMakeLists.txt'), 'cmake_minimum_required(VERSION 3.25)\nproject(stale LANGUAGES CXX)\nadd_library(core src/core/core.cpp)\n')
+      execFileSync('cmake', ['-S', root, '-B', build, '-G', 'Ninja', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+      execFileSync('cmake', ['-S', root, '-B', build, '-DCMAKE_EXPORT_COMPILE_COMMANDS=OFF'])
+      await expect(readCmakeModel(root, build)).rejects.toThrow(/CMAKE_EXPORT_COMPILE_COMMANDS/i)
     } finally { await rm(root, { recursive: true, force: true }) }
   })
   it('rejects an unconfigured build directory', async () => {

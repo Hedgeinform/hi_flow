@@ -6,7 +6,7 @@ import type { CompileCommand } from './compile-commands.ts'
 
 const exec = promisify(execFile)
 export interface IncludeEdge { from: string; to: string; line?: number; spelling: string }
-export interface IncludeResult { translationUnit: string; edges: IncludeEdge[]; visitedFiles: string[]; compilerVersion: string }
+export interface IncludeResult { translationUnit: string; edges: IncludeEdge[]; visitedFiles: string[]; compilerVersion: string; includeSearchRoots: string[] }
 interface Pending { from: string; line: number; spelling: string; quoted: boolean; next: boolean }
 
 function preprocessingArguments(argv: string[]): string[] {
@@ -17,7 +17,7 @@ function preprocessingArguments(argv: string[]): string[] {
     const arg = argv[i]!
     if (takesValue.has(arg)) { if (++i >= argv.length) throw new Error(`Missing value for ${arg}`); continue }
     if (remove.has(arg) || /^-(?:MF|MT|MQ|MJ).+/.test(arg) || /^-o.+/.test(arg)) continue
-    if (arg === '-include-pch' || arg.endsWith('.gch') || arg.startsWith('-Wp,-M')) throw new Error(`Unsupported precompiled header or depfile option: ${arg}`)
+    if (arg.startsWith('-include-pch') || arg.endsWith('.gch') || arg.startsWith('-Wp,-M')) throw new Error(`Unsupported precompiled header or depfile option: ${arg}`)
     result.push(arg)
   }
   return [...result, '-E', '-dI', '-v']
@@ -39,14 +39,18 @@ function searchPaths(stderr: string, directory: string): { quoted: string[]; sys
 }
 async function resolveSkipped(pending: Pending, paths: { quoted: string[]; system: string[] }): Promise<string> {
   const roots = pending.quoted ? [dirname(pending.from), ...paths.quoted, ...paths.system] : paths.system
-  let start = 0
-  if (pending.next) {
-    const owner = roots.findIndex(root => pending.from.startsWith(root + '/'))
-    if (owner < 0) throw new Error(`Cannot resolve include_next in ${pending.from}:${pending.line}`)
-    start = owner + 1
+  const owners = pending.next ? roots.map((root, index) => ({ root, index })).filter(({ root }) => pending.from.startsWith(root + '/')).map(owner => owner.index + 1) : [0]
+  if (owners.length === 0) throw new Error(`Cannot resolve include_next in ${pending.from}:${pending.line}`)
+  const resolved = new Set<string>()
+  for (const start of owners) {
+    const candidates = isAbsolute(pending.spelling) ? [pending.spelling] : roots.slice(start).map(root => join(root, pending.spelling))
+    for (const candidate of candidates) {
+      try { await access(candidate); resolved.add(resolve(candidate)); break } catch {}
+    }
   }
-  const candidates = isAbsolute(pending.spelling) ? [pending.spelling] : roots.slice(start).map(root => join(root, pending.spelling))
-  for (const candidate of candidates) { try { await access(candidate); return resolve(candidate) } catch {} }
+  if (resolved.size > 1) throw new Error(`Ambiguous include_next search path in ${pending.from}:${pending.line}`)
+  if (resolved.size === 1) return [...resolved][0]!
+
   throw new Error(`Cannot resolve include ${pending.spelling} in ${pending.from}:${pending.line}`)
 }
 export async function collectIncludes(command: CompileCommand): Promise<IncludeResult> {
@@ -72,6 +76,9 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
       const name = command.argv[++i]
       if (!name) throw new Error(`Missing forced include argument for ${translationUnit}`)
       forced.push(name)
+    } else if (command.argv[i]!.startsWith('-include') || command.argv[i]!.startsWith('-imacros')) {
+      const prefix = command.argv[i]!.startsWith('-include') ? '-include' : '-imacros'
+      forced.push(command.argv[i]!.slice(prefix.length))
     }
   }
   const edges: IncludeEdge[] = [], visited = new Set<string>()
@@ -80,7 +87,7 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
     edges.push({ from: translationUnit, to, spelling })
     visited.add(to)
   }
-  let file = '', lineNumber = 1, pending: Pending | undefined, sawTranslationUnit = false
+  let file = '', lineNumber = 1, pending: Pending | undefined, sawTranslationUnit = false, sourceActive = false
   const flush = async (to?: string) => {
     if (!pending) return
     const target = to ?? await resolveSkipped(pending, paths)
@@ -92,9 +99,12 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
     const marker = line.match(/^#\s+(\d+)\s+"((?:[^"\\]|\\.)*)"(?:\s+(.*))?$/)
     if (marker) {
       const raw = JSON.parse(`"${marker[2]}"`) as string
+      if (raw.endsWith('//') && Number(marker[1]) === 1) continue // GCC working-directory marker with debug info
       const nextFile = raw.startsWith('<') && raw.endsWith('>') ? '' : resolve(command.directory, raw)
       const flags = (marker[3] ?? '').split(/\s+/)
-      if (nextFile === translationUnit) sawTranslationUnit = true
+      if (file && !nextFile && !flags.includes('2') && (sourceActive || !['<built-in>', '<command-line>'].includes(raw))) throw new Error(`Unsupported source file remapping from ${file} to ${raw}`)
+      if (file && nextFile && nextFile !== file && !flags.includes('1') && !flags.includes('2')) throw new Error(`Unsupported source file remapping from ${file} to ${nextFile}`)
+      if (nextFile === translationUnit) { sawTranslationUnit = true; if (Number(marker[1]) > 0) sourceActive = true }
       if (pending && flags.includes('1') && nextFile && nextFile !== pending.from) await flush(nextFile)
       else if (pending && nextFile !== pending.from) await flush()
       if (nextFile && flags.includes('1')) visited.add(nextFile)
@@ -112,5 +122,5 @@ export async function collectIncludes(command: CompileCommand): Promise<IncludeR
   await flush()
   if (!sawTranslationUnit) throw new Error(`Compiler output did not contain translation unit ${translationUnit}`)
   visited.add(translationUnit)
-  return { translationUnit, edges, visitedFiles: [...visited], compilerVersion }
+  return { translationUnit, edges, visitedFiles: [...visited], compilerVersion, includeSearchRoots: [...paths.quoted, ...paths.system] }
 }

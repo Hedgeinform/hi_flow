@@ -140,6 +140,7 @@ export async function buildReportData(
   const projectRules = await loadProjectRules(projectRoot, { d9 })
   const moduleRoot = normalizeModuleRoot(projectRules.overrides?.module_pattern ?? 'src')
   const parsed = await adapter.collect({ projectRoot, moduleRoot, projectRules, baselineRules, buildDir: opts.buildDir, configuration: opts.configuration, depcruiseVersion: opts.depcruiseVersion, runDepcruise: opts.runDepcruise })
+  if (opts.check && parsed.parsing_errors?.length) throw new Error(`Incomplete audit: parsing failed for ${parsed.parsing_errors.map(item => item.file).join(', ')}`)
   const modulesList = parsed.module_names
   const locByModule = await countSourceLoc(projectRoot, parsed.source_files_by_module)
   for (const [module, raw] of Object.entries(parsed.per_module_raw)) {
@@ -380,7 +381,7 @@ function renderMarkdownReport(
 
   lines.push('## Scope')
   lines.push('')
-  lines.push(report.metadata.audit_tooling_version.startsWith('cpp-cmake@')
+  lines.push(report.metadata.audit_tooling_version?.startsWith('cpp-cmake@')
     ? 'arch-audit covers architecture-level dependency boundaries, cycles and coupling metrics. Run the CMake build, CTest, clang-format and clang-tidy as complementary quality checks.'
     : 'arch-audit covers architecture-level dependency boundaries, cycles, coupling metrics, and structural patterns. Run the project build/typecheck, `npx depcruise --validate`, eslint, tests, and `npm audit` as complementary code-quality gates.')
   lines.push('')
